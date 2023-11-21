@@ -1,1 +1,1 @@
-rootProject.name = "template"
+rootProject.name = "vulpes-spring-generator"
