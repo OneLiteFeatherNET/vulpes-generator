@@ -1,0 +1,141 @@
+# User-specific stuff
+.idea/
+build/
+
+*.iml
+*.ipr
+*.iws
+
+# IntelliJ
+out/
+
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+target/
+
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+.flattened-pom.xml
+
+# Common working directory
+run/
+/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+/.gradle/buildOutputCleanup/cache.properties
+/.gradle/checksums/checksums.lock
+/.gradle/6.8/javaCompile/classAnalysis.bin
+/.gradle/6.8/executionHistory/executionHistory.bin
+/.gradle/6.8/executionHistory/executionHistory.lock
+/.gradle/6.8/fileHashes/fileHashes.bin
+/.gradle/6.8/fileHashes/fileHashes.lock
+/.gradle/6.8/gc.properties
+/.gradle/configuration-cache/gc.properties
+/.gradle/vcs-1/gc.properties
+/gradle/wrapper/gradle-wrapper.properties
+/.gradle/6.8/javaCompile/jarAnalysis.bin
+/.gradle/6.8/javaCompile/javaCompile.lock
+/.gradle/6.8/fileChanges/last-build.bin
+/build/tmp/jar/MANIFEST.MF
+/.gradle/checksums/md5-checksums.bin
+/.gradle/buildOutputCleanup/outputFiles.bin
+/.gradle/6.8/fileHashes/resourceHashesCache.bin
+/.gradle/checksums/sha1-checksums.bin
+/build/tmp/compileJava/source-classes-mapping.txt
+/.gradle/6.8/javaCompile/taskHistory.bin
+/.gradle/
+/.gradle/6.7/
+/gradle.properties
+/gradlew
+/gradlew.bat

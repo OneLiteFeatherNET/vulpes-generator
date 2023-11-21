@@ -1,0 +1,21 @@
+image: gradle:jdk17-jammy
+
+stages:
+  - deploy
+
+variables:
+  BRANCH: master
+  GENERATION_URL: yolo
+
+before_script:
+  - apt install -y unzip wget
+
+
+deploy:
+  stage: deploy
+  script:
+    - wget $GENERATION_URL?branch=$BRANCH -O gen.zip
+    - unzip gen.zip -d gen
+    - cd gen
+    - gradle publish
+  retry: 2
