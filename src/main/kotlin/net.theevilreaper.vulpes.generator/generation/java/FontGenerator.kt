@@ -3,15 +3,15 @@ package net.theevilreaper.vulpes.generator.generation.java
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
 import net.reaper.vulpes.font.FontSymbol
+import net.theevilreaper.vulpes.api.model.FontModel
+import net.theevilreaper.vulpes.api.repository.FontRepository
+import net.theevilreaper.vulpes.api.util.getCharsAsArray
+import net.theevilreaper.vulpes.api.util.getShiftAsArray
+import net.theevilreaper.vulpes.api.util.hasFontSymbols
+import net.theevilreaper.vulpes.api.util.hasShiftData
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.toVariableString
-import net.theevilreaper.vulpes.model.FontModel
-import net.theevilreaper.vulpes.repository.FontRepository
-import net.theevilreaper.vulpes.util.getCharsAsArray
-import net.theevilreaper.vulpes.util.getShiftAsArray
-import net.theevilreaper.vulpes.util.hasFontSymbols
-import net.theevilreaper.vulpes.util.hasShiftData
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 

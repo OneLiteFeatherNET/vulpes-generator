@@ -7,9 +7,9 @@ import net.theevilreaper.dartpoet.enum.EnumPropertySpec
 import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
 import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
+import net.theevilreaper.vulpes.api.model.MaterialWrapper
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.GeneratorType
-import net.theevilreaper.vulpes.model.MaterialWrapper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 

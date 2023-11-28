@@ -1,6 +1,6 @@
 package net.theevilreaper.vulpes.generator
 
-import net.theevilreaper.vulpes.RepoSpec
+import net.theevilreaper.vulpes.api.RepoSpec
 import net.theevilreaper.vulpes.generator.properties.GitlabProperties
 import net.theevilreaper.vulpes.generator.spec.GenerationSpec
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -16,7 +16,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @SpringBootApplication(
     scanBasePackageClasses = [
         GeneratorApplication::class,
-        GenerationSpec::class
+        GenerationSpec::class,
+        RepoSpec::class
     ]
 )
 @EnableConfigurationProperties(value = [GitlabProperties::class])

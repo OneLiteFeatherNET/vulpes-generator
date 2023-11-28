@@ -1,7 +1,7 @@
 package net.theevilreaper.vulpes.generator.spec
 
-import net.theevilreaper.vulpes.model.EnchantmentWrapper
-import net.theevilreaper.vulpes.model.MaterialWrapper
+import net.theevilreaper.vulpes.api.model.EnchantmentWrapper
+import net.theevilreaper.vulpes.api.model.MaterialWrapper
 
 /**
  * The spec is data object which contains several data about minecraft data from a specific version.
