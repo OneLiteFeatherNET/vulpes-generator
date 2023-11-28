@@ -8,20 +8,14 @@ import net.minestom.server.item.Enchantment
 import net.minestom.server.item.ItemHideFlag
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
+import net.theevilreaper.vulpes.api.model.ItemModel
+import net.theevilreaper.vulpes.api.repository.ItemRepository
+import net.theevilreaper.vulpes.api.util.*
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import net.theevilreaper.vulpes.generator.util.META_DATA_VARIABLE
 import net.theevilreaper.vulpes.generator.util.toVariableString
-import net.theevilreaper.vulpes.model.ItemModel
-import net.theevilreaper.vulpes.repository.ItemRepository
-import net.theevilreaper.vulpes.util.getAmount
-import net.theevilreaper.vulpes.util.hasDisplayName
-import net.theevilreaper.vulpes.util.hasEnchantments
-import net.theevilreaper.vulpes.util.hasFlags
-import net.theevilreaper.vulpes.util.hasLoreLines
-import net.theevilreaper.vulpes.util.hasMaterial
-import net.theevilreaper.vulpes.util.hasMetaData
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 

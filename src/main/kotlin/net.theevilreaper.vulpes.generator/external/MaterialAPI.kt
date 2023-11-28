@@ -3,9 +3,9 @@ package net.theevilreaper.vulpes.generator.external
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.cache.CacheBuilder
+import net.theevilreaper.vulpes.api.model.MaterialWrapper
 import net.theevilreaper.vulpes.generator.generation.GeneratorRegistry
 import net.theevilreaper.vulpes.generator.generation.dart.MaterialGenerator
-import net.theevilreaper.vulpes.model.MaterialWrapper
 import org.eclipse.jgit.api.Git
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value

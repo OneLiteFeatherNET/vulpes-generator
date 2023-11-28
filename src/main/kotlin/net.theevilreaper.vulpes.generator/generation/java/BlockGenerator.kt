@@ -8,13 +8,13 @@ import net.kyori.adventure.text.Component
 import net.minestom.server.instance.block.Block
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
+import net.theevilreaper.vulpes.api.model.BlockModel
+import net.theevilreaper.vulpes.api.repository.BlocKRepository
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import net.theevilreaper.vulpes.generator.util.ITEM_CONST
 import net.theevilreaper.vulpes.generator.util.toVariableString
-import net.theevilreaper.vulpes.model.BlockModel
-import net.theevilreaper.vulpes.repository.BlocKRepository
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import javax.lang.model.element.Modifier

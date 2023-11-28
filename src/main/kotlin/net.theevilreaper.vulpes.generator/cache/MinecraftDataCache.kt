@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.benmanes.caffeine.cache.AsyncCache
 import com.github.benmanes.caffeine.cache.Caffeine
+import net.theevilreaper.vulpes.api.model.MaterialWrapper
 import net.theevilreaper.vulpes.generator.external.MaterialAPI
 import net.theevilreaper.vulpes.generator.spec.MinecraftDataSpec
-import net.theevilreaper.vulpes.model.MaterialWrapper
 import org.eclipse.jgit.api.Git
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
