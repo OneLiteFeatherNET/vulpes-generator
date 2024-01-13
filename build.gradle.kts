@@ -15,6 +15,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
@@ -54,34 +55,25 @@ repositories {
 }
 
 dependencies {
-	implementation("net.theevilreaper.vulpes.api:vulpes-spring-api:0.0.1-SNAPSHOT")
-	implementation("dev.themeinerlp:dartpoet:0.0.1-SNAPSHOT")
-	implementation("org.springframework.boot:spring-boot-starter-log4j2")
-	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-	implementation("org.springframework.boot:spring-boot-starter-security")
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.boot:spring-boot-starter-webflux")
-	implementation("org.springframework.boot:spring-boot-starter-cache")
-	implementation("com.github.ben-manes.caffeine:caffeine:3.1.6")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	implementation("org.jetbrains:annotations:24.0.1")
-	implementation("com.squareup:javapoet:1.13.0")
-	implementation("dev.themeinerlp:vulpes-base:1.0-SNAPSHOT+95bd27ce") {
+	implementation(libs.bundles.vulpes) {
 		exclude(group = "com.github.Minestom", module = "Minestom")
 		exclude(group = "net.worldseed.multipart", module = "WorldSeedEntityEngine")
 	}
-
-	implementation("net.onelitefeather.microtus:Minestom:1.1.0") {
+	implementation(libs.dartpoet)
+	implementation(libs.bundles.spring)
+	implementation(libs.caffeine)
+	implementation(libs.jetbrains.annotation)
+	implementation(libs.javapoet)
+	implementation(libs.microtus) {
 		exclude(group = "org.tinylog", module = "slf4j-tinylog")
 	}
 
-	implementation("org.eclipse.jgit:org.eclipse.jgit:6.5.0.202303070854-r")
-	implementation("org.gitlab4j:gitlab4j-api:5.0.1")
-	implementation("com.google.guava:guava:31.1-jre")
-	implementation("commons-io:commons-io:2.11.0")
-	implementation("org.apache.commons:commons-compress:1.21")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.+")
+	implementation(libs.jgit)
+	implementation(libs.gitlab4j)
+	implementation(libs.guava)
+	implementation(libs.commons.io)
+	implementation(libs.commons.compress)
+	implementation(libs.jackson)
 }
 
 tasks {
