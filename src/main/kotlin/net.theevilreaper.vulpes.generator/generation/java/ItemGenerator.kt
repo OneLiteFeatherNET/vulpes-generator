@@ -13,6 +13,7 @@ import net.theevilreaper.vulpes.api.repository.ItemRepository
 import net.theevilreaper.vulpes.api.util.*
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import net.theevilreaper.vulpes.generator.util.META_DATA_VARIABLE
 import net.theevilreaper.vulpes.generator.util.toVariableString
@@ -27,7 +28,7 @@ import java.nio.file.Path
 @Service
 class ItemGenerator(
     val itemRepository: ItemRepository
-) : BaseGenerator<ItemModel>(
+) : JavaGenerationHelper, BaseGenerator<ItemModel>(
     className = "ItemRegistry",
     packageName = "$BASE_PACKAGE.items",
 ) {
@@ -36,7 +37,10 @@ class ItemGenerator(
 
         if (models.isEmpty()) return
 
-        updateClassSpec()
+        this.classSpec.addJavadoc(defaultDocumentation)
+        addClassModifiers(this.classSpec)
+        addJetbrainsAnnotation(this.classSpec)
+        addPrivateDefaultConstructor(this.classSpec)
         val itemFields: MutableMap<String, FieldSpec> = mutableMapOf()
 
         models.filter { it.name.orEmpty().trim().isNotEmpty() }.forEach { model ->

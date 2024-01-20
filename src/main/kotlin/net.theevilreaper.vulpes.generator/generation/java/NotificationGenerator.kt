@@ -14,6 +14,7 @@ import net.theevilreaper.vulpes.api.util.hasDescription
 import net.theevilreaper.vulpes.api.util.hasTitle
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import org.springframework.stereotype.Service
 import java.nio.file.Path
@@ -25,24 +26,27 @@ import java.nio.file.Path
  **/
 @Service
 class NotificationGenerator(
-    val notificationRepository: NotificationRepository
-) : BaseGenerator<NotificationModel>(
+    val notificationRepository: NotificationRepository,
+) : JavaGenerationHelper, BaseGenerator<NotificationModel>(
     className = "NotificationRegistry",
     packageName = "$BASE_PACKAGE.notifications",
 ) {
 
-    override fun generate(outputFolder: Path) {
+    override fun generate(javaPath: Path) {
         val models = getModels()
 
         if (models.isEmpty()) return
-        updateClassSpec()
+        this.classSpec.addJavadoc(defaultDocumentation)
+        addClassModifiers(this.classSpec)
+        addJetbrainsAnnotation(this.classSpec)
+        addPrivateDefaultConstructor(this.classSpec)
         val fields = getFields(models).values
         this.classSpec.addFields(fields)
         val javaFile = JavaFile.builder(packageName, this.classSpec.build())
             .indent(INDENT_DEFAULT)
             .skipJavaLangImports(true)
             .build();
-        writeFiles(listOf(javaFile), outputFolder)
+        writeFiles(listOf(javaFile), javaPath)
     }
 
     /**

@@ -1,9 +1,7 @@
 package net.theevilreaper.vulpes.generator.generation
 
 import com.google.common.base.CaseFormat
-import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.TypeSpec.Kind
 import net.theevilreaper.vulpes.generator.generation.doc.ClassDocumentation
@@ -56,26 +54,6 @@ abstract class BaseGenerator<T>(
                 logger.warn("An error occurred while writing source code to the file system: {0}", exception)
             }
         }
-    }
-
-    protected fun updateClassSpec() {
-        require(generatorType == GeneratorType.JAVA) { "This function can't be called in a generator which works for dart" }
-        this.classSpec
-            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-            .addMethod(
-                MethodSpec
-                    .constructorBuilder()
-                    .addJavadoc(
-                        CodeBlock
-                            .builder()
-                            .add("Constructor for the class.")
-                            .build()
-                    )
-                    .addModifiers(Modifier.PRIVATE)
-                    .addComment("Nothing to do here")
-                    .build()
-            )
-            .build()
     }
 
     private fun getClassType(classType: Kind): TypeSpec.Builder {

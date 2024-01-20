@@ -11,6 +11,7 @@ import net.theevilreaper.vulpes.api.util.hasFontSymbols
 import net.theevilreaper.vulpes.api.util.hasShiftData
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.toVariableString
 import org.springframework.stereotype.Service
 import java.nio.file.Path
@@ -23,7 +24,7 @@ import java.nio.file.Path
 @Service
 class FontGenerator(
     val fontRepository: FontRepository
-) : BaseGenerator<FontModel>(
+) : JavaGenerationHelper, BaseGenerator<FontModel>(
     className = "FontRegistry",
     packageName = "$BASE_PACKAGE.font",
 ) {
@@ -34,7 +35,10 @@ class FontGenerator(
         if (models.isEmpty()) return
 
         val fieldSpecs = generateFonts(models).values
-        updateClassSpec()
+        this.classSpec.addJavadoc(defaultDocumentation)
+        addClassModifiers(this.classSpec)
+        addJetbrainsAnnotation(this.classSpec)
+        addPrivateDefaultConstructor(this.classSpec)
         this.classSpec.addFields(fieldSpecs)
     }
 
