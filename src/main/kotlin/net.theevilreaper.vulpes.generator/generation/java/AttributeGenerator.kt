@@ -8,6 +8,7 @@ import net.theevilreaper.vulpes.api.model.AttributeModel
 import net.theevilreaper.vulpes.api.repository.AttributeRepository
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import org.springframework.stereotype.Service
 import java.nio.file.Path
@@ -23,7 +24,7 @@ import javax.lang.model.element.Modifier
 @Service
 class AttributeGenerator(
     private val attributeRepository: AttributeRepository,
-) : BaseGenerator<AttributeModel>(
+) : JavaGenerationHelper, BaseGenerator<AttributeModel>(
     className = "DungeonAttributes",
     packageName = "$BASE_PACKAGE.attributes",
 ) {
@@ -56,8 +57,9 @@ class AttributeGenerator(
 
         this.classSpec.addFields(generatedModels.values.toList())
         this.classSpec.addJavadoc(defaultDocumentation)
-        this.classSpec.addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-
+        addClassModifiers(this.classSpec)
+        addJetbrainsAnnotation(this.classSpec)
+        addPrivateDefaultConstructor(this.classSpec)
         val javaFile = JavaFile.builder(packageName, this.classSpec.build())
             .indent(INDENT_DEFAULT)
             .skipJavaLangImports(true)

@@ -1,9 +1,7 @@
 package net.theevilreaper.vulpes.generator.generation.java
 
-import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
 import net.kyori.adventure.text.Component
 import net.minestom.server.instance.block.Block
 import net.minestom.server.item.ItemStack
@@ -12,12 +10,12 @@ import net.theevilreaper.vulpes.api.model.BlockModel
 import net.theevilreaper.vulpes.api.repository.BlocKRepository
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import net.theevilreaper.vulpes.generator.util.ITEM_CONST
 import net.theevilreaper.vulpes.generator.util.toVariableString
 import org.springframework.stereotype.Service
 import java.nio.file.Path
-import javax.lang.model.element.Modifier
 
 /**
  * @author theEvilReaper
@@ -27,7 +25,7 @@ import javax.lang.model.element.Modifier
 @Service
 class BlockGenerator(
     val blocKRepository: BlocKRepository
-) : BaseGenerator<BlockModel>(
+) : JavaGenerationHelper, BaseGenerator<BlockModel>(
     className = "CustomBlockRegistry",
     packageName = "$BASE_PACKAGE.block",
 ) {
@@ -62,23 +60,10 @@ class BlockGenerator(
                     .initializer("\$T.fromNamespaceId(\$S)", Block::class.java, namespace).build()
             )
         }
-        this.classSpec
-            .addJavadoc(defaultDocumentation)
-            .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-            .addMethod(
-                MethodSpec
-                    .constructorBuilder()
-                    .addJavadoc(
-                        CodeBlock
-                            .builder()
-                            .add("Constructor for the class.")
-                            .build()
-                    )
-                    .addModifiers(Modifier.PRIVATE)
-                    .addComment("Nothing to do here")
-                    .build()
-            )
-            .build()
+        this.classSpec.addJavadoc(defaultDocumentation)
+        addClassModifiers(this.classSpec)
+        addJetbrainsAnnotation(this.classSpec)
+        addPrivateDefaultConstructor(this.classSpec)
         val javaFile = JavaFile.builder(packageName, this.classSpec.build())
             .indent(INDENT_DEFAULT)
             .skipJavaLangImports(true)
