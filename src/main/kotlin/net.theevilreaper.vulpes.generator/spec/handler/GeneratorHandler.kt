@@ -4,7 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import net.theevilreaper.vulpes.generator.generation.GeneratorRegistry
 import net.theevilreaper.vulpes.generator.generation.GeneratorType
 import net.theevilreaper.vulpes.generator.generation.GitProjectWorker
-import net.theevilreaper.vulpes.generator.util.*
+import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.GRADLE_PROPERTIES
+import net.theevilreaper.vulpes.generator.util.JAVA_MAIM_FOLDER
+import net.theevilreaper.vulpes.generator.util.OUT_PUT_FOLDER
+import net.theevilreaper.vulpes.generator.util.commitMail
+import net.theevilreaper.vulpes.generator.util.commitMessage
+import net.theevilreaper.vulpes.generator.util.commitName
+import net.theevilreaper.vulpes.generator.util.gitlabCiFile
+import net.theevilreaper.vulpes.generator.util.tempPrefix
+import net.theevilreaper.vulpes.generator.util.version
+import net.theevilreaper.vulpes.generator.util.zipFileName
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.springframework.beans.factory.annotation.Value
@@ -12,7 +22,11 @@ import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.CrossOrigin
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.nio.file.Files
@@ -21,13 +35,16 @@ import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
-import kotlin.io.path.*
+import kotlin.io.path.outputStream
+import kotlin.io.path.reader
+import kotlin.io.path.writeText
+import kotlin.io.path.writer
 
 @CrossOrigin(origins = ["*"], maxAge = 4800, allowCredentials = "false")
 @RestController
 class GeneratorHandler(
     val registry: GeneratorRegistry,
-    val objectMapper: ObjectMapper
+    val objectMapper: ObjectMapper,
     /*val gitLabApi: GitLabApi,
     val gitlabProperties: GitlabProperties,*/
 ) {
@@ -51,8 +68,20 @@ class GeneratorHandler(
     private lateinit var gitPassword: String
 
     @RequestMapping("/branches", method = [RequestMethod.GET], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun getBranches(@RequestParam(name = "full", required = false) full: Boolean): ResponseEntity<List<String>> {
-        val refs = Git.lsRemoteRepository().setHeads(true).setRemote(remoteUrl).call().map { it.name }.toList()
+    private fun getBranches(
+        @RequestParam(
+            name = "full",
+            required = false
+        ) full: Boolean
+    ): ResponseEntity<List<String>> {
+        val refs = Git.lsRemoteRepository()
+            .setCredentialsProvider(
+                UsernamePasswordCredentialsProvider(
+                    gitUsername,
+                    gitPassword
+                )
+            )
+            .setHeads(true).setRemote(remoteUrl).call().map { it.name }.toList()
         return if (full) {
             ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(refs)
         } else {
@@ -62,7 +91,7 @@ class GeneratorHandler(
     }
 
     @RequestMapping("/generate", method = [RequestMethod.GET], produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun generate(
+    private fun generate(
         @RequestParam("branch") branch: String, @RequestParam("image", required = false) image: String?,
     ): ResponseEntity<Any> {
         val tempPath = Files.createTempDirectory(tempPrefix)
@@ -117,13 +146,13 @@ class GeneratorHandler(
     }
 
     @RequestMapping("/download", method = [RequestMethod.GET], produces = ["application/octet-stream"])
-    fun download(@RequestParam("branch") branch: String): ResponseEntity<Any> {
+    private fun download(@RequestParam("branch") branch: String): ResponseEntity<Any> {
         val tempPath = Files.createTempDirectory(tempPrefix)
         val zipFile = tempPath.resolve("$OUT_PUT_FOLDER.zip")
         val output = tempPath.resolve(OUT_PUT_FOLDER)
         val javaPath = output.resolve(JAVA_MAIM_FOLDER)
         Files.createDirectories(output)
-        val worker = GitProjectWorker(output.toFile(), remoteUrl, branch)
+        val worker = GitProjectWorker(output.toFile(), remoteUrl, branch, gitUsername, gitPassword)
         worker.cloneAndCheckout()
         val zipStream = javaClass.classLoader.getResourceAsStream(zipFileName)
         if (zipStream != null) {
