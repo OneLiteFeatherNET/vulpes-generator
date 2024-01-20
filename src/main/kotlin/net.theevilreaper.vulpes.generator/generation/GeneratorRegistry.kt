@@ -22,7 +22,8 @@ class GeneratorRegistry(
     bossBarGenerator: BossBarGenerator,
     frameTypeGenerator: FrameTypeGenerator,
     itemFlagGenerator: ItemFlagGenerator,
-    soundTypeGenerator: SoundTypeGenerator
+    soundTypeGenerator: SoundTypeGenerator,
+    attributeGenerator: AttributeGenerator
 ) {
 
     private val generatorMap: MutableMap<String, Generator> = mutableMapOf()
@@ -41,6 +42,7 @@ class GeneratorRegistry(
         register(frameTypeGenerator)
         register(itemFlagGenerator)
         register(soundTypeGenerator)
+        register(attributeGenerator)
     }
 
     /**

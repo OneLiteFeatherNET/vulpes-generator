@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity
  * @version 1.0.0
  * @since
  **/
+@Deprecated(message = "This interface will be removed in the future")
 interface BaseGenerationHandler {
 
     /**
