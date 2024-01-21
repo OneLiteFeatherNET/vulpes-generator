@@ -1,4 +1,4 @@
-package net.theevilreaper.vulpes.generator.generation
+package net.theevilreaper.vulpes.generator.generation.type
 
 /**
  * The enum contains all generator type variant which are supported.

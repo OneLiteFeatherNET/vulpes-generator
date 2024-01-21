@@ -9,7 +9,7 @@ import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
 import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
-import net.theevilreaper.vulpes.generator.generation.GeneratorType
+import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -46,5 +46,5 @@ class FrameTypeGenerator :
 
     override fun getName() = "FrameTypeGenerator"
 
-    override fun getModels(): List<FrameType> = FrameType.values().toList()
+    override fun getModels(): List<FrameType> = FrameType.entries.toList()
 }
