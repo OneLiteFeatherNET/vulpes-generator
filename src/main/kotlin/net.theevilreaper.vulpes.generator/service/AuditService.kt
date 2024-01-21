@@ -1,4 +1,4 @@
-package net.theevilreaper.vulpes.backend.service
+package net.theevilreaper.vulpes.generator.service
 
 /*import net.theevilreaper.vulpes.backend.audit.SpringSecurityAuditAware
 import org.springframework.context.annotation.Bean

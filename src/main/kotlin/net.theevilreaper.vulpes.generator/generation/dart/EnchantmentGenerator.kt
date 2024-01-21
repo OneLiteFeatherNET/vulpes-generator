@@ -5,59 +5,42 @@ import net.theevilreaper.dartpoet.DartModifier
 import net.theevilreaper.dartpoet.clazz.ClassSpec
 import net.theevilreaper.dartpoet.enum.EnumPropertySpec
 import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
-import net.theevilreaper.dartpoet.parameter.ParameterSpec
-import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.api.model.EnchantmentWrapper
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
-import net.theevilreaper.vulpes.generator.generation.GeneratorType
+import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.util.CLASS_PROPERTIES
+import net.theevilreaper.vulpes.generator.util.CONSTRUCTOR_PARAMETERS
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
+/**
+ * The [EnchantmentGenerator] contains the logic to map the data from an [EnchantmentWrapper] into a dart enum
+ * which contains all available enchantments.
+ * @property enchantmentData the data which should be mapped
+ * @constructor Sets the basic values for the generation
+ * @version 1.0
+ * @author theEvilReaper
+ */
 @Service
-class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
+class EnchantmentGenerator(
+    private val enchantmentData: List<EnchantmentWrapper> = emptyList(),
+) : BaseGenerator<EnchantmentWrapper>(
     className = "Enchantment",
     packageName = "enchantment",
     generatorType = GeneratorType.DART
 ) {
 
-    private var data: List<EnchantmentWrapper>? = emptyList()
-
-    /**
-     * Set the new content for the enchantment generation.
-     * @param values the list which contains the [EnchantmentWrapper] for the generation
-     */
-    fun setData(values: List<EnchantmentWrapper>) {
-        data = values
-    }
-
     override fun generate(javaPath: Path) {
-        if (data.orEmpty().isEmpty()) return
+        if (enchantmentData.isEmpty()) return
         val enumClass = ClassSpec.enumClass(className)
             .apply {
-                data!!.forEach {
-                    enumProperty(
-                        EnumPropertySpec.builder(
-                            it.toVariableName()
-                        )
-                            .parameter("%C", it.mojangName)
-                            .parameter("%C", it.category)
-                            .parameter("%L", it.minLevel)
-                            .parameter("%L", it.maxLevel)
-                            .build()
-                    )
-                }
+                enchantmentData.forEach { mapEnchantmentToEnumProperty(it) }
             }
-            .property(PropertySpec.builder("name", String::class).build())
-            .property(PropertySpec.builder("category", String::class).build())
-            .property(PropertySpec.builder("minLevel", Integer::class).build())
-            .property(PropertySpec.builder("maxLevel", Integer::class).build())
+            .properties(*CLASS_PROPERTIES)
             .constructor {
                 ConstructorSpec.builder(className)
                     .modifier(DartModifier.CONST)
-                    .parameter(ParameterSpec.builder("name").modifier(DartModifier.FINAL).build())
-                    .parameter(ParameterSpec.builder("category").modifier(DartModifier.FINAL).build())
-                    .parameter(ParameterSpec.builder("minLevel").modifier(DartModifier.FINAL).build())
-                    .parameter(ParameterSpec.builder("maxLevel").modifier(DartModifier.FINAL).build())
+                    .parameters(*CONSTRUCTOR_PARAMETERS)
                     .build()
             }
             .build()
@@ -66,7 +49,20 @@ class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
             .type(enumClass)
             .build()
         enumFile.write(javaPath)
-        data = null
+    }
+
+    /**
+     * Maps the given [EnchantmentWrapper] into a [EnumPropertySpec].
+     * @param enchantment the given enchantment
+     * @return the generated property
+     */
+    private fun mapEnchantmentToEnumProperty(enchantment: EnchantmentWrapper): EnumPropertySpec {
+        return EnumPropertySpec.builder(enchantment.toVariableName())
+            .parameter("%C", enchantment.mojangName)
+            .parameter("%C", enchantment.category)
+            .parameter("%L", enchantment.minLevel)
+            .parameter("%L", enchantment.maxLevel)
+            .build()
     }
 
     /**
@@ -78,7 +74,8 @@ class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
     /**
      * Not in use.
      */
+    @Throws(UnsupportedOperationException::class)
     override fun getModels(): List<EnchantmentWrapper> {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("The getter is not supported for this generator")
     }
 }

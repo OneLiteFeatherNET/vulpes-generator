@@ -1,5 +1,6 @@
 package net.theevilreaper.vulpes.generator.generation
 
+import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import java.nio.file.Path
 
 /**

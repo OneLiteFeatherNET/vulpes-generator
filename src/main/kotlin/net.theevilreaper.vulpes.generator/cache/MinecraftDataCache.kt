@@ -8,8 +8,6 @@ import net.theevilreaper.vulpes.api.model.MaterialWrapper
 import net.theevilreaper.vulpes.generator.external.MaterialAPI
 import net.theevilreaper.vulpes.generator.spec.MinecraftDataSpec
 import org.eclipse.jgit.api.Git
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -27,7 +25,8 @@ class MinecraftDataCache(
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    private val typeReference: TypeReference<Map<String, MaterialWrapper>> = object : TypeReference<Map<String, MaterialWrapper>>() {}
+    private val typeReference: TypeReference<Map<String, MaterialWrapper>> =
+        object : TypeReference<Map<String, MaterialWrapper>>() {}
 
     private val cacheTimeOut: Long = 10L
 
@@ -38,7 +37,7 @@ class MinecraftDataCache(
 
     fun getDataFromCache(version: String): CompletableFuture<MinecraftDataSpec> {
         return dataCache.get(version) { _, executor ->
-            CompletableFuture.supplyAsync( { fetchDataByVersion(version)}, executor)
+            CompletableFuture.supplyAsync({ fetchDataByVersion(version) }, executor)
         }
     }
 
@@ -52,7 +51,8 @@ class MinecraftDataCache(
         Git.cloneRepository().setBranch("refs/heads/$version").setURI(remoteUrl).setDirectory(tempDir.toFile()).call()
 
         val path = tempDir.resolve("${version.replace(".", "_")}_items.json")
-        val fileContent: Map<String, MaterialWrapper> = objectMapper.readValue(path.toFile(), typeReference).toSortedMap()
+        val fileContent: Map<String, MaterialWrapper> =
+            objectMapper.readValue(path.toFile(), typeReference).toSortedMap()
 
         return MinecraftDataSpec(version = version, materials = fileContent.values.toList())
     }

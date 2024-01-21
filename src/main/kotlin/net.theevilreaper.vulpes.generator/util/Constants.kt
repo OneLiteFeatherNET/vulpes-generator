@@ -15,3 +15,5 @@ const val META_DATA_VARIABLE = "data"
 const val GRADLE_PROPERTIES = "gradle.properties"
 const val OUT_PUT_FOLDER = "out"
 const val JAVA_MAIM_FOLDER = "src/main/java"
+
+const val EMPTY_STRING = ""

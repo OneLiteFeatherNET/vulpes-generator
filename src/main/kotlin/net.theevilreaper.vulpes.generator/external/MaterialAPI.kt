@@ -13,9 +13,8 @@ import org.springframework.core.io.FileSystemResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
 import kotlin.io.path.createTempDirectory
@@ -43,16 +42,16 @@ class MaterialAPI(
     private val typeReference: TypeReference<Map<String, MaterialWrapper>> =
         object : TypeReference<Map<String, MaterialWrapper>>() {}
 
-    @RequestMapping("material/branches", method = [RequestMethod.GET], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("material/branches", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getVersions(): ResponseEntity<List<String>> {
         val refs = Git.lsRemoteRepository().setHeads(true).setRemote(remoteUrl).call().map { it.name }.toList()
-        val branches = refs.map { it.substringAfter("refs/heads/") }.filter { it.contains(supportedMainVersion) }.sorted()
+        val branches =
+            refs.map { it.substringAfter("refs/heads/") }.filter { it.contains(supportedMainVersion) }.sorted()
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(branches)
     }
 
-    @RequestMapping(
+    @GetMapping(
         "material/generate/{version}",
-        method = [RequestMethod.GET],
         produces = [MediaType.APPLICATION_JSON_VALUE]
     )
     fun generate(@PathVariable("version") version: String): ResponseEntity<Any> {

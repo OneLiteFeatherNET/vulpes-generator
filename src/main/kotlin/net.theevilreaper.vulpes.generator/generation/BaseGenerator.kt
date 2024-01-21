@@ -5,6 +5,7 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.TypeSpec.Kind
 import net.theevilreaper.vulpes.generator.generation.doc.ClassDocumentation
+import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException

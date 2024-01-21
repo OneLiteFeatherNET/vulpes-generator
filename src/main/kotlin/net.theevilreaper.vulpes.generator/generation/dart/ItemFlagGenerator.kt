@@ -9,7 +9,7 @@ import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
 import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
-import net.theevilreaper.vulpes.generator.generation.GeneratorType
+import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -59,6 +59,6 @@ class ItemFlagGenerator : BaseGenerator<ItemHideFlag>(
      * @return the given list
      */
     override fun getModels(): List<ItemHideFlag> {
-        return ItemHideFlag.values().toList()
+        return ItemHideFlag.entries.toList()
     }
 }

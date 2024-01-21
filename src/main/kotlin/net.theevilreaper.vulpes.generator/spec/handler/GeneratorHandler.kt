@@ -2,9 +2,11 @@ package net.theevilreaper.vulpes.generator.spec.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.theevilreaper.vulpes.generator.generation.GeneratorRegistry
-import net.theevilreaper.vulpes.generator.generation.GeneratorType
 import net.theevilreaper.vulpes.generator.generation.GitProjectWorker
+import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.BranchFilter
+import net.theevilreaper.vulpes.generator.util.FileHelper
 import net.theevilreaper.vulpes.generator.util.GRADLE_PROPERTIES
 import net.theevilreaper.vulpes.generator.util.JAVA_MAIM_FOLDER
 import net.theevilreaper.vulpes.generator.util.OUT_PUT_FOLDER
@@ -23,18 +25,14 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.yaml.snakeyaml.Yaml
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.*
-import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-import java.util.zip.ZipOutputStream
 import kotlin.io.path.outputStream
 import kotlin.io.path.reader
 import kotlin.io.path.writeText
@@ -67,12 +65,14 @@ class GeneratorHandler(
     @Value(value = "\${vulpes.git.password}")
     private lateinit var gitPassword: String
 
-    @RequestMapping("/branches", method = [RequestMethod.GET], produces = [MediaType.APPLICATION_JSON_VALUE])
+    private val ignoredPrefix = "renovate/"
+
+    @GetMapping("/branches", produces = [MediaType.APPLICATION_JSON_VALUE])
     private fun getBranches(
         @RequestParam(
             name = "full",
             required = false
-        ) full: Boolean
+        ) full: Boolean,
     ): ResponseEntity<List<String>> {
         val refs = Git.lsRemoteRepository()
             .setCredentialsProvider(
@@ -82,15 +82,17 @@ class GeneratorHandler(
                 )
             )
             .setHeads(true).setRemote(remoteUrl).call().map { it.name }.toList()
+        val filtered = BranchFilter.filterBranches(refs) { !it.contains(ignoredPrefix) }
         return if (full) {
-            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(refs)
+            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(filtered)
         } else {
-            val branches = refs.map { it.substringAfter("refs/heads/") }
+            val branches =
+                BranchFilter.filterBranches(refs.map { it.substringAfter("refs/heads/") }) { !it.contains(ignoredPrefix) }
             ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(branches)
         }
     }
 
-    @RequestMapping("/generate", method = [RequestMethod.GET], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("/generate", produces = [MediaType.APPLICATION_JSON_VALUE])
     private fun generate(
         @RequestParam("branch") branch: String, @RequestParam("image", required = false) image: String?,
     ): ResponseEntity<Any> {
@@ -145,7 +147,7 @@ class GeneratorHandler(
         return ResponseEntity.ok().build()
     }
 
-    @RequestMapping("/download", method = [RequestMethod.GET], produces = ["application/octet-stream"])
+    @GetMapping("/download", produces = ["application/octet-stream"])
     private fun download(@RequestParam("branch") branch: String): ResponseEntity<Any> {
         val tempPath = Files.createTempDirectory(tempPrefix)
         val zipFile = tempPath.resolve("$OUT_PUT_FOLDER.zip")
@@ -183,17 +185,7 @@ class GeneratorHandler(
                 it.generate(javaPath)
             }
             Files.createFile(zipFile)
-            val inputDir = output.toFile()
-            ZipOutputStream(zipFile.outputStream()).use { zos ->
-                inputDir.walkTopDown().filter { it.absolutePath != inputDir.absolutePath }.forEach { file ->
-                    val zipFileName = file.absolutePath.removePrefix(inputDir.absolutePath).removePrefix(File.separator)
-                    val entry = ZipEntry("$zipFileName${(if (file.isDirectory) "/" else "")}")
-                    zos.putNextEntry(entry)
-                    if (file.isFile) {
-                        file.inputStream().copyTo(zos)
-                    }
-                }
-            }
+            FileHelper.zipFile(output, zipFile)
         }
         registry.cleanup()
         return ResponseEntity.ok()

@@ -9,7 +9,7 @@ import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
 import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
-import net.theevilreaper.vulpes.generator.generation.GeneratorType
+import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -62,7 +62,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
             .type(
                 ClassSpec.enumClass(className)
                     .apply {
-                        BossBar.Color.values().forEach { color ->
+                        BossBar.Color.entries.forEach { color ->
                             enumProperty(
                                 EnumPropertySpec.builder(color.name)
                                     .parameter(stringIdentifier, color.name.replaceFirstChar { it.uppercase() })
@@ -91,7 +91,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
             .type(
                 ClassSpec.enumClass(overlayClass)
                     .apply {
-                        BossBar.Overlay.values().forEach { overlay ->
+                        BossBar.Overlay.entries.forEach { overlay ->
                             enumProperty(
                                 EnumPropertySpec.builder(overlay.name)
                                     .parameter(stringIdentifier, overlay.name.replaceFirstChar { it.uppercase() })
@@ -119,7 +119,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
             .type(
                 ClassSpec.enumClass(flagClass)
                     .apply {
-                        BossBar.Flag.values().forEach { overlay ->
+                        BossBar.Flag.entries.forEach { overlay ->
                             enumProperty(
                                 EnumPropertySpec.builder(overlay.name)
                                     .parameter(stringIdentifier, overlay.name.replaceFirstChar { it.uppercase() })

@@ -8,6 +8,7 @@ import net.theevilreaper.vulpes.api.model.AttributeModel
 import net.theevilreaper.vulpes.api.repository.AttributeRepository
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
+import net.theevilreaper.vulpes.generator.util.EMPTY_STRING
 import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import org.springframework.stereotype.Service
@@ -44,9 +45,9 @@ class AttributeGenerator(
 
         models.forEach {
             if (it.name == null || it.modelName == null) return@forEach
-            val name = it.name ?: it.modelName ?: ""
+            val name = it.name ?: it.modelName ?: EMPTY_STRING
 
-            if (name == "") return@forEach
+            if (name == EMPTY_STRING) return@forEach
 
             val field = FieldSpec.builder(attributeClass, CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name))
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
