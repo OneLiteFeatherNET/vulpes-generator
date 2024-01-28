@@ -1,5 +1,6 @@
 package net.theevilreaper.vulpes.generator.generation.dart
 
+import net.minestom.server.item.Material
 import net.theevilreaper.dartpoet.DartFile
 import net.theevilreaper.dartpoet.DartModifier
 import net.theevilreaper.dartpoet.clazz.ClassSpec
@@ -10,6 +11,7 @@ import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.api.model.MaterialWrapper
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.util.EMPTY_STRING
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -18,13 +20,16 @@ import java.nio.file.Path
  * @author theEvilReaper
  */
 @Service
-class MaterialGenerator : BaseGenerator<MaterialWrapper>(
+class MaterialGenerator : BaseGenerator<Material>(
     className = "Materials",
     packageName = "materials",
     generatorType = GeneratorType.DART
 ) {
 
     private var generationData: MutableList<MaterialWrapper> = mutableListOf()
+    private val keyName = "namespace"
+    private val categoryKey = "category"
+    private val stackSizeKey = "stackSize"
 
     init {
         check(className.trim().isNotEmpty()) { "The class name can't be empty" }
@@ -48,26 +53,38 @@ class MaterialGenerator : BaseGenerator<MaterialWrapper>(
      * @param javaPath the path to store the content
      */
     override fun generate(javaPath: Path) {
+        val models = getModels();
+        val enumEntries = mutableListOf<EnumPropertySpec>()
+        for (material in models) {
+            material.isBlock
+            val name = material.name().replace("minecraft:", EMPTY_STRING)
+            enumEntries.add(
+                EnumPropertySpec.builder(name.uppercase())
+                    .parameter("%C", name)
+                    .parameter("%C", mapToCategory(material))
+                    .parameter("%L", material.maxStackSize())
+                    .build()
+            )
+        }
         val enumClass = ClassSpec.enumClass(className)
-            .apply {
-                generationData.forEach {
-                    val name = it.mojangName.split(":")[1].replace("_", "")
-                    enumProperty(
-                        EnumPropertySpec
-                            .builder(name)
-                            .parameter("%C", it)
-                            .build()
-                    )
-                }
-            }
-            .property(PropertySpec.builder("name", String::class).modifier(DartModifier.FINAL).build())
+            .properties(
+                PropertySpec.builder(keyName, String::class).build(),
+                PropertySpec.builder(categoryKey, String::class).build(),
+                PropertySpec.builder(stackSizeKey, Int::class).build()
+            )
+            .enumProperties(*enumEntries.toTypedArray())
             .constructor(
                 ConstructorSpec.builder(className)
                     .modifier(DartModifier.CONST)
-                    .parameter(ParameterSpec.builder("name").build())
+                    .parameters(
+                        ParameterSpec.builder(keyName).build(),
+                        ParameterSpec.builder(categoryKey).build(),
+                        ParameterSpec.builder(stackSizeKey).build()
+                    )
                     .build()
             )
             .build()
+
         val file = DartFile.builder(packageName)
             .doc("The file is generated. Don't change anything here")
             .type(enumClass)
@@ -75,6 +92,12 @@ class MaterialGenerator : BaseGenerator<MaterialWrapper>(
 
         file.write(javaPath)
         clearData()
+    }
+
+    private fun mapToCategory(material: Material): String {
+        if (material.isFood) return "food"
+        if (material.isArmor) return "armor"
+        return "block"
     }
 
     /**
@@ -86,7 +109,5 @@ class MaterialGenerator : BaseGenerator<MaterialWrapper>(
     /**
      * Not in use.
      */
-    override fun getModels(): List<MaterialWrapper> {
-        return generationData
-    }
+    override fun getModels(): List<Material> = Material.values().toList()
 }
