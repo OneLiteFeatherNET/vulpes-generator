@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
-class FrameTypeGenerator :
-    BaseGenerator<FrameType>(className = "FrameType", "frame_type", generatorType = GeneratorType.DART) {
+class FrameTypeGenerator : BaseGenerator<FrameType>(
+    className = "FrameType", "frame_type", generatorType = GeneratorType.DART
+) {
+    private val displayEntry: String = "display"
     override fun generate(javaPath: Path) {
         val file = DartFile.builder(packageName)
             .type(
@@ -30,11 +32,11 @@ class FrameTypeGenerator :
                             )
                         }
                     }
-                    .property(PropertySpec.builder("display", String::class).modifier(DartModifier.FINAL).build())
+                    .property(PropertySpec.builder(displayEntry, String::class).modifier(DartModifier.FINAL).build())
                     .constructor(
                         ConstructorSpec.builder(className)
                             .modifier(DartModifier.CONST)
-                            .parameter(ParameterSpec.builder("display").build())
+                            .parameter(ParameterSpec.builder(displayEntry).build())
                             .build()
                     )
                     .endWithNewLine(true)

@@ -56,7 +56,7 @@ class MaterialGenerator : BaseGenerator<Material>(
         val models = getModels();
         val enumEntries = mutableListOf<EnumPropertySpec>()
         for (material in models) {
-            material.isBlock
+           // material.isBlock
             val name = material.name().replace("minecraft:", EMPTY_STRING)
             enumEntries.add(
                 EnumPropertySpec.builder(name.uppercase())
