@@ -25,7 +25,6 @@ class BossBarGenerator : BaseGenerator<BossBar>(
     packageName = "boss_bar_color",
     generatorType = GeneratorType.DART
 ) {
-
     private val overlayClass = "BossOverlay"
     private val overlayFile = "boss_overlay"
     private val flagClass = "BossFlag"
