@@ -15,33 +15,34 @@ import java.nio.file.Path
 
 @Service
 class FrameTypeGenerator : BaseGenerator<FrameType>(
-    className = "FrameType", "frame_type", generatorType = GeneratorType.DART
+    className = "FrameType",
+    packageName = "frame_type",
+    generatorType = GeneratorType.DART,
 ) {
     private val displayEntry: String = "display"
     override fun generate(javaPath: Path) {
-        val file = DartFile.builder(packageName)
-            .type(
-                ClassSpec.enumClass(className)
-                    .apply {
-                        getModels().forEach { model ->
-                            val name = model.name.lowercase()
-                            enumProperty(
-                                EnumPropertySpec.builder(name)
-                                    .parameter("%C", name.replaceFirstChar { it.uppercase() })
-                                    .build()
-                            )
-                        }
-                    }
-                    .property(PropertySpec.builder(displayEntry, String::class).modifier(DartModifier.FINAL).build())
-                    .constructor(
-                        ConstructorSpec.builder(className)
-                            .modifier(DartModifier.CONST)
-                            .parameter(ParameterSpec.builder(displayEntry).build())
+        val enumFile = ClassSpec.enumClass(className)
+            .also {
+                getModels().forEach { model ->
+                    val name = model.name.lowercase()
+                    it.enumProperty(
+                        EnumPropertySpec.builder(name)
+                            .parameter("%C", name.replaceFirstChar { it.uppercase() })
                             .build()
                     )
-                    .endWithNewLine(true)
+                }
+            }
+            .property(PropertySpec.builder(displayEntry, String::class).modifier(DartModifier.FINAL).build())
+            .constructor(
+                ConstructorSpec.builder(className)
+                    .modifier(DartModifier.CONST)
+                    .parameter(ParameterSpec.builder(displayEntry).build())
                     .build()
             )
+            .endWithNewLine(true)
+            .build()
+        val file = DartFile.builder(packageName)
+            .type(enumFile)
             .build()
         file.write(javaPath)
     }

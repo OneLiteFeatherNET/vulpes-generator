@@ -26,8 +26,8 @@ class SoundTypeGenerator : BaseGenerator<Any>(
                 entries.forEach {
                     enumProperty(
                         EnumPropertySpec
-                            .builder(it.name.uppercase())
-                            .parameter("%C", it.name)
+                            .builder(it.name.lowercase())
+                            .parameter("%C", it.name.lowercase().replaceFirstChar { it.uppercase() })
                             .build()
                     )
                 }

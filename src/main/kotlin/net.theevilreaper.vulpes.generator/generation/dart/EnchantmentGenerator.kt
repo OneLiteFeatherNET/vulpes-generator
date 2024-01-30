@@ -20,19 +20,18 @@ import java.nio.file.Path
 /**
  * The [EnchantmentGenerator] contains the logic to map the data from an [EnchantmentWrapper] into a dart enum
  * which contains all available enchantments.
- * @property enchantmentData the data which should be mapped
  * @constructor Sets the basic values for the generation
  * @version 1.0
  * @author theEvilReaper
  */
 @Service
-class EnchantmentGenerator(
-    private val enchantmentData: List<EnchantmentWrapper> = emptyList(),
-) : BaseGenerator<EnchantmentWrapper>(
+class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
     className = "Enchantment",
     packageName = "enchantment",
     generatorType = GeneratorType.DART
 ) {
+
+    private val defaultLevel: Int = 1
 
     override fun generate(javaPath: Path) {
         val enchantmentData = Enchantment.values()
@@ -63,7 +62,7 @@ class EnchantmentGenerator(
     private fun mapEnchantmentToEnumProperty(enchantment: Enchantment): EnumPropertySpec {
         val enchantmentEntry = enchantment.registry()
         return EnumPropertySpec.builder(enchantmentEntry.namespace.path())
-            .parameter("%L", "1")
+            .parameter("%L", defaultLevel)
             .parameter("%L", enchantmentEntry.maxLevel)
             .build()
     }

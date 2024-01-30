@@ -26,7 +26,7 @@ class ItemFlagGenerator : BaseGenerator<ItemHideFlag>(
                 ClassSpec.enumClass(className)
                     .apply {
                         getModels().forEach { entry ->
-                            val propertyName = entry.name.replace("HIDE", "").lowercase()
+                            val propertyName = entry.name.replace("HIDE_", "").lowercase()
                             enumProperty(
                                 EnumPropertySpec.builder(propertyName)
                                     .parameter("%C", propertyName.replaceFirstChar { it.uppercase() })

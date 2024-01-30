@@ -63,7 +63,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                     .apply {
                         BossBar.Color.entries.forEach { color ->
                             enumProperty(
-                                EnumPropertySpec.builder(color.name)
+                                EnumPropertySpec.builder(color.name.lowercase())
                                     .parameter(stringIdentifier, color.name.replaceFirstChar { it.uppercase() })
                                     .parameter(stringIdentifier, color.name.uppercase())
                                     .build()
@@ -92,7 +92,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                     .apply {
                         BossBar.Overlay.entries.forEach { overlay ->
                             enumProperty(
-                                EnumPropertySpec.builder(overlay.name)
+                                EnumPropertySpec.builder(overlay.name.lowercase())
                                     .parameter(stringIdentifier, overlay.name.replaceFirstChar { it.uppercase() })
                                     .parameter(stringIdentifier, overlay.name.uppercase())
                                     .build()
@@ -120,7 +120,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                     .apply {
                         BossBar.Flag.entries.forEach { overlay ->
                             enumProperty(
-                                EnumPropertySpec.builder(overlay.name)
+                                EnumPropertySpec.builder(overlay.name.lowercase())
                                     .parameter(stringIdentifier, overlay.name.replaceFirstChar { it.uppercase() })
                                     .parameter(stringIdentifier, overlay.name.uppercase())
                                     .build()
