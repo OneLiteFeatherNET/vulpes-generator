@@ -15,9 +15,14 @@ repositories {
     mavenCentral()
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
 dependencies {
-    implementation("org.jetbrains:annotations:24.0.1")
-    implementation("com.github.Minestom:Minestom:-SNAPSHOT")
+    implementation(libs.jetbrains.annotation)
+    implementation(libs.microtus)
 }
 
 publishing {
@@ -49,7 +54,7 @@ publishing {
 }
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
