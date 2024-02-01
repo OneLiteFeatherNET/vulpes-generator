@@ -1,9 +1,9 @@
 package net.theevilreaper.vulpes.generator.spec.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import net.theevilreaper.vulpes.generator.generation.GeneratorRegistry
 import net.theevilreaper.vulpes.generator.generation.GitProjectWorker
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.registry.RegistryProvider
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.BranchFilter
 import net.theevilreaper.vulpes.generator.util.FileHelper
@@ -41,11 +41,13 @@ import kotlin.io.path.writer
 @CrossOrigin(origins = ["*"], maxAge = 4800, allowCredentials = "false")
 @RestController
 class GeneratorHandler(
-    val registry: GeneratorRegistry,
+    registry: RegistryProvider,
     val objectMapper: ObjectMapper,
     /*val gitLabApi: GitLabApi,
     val gitlabProperties: GitlabProperties,*/
 ) {
+
+    private val javaGeneratorRegistry = registry.getRegistry(GeneratorType.JAVA)
 
     @Value(value = "\${vulpes.remoteUrl}")
     private lateinit var remoteUrl: String
@@ -180,14 +182,10 @@ class GeneratorHandler(
                 properties["vulpesVersion"] = version
                 properties.store(it.writer(), "Generated Config")
             }
-            registry.getGenerators().values.forEach {
-                if (it.getType() == GeneratorType.DART) return@forEach
-                it.generate(javaPath)
-            }
+            javaGeneratorRegistry.triggerAll(javaPath)
             Files.createFile(zipFile)
             FileHelper.zipFile(output, zipFile)
         }
-        registry.cleanup()
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=generated.zip")
