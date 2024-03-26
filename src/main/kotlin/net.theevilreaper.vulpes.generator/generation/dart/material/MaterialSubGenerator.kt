@@ -9,6 +9,7 @@ import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
 import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.util.EMPTY_STRING
+import net.theevilreaper.vulpes.generator.util.StringHelper
 
 internal object MaterialSubGenerator {
 
@@ -18,14 +19,17 @@ internal object MaterialSubGenerator {
 
     fun generateBlockMaterialEnum(className: String, materials: List<Material>): ClassBuilder {
         val enumProperties = materials.map {
-            EnumPropertySpec.builder(escapeMinecraftPart(it.name()))
-                .parameter("%C", it.name())
+            val name = escapeMinecraftPart(it.name())
+            EnumPropertySpec.builder(name)
+                .parameter("%C", StringHelper.mapDisplayName(name))
+                .parameter("%C", name)
                 .parameter("%L", it.maxStackSize())
                 .build()
         }.toSet()
         val enumFile = ClassSpec.enumClass(className)
             .enumProperties(*enumProperties.toTypedArray())
             .properties(
+                PropertySpec.builder("displayName", String::class).modifier(enumModifier).build(),
                 PropertySpec.builder(MATERIAL_KEY, String::class).modifier(enumModifier).build(),
                 PropertySpec.builder(MAX_STACK_SIZE, Int::class).modifier(enumModifier).build()
             )
@@ -33,6 +37,7 @@ internal object MaterialSubGenerator {
                 ConstructorSpec.builder(className)
                     .modifier(DartModifier.CONST)
                     .parameters(
+                        ParameterSpec.builder("displayName").build(),
                         ParameterSpec.builder(MATERIAL_KEY).build(),
                         ParameterSpec.builder(MAX_STACK_SIZE).build()
                     )

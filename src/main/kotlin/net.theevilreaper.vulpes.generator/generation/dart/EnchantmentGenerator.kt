@@ -35,10 +35,10 @@ class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
 
     override fun generate(javaPath: Path) {
         val enchantmentData = Enchantment.values()
+        val properties = mutableSetOf<EnumPropertySpec>()
+        enchantmentData.forEach { properties.add(mapEnchantmentToEnumProperty(it)) }
         val enumClass = ClassSpec.enumClass(className)
-            .apply {
-                enchantmentData.forEach { mapEnchantmentToEnumProperty(it) }
-            }
+            .enumProperties(*properties.toTypedArray())
             .properties(*CLASS_PROPERTIES)
             .constructor {
                 ConstructorSpec.builder(className)
@@ -62,6 +62,8 @@ class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
     private fun mapEnchantmentToEnumProperty(enchantment: Enchantment): EnumPropertySpec {
         val enchantmentEntry = enchantment.registry()
         return EnumPropertySpec.builder(enchantmentEntry.namespace.path())
+            .parameter("%C", enchantmentEntry.namespace.path().toVariableString())
+            .parameter("%C", "MEEPO")
             .parameter("%L", defaultLevel)
             .parameter("%L", enchantmentEntry.maxLevel)
             .build()
