@@ -11,6 +11,7 @@ import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import net.theevilreaper.vulpes.generator.util.EMPTY_STRING
+import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -29,18 +30,25 @@ class EntityTypeGenerator : BaseGenerator<EntityType>(
         for (type in models) {
             val name = type.name().replace("minecraft:", EMPTY_STRING)
             enumEntries.add(
-                EnumPropertySpec.builder(name.uppercase())
+                EnumPropertySpec.builder(name.lowercase())
+                    .parameter("%C", StringHelper.mapDisplayName(name))
                     .parameter("%C", name)
                     .build()
             )
         }
         val enumClass = ClassSpec.enumClass(className)
-            .property(PropertySpec.Companion.builder(variableName, String::class).build())
+            .properties(
+                PropertySpec.builder("displayName", String::class).build(),
+                PropertySpec.builder(variableName, String::class).build()
+            )
             .enumProperties(*enumEntries.toTypedArray())
             .constructor(
                 ConstructorSpec.builder(className)
                     .modifier(DartModifier.CONST)
-                    .parameter(ParameterSpec.builder(variableName).build())
+                    .parameters(
+                        ParameterSpec.builder("displayName").build(),
+                        ParameterSpec.builder(variableName).build()
+                    )
                     .build()
             )
             .build()
@@ -50,7 +58,6 @@ class EntityTypeGenerator : BaseGenerator<EntityType>(
             .type(enumClass)
             .build()
         file.write(javaPath)
-
     }
 
     override fun getName() = "EntityTypeGenerator"
