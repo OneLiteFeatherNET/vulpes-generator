@@ -10,14 +10,10 @@ val vulpesBaseUrl: String by project
 group = vulpesGroupId
 version = vulpesVersion
 
-repositories {
-    maven("https://jitpack.io")
-    mavenCentral()
-}
-
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 dependencies {
@@ -50,11 +46,6 @@ publishing {
 
             from(components["java"])
         }
-    }
-}
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
