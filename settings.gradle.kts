@@ -3,7 +3,7 @@ rootProject.name = "vulpes-spring-generator"
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            version("kotlin", "1.9.22")
+            version("kotlin", "1.9.23")
 
             library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("0.0.1+1f9ff402")
             library("vulpes.base", "dev.themeinerlp", "vulpes-base").version("1.0-SNAPSHOT+95bd27ce")
@@ -11,7 +11,7 @@ dependencyResolutionManagement {
             library("jetbrains.annotation", "org.jetbrains", "annotations").version("24.1.0")
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
             library("caffeine", "com.github.ben-manes.caffeine", "caffeine").version("3.1.8")
-            library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.2.1")
+            library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.3.1")
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("6.8.0.202311291450-r")
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("5.5.0")
@@ -44,7 +44,7 @@ dependencyResolutionManagement {
 
             plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kotlin.spring", "org.jetbrains.kotlin.plugin.spring").versionRef("kotlin")
-            plugin("spring", "org.springframework.boot").version("3.2.2")
+            plugin("spring", "org.springframework.boot").version("3.2.4")
             plugin("spring.dependency", "io.spring.dependency-management").version("1.1.4")
 
             bundle(
