@@ -10,6 +10,7 @@ import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -27,7 +28,7 @@ class SoundTypeGenerator : BaseGenerator<Any>(
                     enumProperty(
                         EnumPropertySpec
                             .builder(it.name.lowercase())
-                            .parameter("%C", it.name.lowercase().replaceFirstChar { it.uppercase() })
+                            .parameter("%C", StringHelper.mapDisplayName(it.name))
                             .build()
                     )
                 }
@@ -47,7 +48,7 @@ class SoundTypeGenerator : BaseGenerator<Any>(
         file.write(javaPath)
     }
 
-    override fun getName(): String = this.javaClass.simpleName
+    override fun getName(): String = "SoundTypeGenerator"
 
     override fun getModels(): List<Sound.Source> = Sound.Source.entries
 }

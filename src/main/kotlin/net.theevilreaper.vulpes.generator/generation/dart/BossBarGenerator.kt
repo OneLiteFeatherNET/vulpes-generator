@@ -10,6 +10,7 @@ import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -40,7 +41,6 @@ class BossBarGenerator : BaseGenerator<BossBar>(
 
     private val parameterStack: Array<ParameterSpec> = arrayOf(
         ParameterSpec.builder(displayValue).build(),
-        ParameterSpec.builder(enumValue).build()
     )
 
     /**
@@ -64,8 +64,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                         BossBar.Color.entries.forEach { color ->
                             enumProperty(
                                 EnumPropertySpec.builder(color.name.lowercase())
-                                    .parameter(stringIdentifier, color.name.replaceFirstChar { it.uppercase() })
-                                    .parameter(stringIdentifier, color.name.uppercase())
+                                    .parameter(stringIdentifier, color.name.lowercase().replaceFirstChar { it.uppercase() })
                                     .build()
                             )
                         }
@@ -75,7 +74,6 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                         ConstructorSpec.builder(className)
                             .modifier(DartModifier.CONST)
                             .parameter(ParameterSpec.builder(displayValue).build())
-                            .parameter(ParameterSpec.builder(enumValue).build())
                             .build()
                     )
             )
@@ -93,7 +91,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                         BossBar.Overlay.entries.forEach { overlay ->
                             enumProperty(
                                 EnumPropertySpec.builder(overlay.name.lowercase())
-                                    .parameter(stringIdentifier, overlay.name.replaceFirstChar { it.uppercase() })
+                                    .parameter(stringIdentifier, StringHelper.mapDisplayName(overlay.name))
                                     .parameter(stringIdentifier, overlay.name.uppercase())
                                     .build()
                             )
@@ -121,8 +119,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                         BossBar.Flag.entries.forEach { overlay ->
                             enumProperty(
                                 EnumPropertySpec.builder(overlay.name.lowercase())
-                                    .parameter(stringIdentifier, overlay.name.replaceFirstChar { it.uppercase() })
-                                    .parameter(stringIdentifier, overlay.name.uppercase())
+                                    .parameter(stringIdentifier, StringHelper.mapDisplayName(overlay.name))
                                     .build()
                             )
                         }
