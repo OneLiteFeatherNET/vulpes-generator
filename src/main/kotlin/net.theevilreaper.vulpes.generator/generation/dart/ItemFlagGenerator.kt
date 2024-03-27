@@ -10,6 +10,7 @@ import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -29,7 +30,7 @@ class ItemFlagGenerator : BaseGenerator<ItemHideFlag>(
                             val propertyName = entry.name.replace("HIDE_", "").lowercase()
                             enumProperty(
                                 EnumPropertySpec.builder(propertyName)
-                                    .parameter("%C", propertyName.replaceFirstChar { it.uppercase() })
+                                    .parameter("%C", StringHelper.mapDisplayName(propertyName))
                                     .parameter("%C", entry.name)
                                     .build()
                             )

@@ -10,6 +10,7 @@ import net.theevilreaper.dartpoet.parameter.ParameterSpec
 import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -27,7 +28,7 @@ class FrameTypeGenerator : BaseGenerator<FrameType>(
                     val name = model.name.lowercase()
                     it.enumProperty(
                         EnumPropertySpec.builder(name)
-                            .parameter("%C", name.replaceFirstChar { it.uppercase() })
+                            .parameter("%C", StringHelper.mapDisplayName(name))
                             .build()
                     )
                 }
