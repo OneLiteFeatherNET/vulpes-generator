@@ -6,9 +6,9 @@ import net.theevilreaper.dartpoet.DartModifier
 import net.theevilreaper.dartpoet.clazz.ClassSpec
 import net.theevilreaper.dartpoet.enum.EnumPropertySpec
 import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
-import net.theevilreaper.dartpoet.parameter.ParameterSpec
-import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PARAMETERS
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PROPERTIES
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
@@ -30,18 +30,7 @@ class BossBarGenerator : BaseGenerator<BossBar>(
     private val overlayFile = "boss_overlay"
     private val flagClass = "BossFlag"
     private val flagFile = "boss_flag"
-    private val displayValue = "display"
-    private val enumValue = "enumValue"
     private val stringIdentifier = "%C"
-
-    private val propertyStack: Array<PropertySpec> = arrayOf(
-        PropertySpec.builder(displayValue, String::class).modifier { DartModifier.FINAL }.build(),
-        PropertySpec.builder(enumValue, String::class).modifier { DartModifier.FINAL }.build()
-    )
-
-    private val parameterStack: Array<ParameterSpec> = arrayOf(
-        ParameterSpec.builder(displayValue).build(),
-    )
 
     /**
      * Triggers the generation for all relevant data for the [BossBar].
@@ -64,16 +53,17 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                         BossBar.Color.entries.forEach { color ->
                             enumProperty(
                                 EnumPropertySpec.builder(color.name.lowercase())
-                                    .parameter(stringIdentifier, color.name.lowercase().replaceFirstChar { it.uppercase() })
+                                    .parameter(stringIdentifier, StringHelper.mapDisplayName(color.name))
+                                    .parameter(stringIdentifier, color.name.uppercase())
                                     .build()
                             )
                         }
                     }
-                    .properties(*propertyStack)
+                    .properties(*DEFAULT_PROPERTIES)
                     .constructor(
                         ConstructorSpec.builder(className)
                             .modifier(DartModifier.CONST)
-                            .parameter(ParameterSpec.builder(displayValue).build())
+                            .parameters(*DEFAULT_PARAMETERS)
                             .build()
                     )
             )
@@ -97,11 +87,11 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                             )
                         }
                     }
-                    .properties(*propertyStack)
+                    .properties(*DEFAULT_PROPERTIES)
                     .constructor(
                         ConstructorSpec.builder(overlayClass)
                             .modifier(DartModifier.CONST)
-                            .parameters(*parameterStack)
+                            .parameters(*DEFAULT_PARAMETERS)
                             .build()
                     )
             )
@@ -120,15 +110,16 @@ class BossBarGenerator : BaseGenerator<BossBar>(
                             enumProperty(
                                 EnumPropertySpec.builder(overlay.name.lowercase())
                                     .parameter(stringIdentifier, StringHelper.mapDisplayName(overlay.name))
+                                    .parameter(stringIdentifier, overlay.name.uppercase())
                                     .build()
                             )
                         }
                     }
-                    .properties(*propertyStack)
+                    .properties(*DEFAULT_PROPERTIES)
                     .constructor(
                         ConstructorSpec.builder(flagClass)
                             .modifier(DartModifier.CONST)
-                            .parameters(*parameterStack)
+                            .parameters(*DEFAULT_PARAMETERS)
                             .build()
                     )
             )

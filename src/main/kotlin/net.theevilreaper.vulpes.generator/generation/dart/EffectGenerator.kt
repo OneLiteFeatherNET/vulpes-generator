@@ -6,9 +6,9 @@ import net.theevilreaper.dartpoet.DartModifier
 import net.theevilreaper.dartpoet.clazz.ClassSpec
 import net.theevilreaper.dartpoet.enum.EnumPropertySpec
 import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
-import net.theevilreaper.dartpoet.parameter.ParameterSpec
-import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PARAMETERS
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PROPERTIES
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
@@ -25,17 +25,18 @@ class EffectGenerator : BaseGenerator<Effects>(
         val enumEntries = mutableListOf<EnumPropertySpec>()
         effects.forEach {
             enumEntries.add(
-                EnumPropertySpec.builder(it.name.lowercase()).parameter("%C", StringHelper.mapDisplayName(it.name)).build()
+                EnumPropertySpec.builder(it.name.lowercase()).parameter("%C", StringHelper.mapDisplayName(it.name))
+                    .build()
             )
         }
 
         val enumClass = ClassSpec.enumClass(className)
             .enumProperties(*enumEntries.toTypedArray())
-            .property(PropertySpec.builder("displayName", String::class).build())
+            .property(DEFAULT_PROPERTIES[0])
             .constructor(
                 ConstructorSpec.builder(className)
                     .modifier(DartModifier.CONST)
-                    .parameters(ParameterSpec.builder("displayName").build())
+                    .parameter(DEFAULT_PARAMETERS[0])
                     .build()
             )
             .build()

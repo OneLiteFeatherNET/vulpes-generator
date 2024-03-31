@@ -6,9 +6,9 @@ import net.theevilreaper.dartpoet.DartModifier
 import net.theevilreaper.dartpoet.clazz.ClassSpec
 import net.theevilreaper.dartpoet.enum.EnumPropertySpec
 import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
-import net.theevilreaper.dartpoet.parameter.ParameterSpec
-import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PARAMETERS
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PROPERTIES
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import net.theevilreaper.vulpes.generator.util.EMPTY_STRING
 import net.theevilreaper.vulpes.generator.util.StringHelper
@@ -21,8 +21,6 @@ class EntityTypeGenerator : BaseGenerator<EntityType>(
     packageName = "entity_type",
     generatorType = GeneratorType.DART
 ) {
-
-    private val variableName = "type"
 
     override fun generate(javaPath: Path) {
         val models = EntityType.values()
@@ -37,18 +35,12 @@ class EntityTypeGenerator : BaseGenerator<EntityType>(
             )
         }
         val enumClass = ClassSpec.enumClass(className)
-            .properties(
-                PropertySpec.builder("displayName", String::class).build(),
-                PropertySpec.builder(variableName, String::class).build()
-            )
+            .properties(*DEFAULT_PROPERTIES)
             .enumProperties(*enumEntries.toTypedArray())
             .constructor(
                 ConstructorSpec.builder(className)
                     .modifier(DartModifier.CONST)
-                    .parameters(
-                        ParameterSpec.builder("displayName").build(),
-                        ParameterSpec.builder(variableName).build()
-                    )
+                    .parameters(*DEFAULT_PARAMETERS)
                     .build()
             )
             .build()
