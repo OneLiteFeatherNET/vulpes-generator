@@ -6,9 +6,9 @@ import net.theevilreaper.dartpoet.enum.EnumPropertySpec
 import net.minestom.server.item.ItemHideFlag
 import net.theevilreaper.dartpoet.clazz.ClassSpec
 import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
-import net.theevilreaper.dartpoet.parameter.ParameterSpec
-import net.theevilreaper.dartpoet.property.PropertySpec
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PARAMETERS
+import net.theevilreaper.vulpes.generator.generation.dart.util.DEFAULT_PROPERTIES
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
@@ -36,14 +36,11 @@ class ItemFlagGenerator : BaseGenerator<ItemHideFlag>(
                             )
                         }
                     }
-                    .property(PropertySpec.builder("name", String::class).modifier { DartModifier.FINAL }.build())
-                    .property(PropertySpec.builder("minestomValue", String::class).modifier { DartModifier.FINAL }
-                        .build())
+                    .properties(*DEFAULT_PROPERTIES)
                     .constructor(
                         ConstructorSpec.builder(className)
-                            .modifier(DartModifier.FINAL)
-                            .parameter(ParameterSpec.builder("name").build())
-                            .parameter(ParameterSpec.builder("minestomValue").build())
+                            .modifier(DartModifier.CONST)
+                            .parameters(*DEFAULT_PARAMETERS)
                             .build()
                     )
                     .endWithNewLine(true)

@@ -1,8 +1,6 @@
 package net.theevilreaper.vulpes.generator.generation.dart
 
 import net.minestom.server.item.Enchantment
-import net.minestom.server.registry.Registry
-import net.minestom.server.registry.Registry.EnchantmentEntry
 import net.theevilreaper.dartpoet.DartFile
 import net.theevilreaper.dartpoet.DartModifier
 import net.theevilreaper.dartpoet.clazz.ClassSpec
@@ -13,7 +11,7 @@ import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import net.theevilreaper.vulpes.generator.util.CLASS_PROPERTIES
 import net.theevilreaper.vulpes.generator.util.CONSTRUCTOR_PARAMETERS
-import net.theevilreaper.vulpes.generator.util.toVariableString
+import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -62,7 +60,7 @@ class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
     private fun mapEnchantmentToEnumProperty(enchantment: Enchantment): EnumPropertySpec {
         val enchantmentEntry = enchantment.registry()
         return EnumPropertySpec.builder(enchantmentEntry.namespace.path())
-            .parameter("%C", enchantmentEntry.namespace.path().toVariableString())
+            .parameter("%C", StringHelper.mapDisplayName(enchantmentEntry.namespace.path()))
             .parameter("%C", "MEEPO")
             .parameter("%L", defaultLevel)
             .parameter("%L", enchantmentEntry.maxLevel)
