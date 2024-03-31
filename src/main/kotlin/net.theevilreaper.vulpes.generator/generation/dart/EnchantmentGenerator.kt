@@ -9,8 +9,8 @@ import net.theevilreaper.dartpoet.function.constructor.ConstructorSpec
 import net.theevilreaper.vulpes.api.model.EnchantmentWrapper
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
-import net.theevilreaper.vulpes.generator.util.CLASS_PROPERTIES
-import net.theevilreaper.vulpes.generator.util.CONSTRUCTOR_PARAMETERS
+import net.theevilreaper.vulpes.generator.generation.dart.util.CLASS_PROPERTIES
+import net.theevilreaper.vulpes.generator.generation.dart.util.CONSTRUCTOR_PARAMETERS
 import net.theevilreaper.vulpes.generator.util.StringHelper
 import org.springframework.stereotype.Service
 import java.nio.file.Path
