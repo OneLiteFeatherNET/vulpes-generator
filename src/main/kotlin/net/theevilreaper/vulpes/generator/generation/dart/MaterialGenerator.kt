@@ -15,7 +15,7 @@ import java.nio.file.Path
  * @author theEvilReaper
  */
 @Service
-class MaterialGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<Material>(
+class MaterialGenerator : BaseGenerator<Material>(
     className = "Materials",
     packageName = "materials",
     generatorType = GeneratorType.DART

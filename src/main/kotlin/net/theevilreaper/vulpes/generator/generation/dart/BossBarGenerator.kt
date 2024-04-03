@@ -21,7 +21,7 @@ import java.nio.file.Path
  * @since 1.0.0
  */
 @Service
-class BossBarGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<BossBar>(
+class BossBarGenerator : BaseGenerator<BossBar>(
     className = "BossBarColor",
     packageName = "boss_bar_color",
     generatorType = GeneratorType.DART

@@ -25,7 +25,7 @@ import java.nio.file.Path
 @Service
 class BlockGenerator(
     val blocKRepository: BlocKRepository
-) : JavaGenerationHelper, net.theevilreaper.vulpes.generator.generation.BaseGenerator<BlockModel>(
+) : JavaGenerationHelper, BaseGenerator<BlockModel>(
     className = "CustomBlockRegistry",
     packageName = "$BASE_PACKAGE.block",
 ) {

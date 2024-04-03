@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
-class EffectGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<Effects>(
+class EffectGenerator : BaseGenerator<Effects>(
     className = "Effect",
     packageName = "effect",
     generatorType = GeneratorType.DART

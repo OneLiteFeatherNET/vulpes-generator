@@ -25,7 +25,7 @@ import javax.lang.model.element.Modifier
 @Service
 class AttributeGenerator(
     private val attributeRepository: AttributeRepository,
-) : JavaGenerationHelper, net.theevilreaper.vulpes.generator.generation.BaseGenerator<AttributeModel>(
+) : JavaGenerationHelper, BaseGenerator<AttributeModel>(
     className = "DungeonAttributes",
     packageName = "$BASE_PACKAGE.attributes",
 ) {
