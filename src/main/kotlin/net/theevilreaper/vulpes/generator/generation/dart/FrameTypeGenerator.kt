@@ -1,6 +1,6 @@
 package net.theevilreaper.vulpes.generator.generation.dart
 
-import net.kyori.adventure.sound.Sound
+import net.minestom.server.advancements.FrameType
 import net.theevilreaper.dartpoet.DartFile
 import net.theevilreaper.dartpoet.DartModifier
 import net.theevilreaper.dartpoet.clazz.ClassSpec
@@ -15,40 +15,40 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
-class SoundTypeGenerator : BaseGenerator<Any>(
-    className = "SoundSource",
-    packageName = "sound",
-    generatorType = GeneratorType.DART
+class FrameTypeGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<FrameType>(
+    className = "FrameType",
+    packageName = "frame_type",
+    generatorType = GeneratorType.DART,
 ) {
+    private val displayEntry: String = "display"
     override fun generate(javaPath: Path) {
-        val enumClass = ClassSpec.enumClass(className)
-            .apply {
-                val entries = getModels()
-                entries.forEach {
-                    enumProperty(
-                        EnumPropertySpec
-                            .builder(it.name.lowercase())
-                            .parameter("%C", StringHelper.mapDisplayName(it.name))
+        val enumFile = ClassSpec.enumClass(className)
+            .also {
+                getModels().forEach { model ->
+                    val name = model.name.lowercase()
+                    it.enumProperty(
+                        EnumPropertySpec.builder(name)
+                            .parameter("%C", StringHelper.mapDisplayName(name))
                             .build()
                     )
                 }
             }
-            .property(PropertySpec.builder("name", String::class).modifier(DartModifier.FINAL).build())
+            .property(PropertySpec.builder(displayEntry, String::class).modifier(DartModifier.FINAL).build())
             .constructor(
                 ConstructorSpec.builder(className)
                     .modifier(DartModifier.CONST)
-                    .parameter(ParameterSpec.builder("name").build())
+                    .parameter(ParameterSpec.builder(displayEntry).build())
                     .build()
             )
+            .endWithNewLine(true)
             .build()
         val file = DartFile.builder(packageName)
-            .doc("Generated class for the sound sources. Don't edit this file manually")
-            .type(enumClass)
+            .type(enumFile)
             .build()
         file.write(javaPath)
     }
 
-    override fun getName(): String = "SoundTypeGenerator"
+    override fun getName() = "FrameTypeGenerator"
 
-    override fun getModels(): List<Sound.Source> = Sound.Source.entries
+    override fun getModels(): List<FrameType> = FrameType.entries.toList()
 }

@@ -27,7 +27,7 @@ import java.nio.file.Path
 @Service
 class NotificationGenerator(
     val notificationRepository: NotificationRepository,
-) : JavaGenerationHelper, BaseGenerator<NotificationModel>(
+) : JavaGenerationHelper, net.theevilreaper.vulpes.generator.generation.BaseGenerator<NotificationModel>(
     className = "NotificationRegistry",
     packageName = "$BASE_PACKAGE.notifications",
 ) {
