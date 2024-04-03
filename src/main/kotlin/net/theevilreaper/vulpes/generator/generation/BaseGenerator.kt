@@ -22,9 +22,9 @@ abstract class BaseGenerator<T>(
     val packageName: String,
     private val classType: Kind = Kind.CLASS,
     val generatorType: GeneratorType = GeneratorType.JAVA
-) : Generator, ClassDocumentation {
+) : net.theevilreaper.vulpes.generator.generation.Generator, ClassDocumentation {
 
-    private val logger: Logger = LoggerFactory.getLogger(BaseGenerator::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(net.theevilreaper.vulpes.generator.generation.BaseGenerator::class.java)
     protected val defaultModifiers = arrayOf(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
     protected val filesToGenerate: MutableList<JavaFile> = arrayListOf()
     protected val emptyComponent = "empty()"

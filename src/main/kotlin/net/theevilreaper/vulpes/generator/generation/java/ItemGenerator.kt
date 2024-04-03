@@ -28,7 +28,7 @@ import java.nio.file.Path
 @Service
 class ItemGenerator(
     val itemRepository: ItemRepository
-) : JavaGenerationHelper, BaseGenerator<ItemModel>(
+) : JavaGenerationHelper, net.theevilreaper.vulpes.generator.generation.BaseGenerator<ItemModel>(
     className = "ItemRegistry",
     packageName = "$BASE_PACKAGE.items",
 ) {

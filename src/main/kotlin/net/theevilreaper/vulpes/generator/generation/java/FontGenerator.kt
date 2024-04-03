@@ -24,7 +24,7 @@ import java.nio.file.Path
 @Service
 class FontGenerator(
     val fontRepository: FontRepository
-) : JavaGenerationHelper, BaseGenerator<FontModel>(
+) : JavaGenerationHelper, net.theevilreaper.vulpes.generator.generation.BaseGenerator<FontModel>(
     className = "FontRegistry",
     packageName = "$BASE_PACKAGE.font",
 ) {

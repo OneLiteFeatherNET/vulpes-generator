@@ -19,7 +19,7 @@ import java.nio.file.Files
  * @author theEvilReaper
  * @since 1.0.0
  */
-@CrossOrigin(origins = ["*"], maxAge = 4800, allowCredentials = "false")
+//@CrossOrigin(origins = ["*"], maxAge = 4800, allowCredentials = "false")
 @RestController
 class DartGenerationHandler(registryProvider: RegistryProvider) {
     private val dartGeneratorRegistry: GeneratorRegistry = registryProvider.getRegistry(GeneratorType.DART)

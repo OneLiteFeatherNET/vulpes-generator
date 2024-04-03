@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
-class ItemFlagGenerator : BaseGenerator<ItemHideFlag>(
+class ItemFlagGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<ItemHideFlag>(
     className = "ItemFlags",
     packageName = "item_flags",
     generatorType = GeneratorType.DART

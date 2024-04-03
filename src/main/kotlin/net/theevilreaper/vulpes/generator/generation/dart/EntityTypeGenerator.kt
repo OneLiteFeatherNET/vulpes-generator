@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
-class EntityTypeGenerator : BaseGenerator<EntityType>(
+class EntityTypeGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<EntityType>(
     className = "EntityType",
     packageName = "entity_type",
     generatorType = GeneratorType.DART
