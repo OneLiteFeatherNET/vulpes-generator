@@ -23,7 +23,7 @@ import java.nio.file.Path
  * @author theEvilReaper
  */
 @Service
-class EnchantmentGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<EnchantmentWrapper>(
+class EnchantmentGenerator : BaseGenerator<EnchantmentWrapper>(
     className = "Enchantment",
     packageName = "enchantment",
     generatorType = GeneratorType.DART

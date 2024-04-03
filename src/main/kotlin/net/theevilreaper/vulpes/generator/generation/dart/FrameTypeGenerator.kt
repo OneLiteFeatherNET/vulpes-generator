@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
-class FrameTypeGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<FrameType>(
+class FrameTypeGenerator : BaseGenerator<FrameType>(
     className = "FrameType",
     packageName = "frame_type",
     generatorType = GeneratorType.DART,

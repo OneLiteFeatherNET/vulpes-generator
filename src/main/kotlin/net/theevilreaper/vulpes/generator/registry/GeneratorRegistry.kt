@@ -11,7 +11,7 @@ class GeneratorRegistry internal constructor(
     private val generators: MutableMap<String, Generator> = mutableMapOf()
 
     @Throws(IllegalStateException::class)
-    fun add(generator: net.theevilreaper.vulpes.generator.generation.BaseGenerator<*>) {
+    fun add(generator: BaseGenerator<*>) {
         check(generator.getType() == allowedType) {
             "This instance of the registry only supports generators which has the type: $allowedType"
         }

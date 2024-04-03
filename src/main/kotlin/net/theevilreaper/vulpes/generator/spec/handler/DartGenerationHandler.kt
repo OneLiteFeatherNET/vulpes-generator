@@ -7,7 +7,6 @@ import net.theevilreaper.vulpes.generator.util.FileHelper
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.nio.file.Files
@@ -19,7 +18,6 @@ import java.nio.file.Files
  * @author theEvilReaper
  * @since 1.0.0
  */
-//@CrossOrigin(origins = ["*"], maxAge = 4800, allowCredentials = "false")
 @RestController
 class DartGenerationHandler(registryProvider: RegistryProvider) {
     private val dartGeneratorRegistry: GeneratorRegistry = registryProvider.getRegistry(GeneratorType.DART)

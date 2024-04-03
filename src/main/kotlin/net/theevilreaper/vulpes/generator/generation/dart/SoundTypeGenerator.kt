@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 @Service
-class SoundTypeGenerator : net.theevilreaper.vulpes.generator.generation.BaseGenerator<Any>(
+class SoundTypeGenerator : BaseGenerator<Any>(
     className = "SoundSource",
     packageName = "sound",
     generatorType = GeneratorType.DART
