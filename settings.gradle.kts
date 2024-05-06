@@ -32,7 +32,7 @@ dependencyResolutionManagement {
             library("caffeine", "com.github.ben-manes.caffeine", "caffeine").version("3.1.8")
             library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.3.1")
 
-            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("6.8.0.202311291450-r")
+            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("6.9.0.202403050737-r")
             // We need to use the RC version of Gitlab4j api because Spring Boot 3 requires Jakarta as a dependency which is only supported in the RC version
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.4")
             library("guava", "com.google.guava", "guava").version("33.1.0-jre")
