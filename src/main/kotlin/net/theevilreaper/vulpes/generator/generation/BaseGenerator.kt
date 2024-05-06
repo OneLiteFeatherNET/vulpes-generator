@@ -5,7 +5,6 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.TypeSpec.Kind
 import net.theevilreaper.vulpes.generator.generation.doc.ClassDocumentation
-import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -21,10 +20,9 @@ abstract class BaseGenerator<T>(
     val className: String,
     val packageName: String,
     private val classType: Kind = Kind.CLASS,
-    val generatorType: GeneratorType = GeneratorType.JAVA
-) : net.theevilreaper.vulpes.generator.generation.Generator, ClassDocumentation {
+) : Generator, ClassDocumentation {
 
-    private val logger: Logger = LoggerFactory.getLogger(net.theevilreaper.vulpes.generator.generation.BaseGenerator::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(BaseGenerator::class.java)
     protected val defaultModifiers = arrayOf(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
     protected val filesToGenerate: MutableList<JavaFile> = arrayListOf()
     protected val emptyComponent = "empty()"
@@ -98,6 +96,4 @@ abstract class BaseGenerator<T>(
      * @return a [List] which contains all models
      */
     internal abstract fun getModels(): List<T>
-
-    override fun getType(): GeneratorType = generatorType
 }

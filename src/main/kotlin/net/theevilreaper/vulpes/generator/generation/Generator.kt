@@ -1,6 +1,5 @@
 package net.theevilreaper.vulpes.generator.generation
 
-import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import java.nio.file.Path
 
 /**
@@ -26,10 +25,4 @@ interface Generator {
      * Contains logic to clean up the generator data structure.
      */
     fun cleanUp()
-
-    /**
-     * Returns the given [GeneratorType] from the generator implementation.
-     * @return the given type
-     */
-    fun getType(): GeneratorType
 }
