@@ -36,7 +36,7 @@ dependencyResolutionManagement {
             // We need to use the RC version of Gitlab4j api because Spring Boot 3 requires Jakarta as a dependency which is only supported in the RC version
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.4")
             library("guava", "com.google.guava", "guava").version("33.1.0-jre")
-            library("commons.io", "commons-io", "commons-io").version("2.15.1")
+            library("commons.io", "commons-io", "commons-io").version("2.16.1")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.25.0")
             library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.16.1")
 
