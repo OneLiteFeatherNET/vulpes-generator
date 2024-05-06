@@ -49,11 +49,6 @@ dependencyResolutionManagement {
                 "spring-boot-starter-data-mongodb"
             ).withoutVersion()
             library(
-                "spring.starter.security",
-                "org.springframework.boot",
-                "spring-boot-starter-security"
-            ).withoutVersion()
-            library(
                 "spring.starter.webflux",
                 "org.springframework.boot",
                 "spring-boot-starter-webflux"
@@ -72,7 +67,6 @@ dependencyResolutionManagement {
                 listOf(
                     "spring.starter.web",
                     "spring.starter.data.mongodb",
-                    "spring.starter.security",
                     "spring.starter.webflux",
                     "spring.starter.cache",
                     "spring.starter.log4j2"
