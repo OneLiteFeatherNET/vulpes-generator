@@ -9,7 +9,7 @@ import org.springframework.security.web.csrf.CsrfTokenRepository
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository
 import org.springframework.web.cors.CorsConfiguration
 
-@Configuration
+/*@Configuration
 @EnableWebSecurity
 class SpringSecurityConfiguration {
 
@@ -41,4 +41,4 @@ class SpringSecurityConfiguration {
         configuration.allowCredentials = true
         return configuration
     }
-}
+}*/
