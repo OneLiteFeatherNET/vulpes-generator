@@ -14,7 +14,8 @@ dependencyResolutionManagement {
             library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.3.1")
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("6.8.0.202311291450-r")
-            library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("5.5.0")
+            // We need to use the RC version of Gitlab4j api because Spring Boot 3 requires Jakarta as a dependency which is only supported in the RC version
+            library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.4")
             library("guava", "com.google.guava", "guava").version("33.1.0-jre")
             library("commons.io", "commons-io", "commons-io").version("2.15.1")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.25.0")

@@ -1,8 +1,7 @@
-package net.theevilreaper.vulpes.generator.spec.handler
+package net.theevilreaper.vulpes.generator.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import net.theevilreaper.vulpes.generator.generation.GitProjectWorker
-import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
+import net.theevilreaper.vulpes.generator.properties.GitlabProperties
 import net.theevilreaper.vulpes.generator.registry.RegistryProvider
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.BranchFilter
@@ -19,7 +18,6 @@ import net.theevilreaper.vulpes.generator.util.version
 import net.theevilreaper.vulpes.generator.util.zipFileName
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -30,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.yaml.snakeyaml.Yaml
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.*
 import java.util.zip.ZipInputStream
@@ -41,31 +40,9 @@ import kotlin.io.path.writer
 @CrossOrigin(origins = ["*"], maxAge = 4800, allowCredentials = "false")
 @RestController
 class GeneratorHandler(
-    registry: RegistryProvider,
-    val objectMapper: ObjectMapper,
-    /*val gitLabApi: GitLabApi,
-    val gitlabProperties: GitlabProperties,*/
+    private val registryProvider: RegistryProvider,
+    private val properties: GitlabProperties,
 ) {
-
-    private val javaGeneratorRegistry = registry.getRegistry(GeneratorType.JAVA)
-
-    @Value(value = "\${vulpes.remoteUrl}")
-    private lateinit var remoteUrl: String
-
-    @Value(value = "\${vulpes.piplineUrl}")
-    private lateinit var pipelineUrl: String
-
-    @Value(value = "\${vulpes.deployUrl}")
-    private lateinit var deployUrl: String
-
-    @Value(value = "\${vulpes.dependencyUrl}")
-    private lateinit var dependencyUrl: String
-
-    @Value(value = "\${vulpes.git.username}")
-    private lateinit var gitUsername: String
-
-    @Value(value = "\${vulpes.git.password}")
-    private lateinit var gitPassword: String
 
     private val ignoredPrefix = "renovate/"
 
@@ -79,11 +56,11 @@ class GeneratorHandler(
         val refs = Git.lsRemoteRepository()
             .setCredentialsProvider(
                 UsernamePasswordCredentialsProvider(
-                    gitUsername,
-                    gitPassword
+                    properties.user,
+                    properties.password
                 )
             )
-            .setHeads(true).setRemote(remoteUrl).call().map { it.name }.toList()
+            .setHeads(true).setRemote(properties.remoteUrl).call().map { it.name }.toList()
         val filtered = BranchFilter.filterBranches(refs) { !it.contains(ignoredPrefix) }
         return if (full) {
             ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(filtered)
@@ -116,16 +93,16 @@ class GeneratorHandler(
             }
             val variables = objects["variables"] as MutableMap<String, Any>
             variables["BRANCH"] = branch
-            variables["GENERATION_URL"] = deployUrl
+            variables["GENERATION_URL"] = properties.deployUrl
             objects["variables"] = variables
             tempGitlabCi.writeText(yaml.dumpAsMap(objects))
         }
 
         val rawGit =
-            Git.cloneRepository().setURI(pipelineUrl).setCredentialsProvider(
+            Git.cloneRepository().setURI(properties.piplineUrl).setCredentialsProvider(
                 UsernamePasswordCredentialsProvider(
-                    gitUsername,
-                    gitPassword
+                    properties.user,
+                    properties.password
                 )
             ).setDirectory(output.toFile()).setCloneAllBranches(true)
         val git = rawGit.call()
@@ -141,8 +118,8 @@ class GeneratorHandler(
         val push = git.push()
         push.setCredentialsProvider(
             UsernamePasswordCredentialsProvider(
-                gitUsername,
-                gitPassword
+                properties.user,
+                properties.password
             )
         )
         push.call()
@@ -156,7 +133,7 @@ class GeneratorHandler(
         val output = tempPath.resolve(OUT_PUT_FOLDER)
         val javaPath = output.resolve(JAVA_MAIM_FOLDER)
         Files.createDirectories(output)
-        val worker = GitProjectWorker(output.toFile(), remoteUrl, branch, gitUsername, gitPassword)
+        val worker = GitProjectWorker(output.toFile(), properties.remoteUrl, branch, properties.user, properties.password)
         worker.cloneAndCheckout()
         val zipStream = javaClass.classLoader.getResourceAsStream(zipFileName)
         if (zipStream != null) {
@@ -174,15 +151,8 @@ class GeneratorHandler(
                     }
             }
             val buildGradle = output.resolve(GRADLE_PROPERTIES)
-            buildGradle.let {
-                val properties = Properties()
-                properties.load(it.reader())
-                properties["vulpesGroupId"] = BASE_PACKAGE
-                properties["vulpesBaseUrl"] = dependencyUrl
-                properties["vulpesVersion"] = version
-                properties.store(it.writer(), "Generated Config")
-            }
-            javaGeneratorRegistry.triggerAll(javaPath)
+            applyVulpesData(buildGradle)
+            registryProvider.getRegistry().triggerAll(javaPath)
             Files.createFile(zipFile)
             FileHelper.zipFile(output, zipFile)
         }
@@ -190,5 +160,20 @@ class GeneratorHandler(
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=generated.zip")
             .body(FileSystemResource(zipFile.toFile()))
+    }
+
+    /**
+     * Applies some vulpes relevant data to a file from gradle.
+     * @param
+     */
+    private fun applyVulpesData(buildGradle: Path) {
+        buildGradle.let {
+            val properties = Properties()
+            properties.load(it.reader())
+            properties["vulpesGroupId"] = BASE_PACKAGE
+            properties["vulpesBaseUrl"] = this.properties.dependencyUrl
+            properties["vulpesVersion"] = version
+            properties.store(it.writer(), "Generated Config")
+        }
     }
 }

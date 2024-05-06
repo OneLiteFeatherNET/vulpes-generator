@@ -2,19 +2,14 @@ package net.theevilreaper.vulpes.generator.registry
 
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.Generator
-import net.theevilreaper.vulpes.generator.generation.type.GeneratorType
 import java.nio.file.Path
 
 class GeneratorRegistry internal constructor(
-    private val allowedType: GeneratorType
 ) {
     private val generators: MutableMap<String, Generator> = mutableMapOf()
 
     @Throws(IllegalStateException::class)
     fun add(generator: BaseGenerator<*>) {
-        check(generator.getType() == allowedType) {
-            "This instance of the registry only supports generators which has the type: $allowedType"
-        }
         check(generator.getName().trim().isNotEmpty()) { "The name of the generator can't be empty" }
         this.generators[generator.getName()] = generator
     }
