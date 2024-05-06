@@ -15,7 +15,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties("gitlab")
 data class GitlabProperties(
+    val user: String,
+    val password: String,
     val accessToken: String,
     val gitlabUrl: String,
-    val baseProjectID: Int
+    val baseProjectID: Int,
+    val remoteUrl: String,
+    val piplineUrl: String,
+    val deployUrl: String,
+    val dependencyUrl: String,
 )
