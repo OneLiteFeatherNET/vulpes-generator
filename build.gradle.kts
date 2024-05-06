@@ -29,25 +29,12 @@ repositories {
 	maven("https://jitpack.io")
 	maven {
 		val groupdId = 28 // Gitlab Group
-		url = if (System.getenv().containsKey("CI")) {
-			val ciApiv4Url = System.getenv("CI_API_V4_URL")
-			uri("$ciApiv4Url/groups/$groupdId/-/packages/maven")
-		} else {
-			uri("https://gitlab.themeinerlp.dev/api/v4/groups/$groupdId/-/packages/maven")
-		}
+		url = uri("https://gitlab.themeinerlp.dev/api/v4/groups/$groupdId/-/packages/maven")
 		name = "GitLab"
 		credentials(HttpHeaderCredentials::class.java) {
-			name = if (System.getenv().containsKey("CI")) {
-				"Job-Token"
-			} else {
-				"Private-Token"
-			}
-			value = if (System.getenv().containsKey("CI")) {
-				System.getenv("CI_JOB_TOKEN")
-			} else {
-				val gitLabPrivateToken: String? by project
-				gitLabPrivateToken
-			}
+			name = "Private-Token"
+			val gitLabPrivateToken: String? by project
+			value = gitLabPrivateToken
 		}
 		authentication {
 			create<HttpHeaderAuthentication>("header")

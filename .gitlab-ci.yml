@@ -1,5 +1,52 @@
-image: repo.htl-md.schule:5003/gradle:8.7.0-jdk17-alpine
-
 include:
   - template: Jobs/Dependency-Scanning.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
+
+variables:
+  STORAGE_DRIVER: vfs
+  BUILDAH_FORMAT: docker
+  BUILDAH_ISOLATION: chroot
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+  CACHE_COMPRESSION_LEVEL: "fastest"
+  ARTIFACT_COMPRESSION_LEVEL: "fast"
+  FF_USE_FASTZIP: 1
+
+cache:
+  key: $CI_COMMIT_REF_SLUG
+  paths:
+    - "$CI_PROJECT_DIR/.gradle"
+  policy: pull-push
+before_script:
+  - export GRADLE_USER_HOME=$CI_PROJECT_DIR/.gradle
+
+pre-container:
+  image: "${HTL_NEXUS_PROXY}/gradle:8.7.0-jdk21"
+  stage: build
+  tags:
+    - saas-linux-medium-amd64
+  script:
+    - gradle build -x test
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 week
+  only:
+    - tags
+container:
+  image: "${HTL_NEXUS_PROXY}/buildah/stable:latest"
+  tags:
+    - saas-linux-medium-amd64
+  dependencies:
+    - "pre-container"
+  needs:
+    - "pre-container"
+  stage: build
+  cache: {}
+  script:
+    - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - buildah build --build-arg JAR_FILE=build/libs/*.jar -t $IMAGE_TAG -t $CI_REGISTRY_IMAGE:latest .
+    - buildah push $IMAGE_TAG
+    - buildah push $CI_REGISTRY_IMAGE:latest
+  only:
+    - tags
