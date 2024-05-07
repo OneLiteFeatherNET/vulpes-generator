@@ -39,6 +39,7 @@ class FontGenerator(
         addClassModifiers(this.classSpec)
         addJetbrainsAnnotation(this.classSpec)
         addPrivateDefaultConstructor(this.classSpec)
+        addSuppressAnnotation(this.classSpec)
         this.classSpec.addFields(fieldSpecs)
     }
 

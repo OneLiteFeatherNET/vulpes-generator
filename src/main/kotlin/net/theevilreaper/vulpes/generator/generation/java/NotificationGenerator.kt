@@ -1,6 +1,5 @@
 package net.theevilreaper.vulpes.generator.generation.java
 
-import com.google.common.base.CaseFormat
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
@@ -29,7 +28,7 @@ class NotificationGenerator(
     val notificationRepository: NotificationRepository,
 ) : JavaGenerationHelper, BaseGenerator<NotificationModel>(
     className = "NotificationRegistry",
-    packageName = "$BASE_PACKAGE.notifications",
+    packageName = "$BASE_PACKAGE.notification",
 ) {
 
     override fun generate(javaPath: Path) {
@@ -40,6 +39,7 @@ class NotificationGenerator(
         addClassModifiers(this.classSpec)
         addJetbrainsAnnotation(this.classSpec)
         addPrivateDefaultConstructor(this.classSpec)
+        addSuppressAnnotation(this.classSpec)
         val fields = getFields(models).values
         this.classSpec.addFields(fields)
         val javaFile = JavaFile.builder(packageName, this.classSpec.build())
@@ -69,7 +69,7 @@ class NotificationGenerator(
             }
 
             val field = FieldSpec.builder(
-                Advancement::class.java, CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, model.name!!)
+                Advancement::class.java, model.name!!.uppercase()
             )
                 .addModifiers(*defaultModifiers)
                 .initializer(
