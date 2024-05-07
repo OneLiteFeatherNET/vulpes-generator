@@ -1,16 +1,13 @@
 package net.theevilreaper.vulpes.generator.generation.java
 
-import com.google.common.base.CaseFormat
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
 import net.minestom.server.attribute.Attribute
 import net.theevilreaper.vulpes.api.model.AttributeModel
 import net.theevilreaper.vulpes.api.repository.AttributeRepository
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
-import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
-import net.theevilreaper.vulpes.generator.util.EMPTY_STRING
+import net.theevilreaper.vulpes.generator.util.*
 import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
-import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 import javax.lang.model.element.Modifier
@@ -27,7 +24,7 @@ class AttributeGenerator(
     private val attributeRepository: AttributeRepository,
 ) : JavaGenerationHelper, BaseGenerator<AttributeModel>(
     className = "DungeonAttributes",
-    packageName = "$BASE_PACKAGE.attributes",
+    packageName = "$BASE_PACKAGE.attribute",
 ) {
 
     private val attributeClass: Class<Attribute> = Attribute::class.java
@@ -49,9 +46,9 @@ class AttributeGenerator(
 
             if (name == EMPTY_STRING) return@forEach
 
-            val field = FieldSpec.builder(attributeClass, CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name))
+            val field = FieldSpec.builder(attributeClass, name.uppercase())
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .initializer("new \$T(\$S, \$L, \$L)", attributeClass, name, it.defaultValue, it.maximumValue)
+                .initializer("new \$T(\$S, \$Lf, \$Lf)", attributeClass, name, it.defaultValue, it.maximumValue)
                 .build()
             generatedModels.putIfAbsent(name, field)
         }
@@ -61,6 +58,7 @@ class AttributeGenerator(
         addClassModifiers(this.classSpec)
         addJetbrainsAnnotation(this.classSpec)
         addPrivateDefaultConstructor(this.classSpec)
+        addSuppressAnnotation(this.classSpec)
         val javaFile = JavaFile.builder(packageName, this.classSpec.build())
             .indent(INDENT_DEFAULT)
             .skipJavaLangImports(true)

@@ -16,7 +16,6 @@ import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import net.theevilreaper.vulpes.generator.util.META_DATA_VARIABLE
-import net.theevilreaper.vulpes.generator.util.toVariableString
 import org.springframework.stereotype.Service
 import java.nio.file.Path
 
@@ -30,7 +29,7 @@ class ItemGenerator(
     val itemRepository: ItemRepository
 ) : JavaGenerationHelper, BaseGenerator<ItemModel>(
     className = "ItemRegistry",
-    packageName = "$BASE_PACKAGE.items",
+    packageName = "$BASE_PACKAGE.item",
 ) {
     override fun generate(javaPath: Path) {
         val models = getModels()
@@ -41,6 +40,7 @@ class ItemGenerator(
         addClassModifiers(this.classSpec)
         addJetbrainsAnnotation(this.classSpec)
         addPrivateDefaultConstructor(this.classSpec)
+        addSuppressAnnotation(this.classSpec)
         val itemFields: MutableMap<String, FieldSpec> = mutableMapOf()
 
         models.filter { it.name.orEmpty().trim().isNotEmpty() }.forEach { model ->
@@ -77,7 +77,7 @@ class ItemGenerator(
                 }
 
                 if (model.hasDisplayName()) {
-                    metadata.add(".displayName(\$T.text(\$S))", Component::class.java, model.displayName)
+                    metadata.add(".displayName(\$T.text(\$S))", Component::class.java, getDisplayName(model))
                 }
 
                 if (model.hasFlags()) {
@@ -98,7 +98,7 @@ class ItemGenerator(
             }
             init.add(".build()")
 
-            itemFields[model.name!!] = FieldSpec.builder(ItemStack::class.java, model.name!!.toVariableString())
+            itemFields[model.name!!] = FieldSpec.builder(ItemStack::class.java, model.name!!.uppercase())
                 .addModifiers(*defaultModifiers)
                 .initializer(init.build())
                 .build()
@@ -115,6 +115,14 @@ class ItemGenerator(
     override fun getName(): String = "ItemGenerator"
 
     override fun getModels(): List<ItemModel> = itemRepository.findAll()
+
+    private fun getDisplayName(model: ItemModel): String {
+        val displayName = model.displayName.orEmpty()
+        return when(displayName.isNotEmpty()) {
+            true -> displayName
+            false -> "No display name provided for ${model.name}"
+        }
+    }
 
     private fun buildLore(lore: List<String>): CodeBlock {
         val block = CodeBlock.builder()
