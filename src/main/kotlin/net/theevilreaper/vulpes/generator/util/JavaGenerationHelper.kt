@@ -1,5 +1,6 @@
 package net.theevilreaper.vulpes.generator.util
 
+import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
@@ -18,11 +19,12 @@ internal interface JavaGenerationHelper {
 
     val constructorDocumentation: CodeBlock
         get() = CodeBlock.builder()
-            .add("Default constructor for the class")
-            .add("It's private because the class should not be instantiated")
+            .addStatement("\$L", "Default constructor for the class")
+            .add("\$L", "It's private because the class should not be instantiated")
             .build()
 
     val jetbrainsAnnotation: Class<out Annotation> get() = ApiStatus.NonExtendable::class.java
+    private val defaultSuppressWarnings: Set<String> get() = setOf("java:S3252")
 
     /**
      * Add a private default constructor to the given [TypeSpec.Builder].
@@ -54,4 +56,13 @@ internal interface JavaGenerationHelper {
      * @return the [TypeSpec.Builder] with the added annotation
      */
     fun addJetbrainsAnnotation(spec: TypeSpec.Builder): TypeSpec.Builder = spec.addAnnotation(jetbrainsAnnotation)
+
+    fun addSuppressAnnotation(spec: TypeSpec.Builder, warnings: Set<String> = defaultSuppressWarnings): TypeSpec.Builder {
+        spec.addAnnotation(
+            AnnotationSpec.builder(SuppressWarnings::class.java)
+                .addMember("value", warnings.joinToString(prefix = "{", separator = ",", postfix = "}") { "\"$it\"" })
+                .build()
+        )
+        return spec
+    }
 }
