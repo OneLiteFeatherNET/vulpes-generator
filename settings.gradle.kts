@@ -22,7 +22,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            version("kotlin", "1.9.23")
+            version("kotlin", "1.9.24")
 
             library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("0.0.1+1f9ff402")
             library("vulpes.base", "dev.themeinerlp", "vulpes-base").version("1.0-SNAPSHOT+95bd27ce")
