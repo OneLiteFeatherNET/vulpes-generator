@@ -59,7 +59,7 @@ dependencyResolutionManagement {
 
             plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("kotlin.spring", "org.jetbrains.kotlin.plugin.spring").versionRef("kotlin")
-            plugin("spring", "org.springframework.boot").version("3.3.1")
+            plugin("spring", "org.springframework.boot").version("3.3.2")
             plugin("spring.dependency", "io.spring.dependency-management").version("1.1.5")
 
             bundle(
