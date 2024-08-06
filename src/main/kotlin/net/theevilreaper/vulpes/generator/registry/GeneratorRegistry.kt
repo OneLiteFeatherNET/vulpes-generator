@@ -4,8 +4,7 @@ import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.generation.Generator
 import java.nio.file.Path
 
-class GeneratorRegistry internal constructor(
-) {
+class GeneratorRegistry {
     private val generators: MutableMap<String, Generator> = mutableMapOf()
 
     @Throws(IllegalStateException::class)
