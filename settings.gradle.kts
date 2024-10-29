@@ -26,7 +26,6 @@ dependencyResolutionManagement {
 
             library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("0.0.1+1f9ff402")
             library("vulpes.base", "dev.themeinerlp", "vulpes-base").version("1.0-SNAPSHOT+95bd27ce")
-            library("dartpoet", "dev.themeinerlp", "dartpoet").version("0.0.1-SNAPSHOT")
             library("jetbrains.annotation", "org.jetbrains", "annotations").version("24.1.0")
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
             library("caffeine", "com.github.ben-manes.caffeine", "caffeine").version("3.1.8")
@@ -39,7 +38,6 @@ dependencyResolutionManagement {
             library("commons.io", "commons-io", "commons-io").version("2.17.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
             library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.17.1")
-
 
             //Spring
             library("spring.starter.web", "org.springframework.boot", "spring-boot-starter-web").withoutVersion()
