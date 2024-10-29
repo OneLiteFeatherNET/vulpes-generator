@@ -29,7 +29,7 @@ repositories {
 	maven("https://jitpack.io")
 	maven {
 		val groupdId = 28 // Gitlab Group
-		url = uri("https://gitlab.themeinerlp.dev/api/v4/groups/$groupdId/-/packages/maven")
+		url = uri("https://gitlab.onelitefeather.dev/api/v4/groups/$groupdId/-/packages/maven")
 		name = "GitLab"
 		credentials(HttpHeaderCredentials::class.java) {
 			name = "Private-Token"
