@@ -47,7 +47,6 @@ dependencies {
 		exclude(group = "com.github.Minestom", module = "Minestom")
 		exclude(group = "net.worldseed.multipart", module = "WorldSeedEntityEngine")
 	}
-	implementation(libs.dartpoet)
 	implementation(libs.bundles.spring)
 	implementation(libs.caffeine)
 	implementation(libs.jetbrains.annotation)
