@@ -48,7 +48,3 @@ publishing {
         }
     }
 }
-
-//TODO:
-//JUNIT
-//"Database"
