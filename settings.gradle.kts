@@ -1,4 +1,16 @@
-rootProject.name = "vulpes-spring-generator"
+rootProject.name = "vulpes-generator"
+
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven("https://eldonexus.de/repository/maven-public/")
+    }
+}
+
+plugins {
+    id("io.micronaut.platform.catalog") version "4.4.4"
+}
 
 dependencyResolutionManagement {
     if (System.getenv("CI") != null) {
@@ -19,57 +31,52 @@ dependencyResolutionManagement {
                 }
             }
         }
+    } else {
+        repositories {
+            mavenLocal()
+            mavenCentral()
+            maven { url = uri("https://repo.spring.io/milestone") }
+            maven { url = uri("https://repo.spring.io/snapshot") }
+            maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            //maven("https://reposilite.worldseed.online/public")
+            maven("https://jitpack.io")
+            maven {
+                val groupdId = 28 // Gitlab Group
+                url = uri("https://gitlab.onelitefeather.dev/api/v4/groups/$groupdId/-/packages/maven")
+                name = "GitLab"
+                credentials(HttpHeaderCredentials::class.java) {
+                    name = "Private-Token"
+                    val gitLabPrivateToken: String? by settings
+                    value = gitLabPrivateToken
+                }
+                authentication {
+                    create<HttpHeaderAuthentication>("header")
+                }
+            }
+        }
     }
     versionCatalogs {
         create("libs") {
             version("kotlin", "2.0.20")
+            version("micronaut", "4.4.4")
 
-            library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("0.0.1+1f9ff402")
+            library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("1.0.0-SNAPSHOT")
             library("vulpes.base", "dev.themeinerlp", "vulpes-base").version("1.0-SNAPSHOT+95bd27ce")
-            library("jetbrains.annotation", "org.jetbrains", "annotations").version("26.0.1")
+            library("jetbrains.annotation", "org.jetbrains", "annotations").version("24.1.0")
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
-            library("caffeine", "com.github.ben-manes.caffeine", "caffeine").version("3.1.8")
             library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.3.1")
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.0.0.202409031743-r")
-            // We need to use the RC version of Gitlab4j api because Spring Boot 3 requires Jakarta as a dependency which is only supported in the RC version
-            library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.8")
-            library("guava", "com.google.guava", "guava").version("33.4.0-jre")
-            library("commons.io", "commons-io", "commons-io").version("2.18.0")
+            library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.5")
+            library("guava", "com.google.guava", "guava").version("33.3.1-jre")
+            library("commons.io", "commons-io", "commons-io").version("2.17.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
-            library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.18.2")
-
-            //Spring
-            library("spring.starter.web", "org.springframework.boot", "spring-boot-starter-web").withoutVersion()
-            library(
-                "spring.starter.data.mongodb",
-                "org.springframework.boot",
-                "spring-boot-starter-data-mongodb"
-            ).withoutVersion()
-            library(
-                "spring.starter.webflux",
-                "org.springframework.boot",
-                "spring-boot-starter-webflux"
-            ).withoutVersion()
-            library("spring.starter.cache", "org.springframework.boot", "spring-boot-starter-cache").withoutVersion()
-            library("spring.starter.log4j2", "org.springframework.boot", "spring-boot-starter-log4j2").withoutVersion()
-
+            library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.17.1")
 
             plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
-            plugin("kotlin.spring", "org.jetbrains.kotlin.plugin.spring").versionRef("kotlin")
-            plugin("spring", "org.springframework.boot").version("3.3.5")
-            plugin("spring.dependency", "io.spring.dependency-management").version("1.1.7")
+            plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
+            plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
 
-            bundle(
-                "spring",
-                listOf(
-                    "spring.starter.web",
-                    "spring.starter.data.mongodb",
-                    "spring.starter.webflux",
-                    "spring.starter.cache",
-                    "spring.starter.log4j2"
-                )
-            )
 
             bundle(
                 "vulpes",

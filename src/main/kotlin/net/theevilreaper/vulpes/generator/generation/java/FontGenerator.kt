@@ -2,10 +2,11 @@ package net.theevilreaper.vulpes.generator.generation.java
 
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import net.reaper.vulpes.font.FontSymbol
 import net.theevilreaper.vulpes.api.model.FontModel
 import net.theevilreaper.vulpes.api.repository.FontRepository
-import net.theevilreaper.vulpes.api.util.getCharsAsArray
 import net.theevilreaper.vulpes.api.util.getShiftAsArray
 import net.theevilreaper.vulpes.api.util.hasFontSymbols
 import net.theevilreaper.vulpes.api.util.hasShiftData
@@ -13,7 +14,6 @@ import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.toVariableString
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 /**
@@ -21,9 +21,9 @@ import java.nio.file.Path
  * @version 1.0.0
  * @since
  **/
-@Service
+@Singleton
 class FontGenerator(
-    val fontRepository: FontRepository
+    @Inject val fontRepository: FontRepository
 ) : JavaGenerationHelper, BaseGenerator<FontModel>(
     className = "FontRegistry",
     packageName = "$BASE_PACKAGE.font",
@@ -53,7 +53,7 @@ class FontGenerator(
             val fontCode = CodeBlock.builder()
 
             fontCode.add("\$T.builder()", FontSymbol::class.java)
-            fontCode.add(".symbols(\$L)", model.getCharsAsArray())
+            fontCode.add(".symbols(\$L)", model.chars!!.toTypedArray())
 
             if (model.ascent != null) {
                 fontCode.add(".ascent(\$L)", model.ascent!!)

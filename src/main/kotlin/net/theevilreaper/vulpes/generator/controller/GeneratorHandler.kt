@@ -1,5 +1,12 @@
 package net.theevilreaper.vulpes.generator.controller
 
+import io.micronaut.http.HttpHeaders
+import io.micronaut.http.HttpResponse
+import io.micronaut.http.MediaType
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.QueryValue
+import jakarta.inject.Inject
 import net.theevilreaper.vulpes.generator.generation.GitProjectWorker
 import net.theevilreaper.vulpes.generator.properties.GitlabProperties
 import net.theevilreaper.vulpes.generator.registry.RegistryProvider
@@ -18,14 +25,6 @@ import net.theevilreaper.vulpes.generator.util.version
 import net.theevilreaper.vulpes.generator.util.zipFileName
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import org.springframework.core.io.FileSystemResource
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
 import org.yaml.snakeyaml.Yaml
 import java.nio.file.Files
 import java.nio.file.Path
@@ -37,22 +36,18 @@ import kotlin.io.path.reader
 import kotlin.io.path.writeText
 import kotlin.io.path.writer
 
-@CrossOrigin(origins = ["*"], maxAge = 4800, allowCredentials = "false")
-@RestController
-class GeneratorHandler(
+@Controller
+class GeneratorHandler @Inject constructor(
     private val registryProvider: RegistryProvider,
     private val properties: GitlabProperties,
 ) {
 
     private val ignoredPrefix = "renovate/"
 
-    @GetMapping("/branches", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Get("/branches", produces = [MediaType.APPLICATION_JSON])
     private fun getBranches(
-        @RequestParam(
-            name = "full",
-            required = false
-        ) full: Boolean,
-    ): ResponseEntity<List<String>> {
+        @QueryValue(value = "full",) full: Boolean,
+    ): HttpResponse<List<String>> {
         val refs = Git.lsRemoteRepository()
             .setCredentialsProvider(
                 UsernamePasswordCredentialsProvider(
@@ -63,18 +58,18 @@ class GeneratorHandler(
             .setHeads(true).setRemote(properties.remoteUrl).call().map { it.name }.toList()
         val filtered = BranchFilter.filterBranches(refs) { !it.contains(ignoredPrefix) }
         return if (full) {
-            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(filtered)
+            HttpResponse.ok(filtered).contentType(MediaType.APPLICATION_JSON)
         } else {
             val branches =
                 BranchFilter.filterBranches(refs.map { it.substringAfter("refs/heads/") }) { !it.contains(ignoredPrefix) }
-            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(branches)
+            HttpResponse.ok(branches).contentType(MediaType.APPLICATION_JSON)
         }
     }
 
-    @GetMapping("/generate", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @Get("/generate", produces = [MediaType.APPLICATION_JSON])
     private fun generate(
-        @RequestParam("branch") branch: String, @RequestParam("image", required = false) image: String?,
-    ): ResponseEntity<Any> {
+        @QueryValue("branch") branch: String, @QueryValue("image") image: String?,
+    ): HttpResponse<Any> {
         val tempPath = Files.createTempDirectory(tempPrefix)
         val output = tempPath.resolve(OUT_PUT_FOLDER)
         val tempGitlabCi = tempPath.resolve(gitlabCiFile)
@@ -123,11 +118,12 @@ class GeneratorHandler(
             )
         )
         push.call()
-        return ResponseEntity.ok().build()
+        return HttpResponse.accepted()
     }
 
-    @GetMapping("/download", produces = ["application/octet-stream"])
-    private fun download(@RequestParam("branch") branch: String): ResponseEntity<Any> {
+    @Get("/download", produces = ["application/octet-stream"])
+    private fun download(@QueryValue("branch", defaultValue = "master") branch: String): HttpResponse<Any> {
+        println("MEEPO")
         val tempPath = Files.createTempDirectory(tempPrefix)
         val zipFile = tempPath.resolve("$OUT_PUT_FOLDER.zip")
         val output = tempPath.resolve(OUT_PUT_FOLDER)
@@ -156,10 +152,11 @@ class GeneratorHandler(
             Files.createFile(zipFile)
             FileHelper.zipFile(output, zipFile)
         }
-        return ResponseEntity.ok()
+        return HttpResponse.ok(zipFile.toFile())
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=generated.zip")
-            .body(FileSystemResource(zipFile.toFile()))
+            .headers {
+                it.add(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=generated.zip")
+            } as HttpResponse<Any>
     }
 
     /**

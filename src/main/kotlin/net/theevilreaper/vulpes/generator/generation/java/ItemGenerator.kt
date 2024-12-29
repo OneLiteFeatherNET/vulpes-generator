@@ -3,6 +3,8 @@ package net.theevilreaper.vulpes.generator.generation.java
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import net.kyori.adventure.text.Component
 import net.minestom.server.item.Enchantment
 import net.minestom.server.item.ItemHideFlag
@@ -16,7 +18,6 @@ import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
 import net.theevilreaper.vulpes.generator.util.META_DATA_VARIABLE
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 /**
@@ -24,8 +25,8 @@ import java.nio.file.Path
  * @version 1.0.0
  * @since
  **/
-@Service
-class ItemGenerator(
+@Singleton
+class ItemGenerator @Inject constructor(
     val itemRepository: ItemRepository
 ) : JavaGenerationHelper, BaseGenerator<ItemModel>(
     className = "ItemRegistry",

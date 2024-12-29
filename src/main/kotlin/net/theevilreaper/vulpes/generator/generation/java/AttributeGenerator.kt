@@ -2,13 +2,14 @@ package net.theevilreaper.vulpes.generator.generation.java
 
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import net.minestom.server.attribute.Attribute
 import net.theevilreaper.vulpes.api.model.AttributeModel
 import net.theevilreaper.vulpes.api.repository.AttributeRepository
 import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.*
 import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 import javax.lang.model.element.Modifier
 
@@ -19,8 +20,8 @@ import javax.lang.model.element.Modifier
  * @author theEvilReaper
  * @since 1.0.0
  */
-@Service
-class AttributeGenerator(
+@Singleton
+class AttributeGenerator @Inject constructor(
     private val attributeRepository: AttributeRepository,
 ) : JavaGenerationHelper, BaseGenerator<AttributeModel>(
     className = "DungeonAttributes",
