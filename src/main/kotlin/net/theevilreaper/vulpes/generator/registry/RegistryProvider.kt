@@ -1,13 +1,14 @@
 package net.theevilreaper.vulpes.generator.registry
 
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import net.theevilreaper.vulpes.generator.generation.java.AttributeGenerator
 import net.theevilreaper.vulpes.generator.generation.java.FontGenerator
 import net.theevilreaper.vulpes.generator.generation.java.ItemGenerator
 import net.theevilreaper.vulpes.generator.generation.java.NotificationGenerator
-import org.springframework.stereotype.Service
 
-@Service
-class RegistryProvider internal constructor(
+@Singleton
+class RegistryProvider @Inject constructor(
     private val attributeGenerator: AttributeGenerator,
     private val fontGenerator: FontGenerator,
     private val itemGenerator: ItemGenerator,

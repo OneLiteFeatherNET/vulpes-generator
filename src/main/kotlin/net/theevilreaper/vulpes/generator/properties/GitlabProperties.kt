@@ -1,6 +1,7 @@
 package net.theevilreaper.vulpes.generator.properties
 
-import org.springframework.boot.context.properties.ConfigurationProperties
+import io.micronaut.context.annotation.ConfigurationProperties
+import jakarta.inject.Singleton
 
 /**
  * The class contains some properties which are required to communicate with the Gitlab API.
@@ -13,15 +14,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * @version 1.0.0
  * @author theEvilReaper
  */
-@ConfigurationProperties("gitlab")
+@Singleton
+@ConfigurationProperties(value = "gitlab")
 data class GitlabProperties(
-    val user: String,
-    val password: String,
-    val accessToken: String,
-    val gitlabUrl: String,
-    val baseProjectID: Int,
-    val remoteUrl: String,
-    val piplineUrl: String,
-    val deployUrl: String,
-    val dependencyUrl: String,
+    var user: String,
+    var password: String,
+    var accessToken: String,
+    var gitlabUrl: String,
+    var baseProjectID: Int,
+    var remoteUrl: String,
+    var piplineUrl: String,
+    var deployUrl: String,
+    var dependencyUrl: String,
 )

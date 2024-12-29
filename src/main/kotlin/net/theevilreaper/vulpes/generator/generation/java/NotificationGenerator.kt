@@ -3,6 +3,7 @@ package net.theevilreaper.vulpes.generator.generation.java
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
+import jakarta.inject.Singleton
 import net.kyori.adventure.text.Component
 import net.minestom.server.advancements.Advancement
 import net.minestom.server.advancements.FrameType
@@ -15,7 +16,6 @@ import net.theevilreaper.vulpes.generator.generation.BaseGenerator
 import net.theevilreaper.vulpes.generator.util.BASE_PACKAGE
 import net.theevilreaper.vulpes.generator.util.JavaGenerationHelper
 import net.theevilreaper.vulpes.generator.util.INDENT_DEFAULT
-import org.springframework.stereotype.Service
 import java.nio.file.Path
 
 /**
@@ -23,7 +23,7 @@ import java.nio.file.Path
  * @version 1.0.0
  * @since
  **/
-@Service
+@Singleton
 class NotificationGenerator(
     val notificationRepository: NotificationRepository,
 ) : JavaGenerationHelper, BaseGenerator<NotificationModel>(
