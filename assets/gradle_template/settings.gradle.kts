@@ -8,7 +8,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            library("jetbrains.annotation", "org.jetbrains", "annotations").version("24.1.0")
+            library("jetbrains.annotation", "org.jetbrains", "annotations").version("26.0.1")
             library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.3.1")
         }
     }
