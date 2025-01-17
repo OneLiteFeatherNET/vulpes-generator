@@ -33,7 +33,7 @@ dependencyResolutionManagement {
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.0.0.202409031743-r")
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.8")
-            library("guava", "com.google.guava", "guava").version("33.3.1-jre")
+            library("guava", "com.google.guava", "guava").version("33.4.0-jre")
             library("commons.io", "commons-io", "commons-io").version("2.18.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
             library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.18.2")
