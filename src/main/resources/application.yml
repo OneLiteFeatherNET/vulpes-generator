@@ -1,19 +1,23 @@
 micronaut:
   server:
-    port: 8080
+    port: ${PORT:8080}
   application:
     name: Vulpes Generator
+  logger:
+    level:
+      io.micronaut: DEBUG
+mongodb:
+  uri: mongodb://localhost:27017
+  database: test
+    #mongodb:
+    #   uri: ${MONGODB_URI}
+    #  database: ${MONGODB_DATABASE}
 
-
-#mongodb:
- #   uri: ${MONGODB_URI}
-  #  database: ${MONGODB_DATABASE}
-
-#gitlab:
- # user: ${GITLAB_USER}
-  #password: ${GITLAB_PASSWORD}
-  #accessTokens:
-   # - ${GITLAB_ACCESS_TOKEN}
+    #gitlab:
+    # user: ${GITLAB_USER}
+    #password: ${GITLAB_PASSWORD}
+    #accessTokens:
+  # - ${GITLAB_ACCESS_TOKEN}
   #gitlabUrl: ${GITLAB_URL}
   #baseProjectID: ${GITLAB_PROJECT}
   #remoteUrl: ${GITLAB_REMOTE_URL}
