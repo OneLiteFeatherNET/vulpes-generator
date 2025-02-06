@@ -57,7 +57,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            version("kotlin", "2.0.20")
+            version("kotlin", "2.0.21")
             version("micronaut", "4.4.4")
 
             library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("1.0.0-SNAPSHOT")

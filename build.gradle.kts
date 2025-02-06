@@ -19,7 +19,10 @@ java {
 dependencies {
     annotationProcessor(mn.micronaut.serde.processor)
     annotationProcessor(mn.micronaut.http.validation)
+    annotationProcessor(mn.micronaut.data.processor)
+    annotationProcessor("io.micronaut:micronaut-inject-java:4.7.10")
     annotationProcessor(mn.micronaut.openapi)
+    implementation(mn.micronaut.data.processor)
     compileOnly(mn.micronaut.openapi.annotations)
 
     implementation(libs.bundles.vulpes) {
@@ -36,9 +39,6 @@ dependencies {
     implementation(mn.micronaut.runtime)
     implementation(mn.validation)
     implementation(mn.snakeyaml)
-    implementation(mn.micronaut.data.document.processor)
-    implementation(mn.micronaut.data.mongodb)
-    implementation(mn.micronaut.mongo.core)
     implementation(mn.log4j)
     implementation(mn.slf4j.api)
     implementation(mn.slf4j.simple)
@@ -46,12 +46,15 @@ dependencies {
     implementation(mn.jackson.databind)
     implementation(mn.jackson.datatype.jsr310)
 
+    implementation(mn.micronaut.data.document.processor)
+    implementation(mn.micronaut.data.mongodb)
+    implementation(mn.micronaut.mongo.core)
+
     implementation(libs.jgit)
     implementation(libs.gitlab4j)
     implementation(libs.guava)
     implementation(libs.commons.io)
     implementation(libs.commons.compress)
-    implementation(libs.jackson)
 
     testImplementation(mn.junit.jupiter.api)
     testRuntimeOnly(mn.junit.jupiter.engine)
@@ -119,10 +122,10 @@ tasks {
 }
 
 application {
-    mainClass.set("net.theevilreaper.vulpes.generator.GeneratorApplication")
+    mainClass = "net.theevilreaper.vulpes.generator.GeneratorApplication"
 }
 
-graalvmNative.toolchainDetection.set(false)
+graalvmNative.toolchainDetection = false
 
 micronaut {
     runtime("netty")
@@ -130,19 +133,20 @@ micronaut {
     processing {
         incremental(true)
         annotations(
+            "net.theevilreaper.vulpes.api.*",
             "net.theevilreaper.vulpes.generator.*",
-            "net.theevilreaper.vulpes.api.*"
         )
     }
     aot {
         // Please review carefully the optimizations enabled below
         // Check https://micronaut-projects.github.io/micronaut-aot/latest/guide/ for more details
-        optimizeServiceLoading.set(false)
-        convertYamlToJava.set(false)
-        precomputeOperations.set(true)
-        cacheEnvironment.set(true)
-        optimizeClassLoading.set(true)
-        deduceEnvironment.set(true)
-        optimizeNetty.set(true)
+        optimizeServiceLoading = false
+        convertYamlToJava = false
+        precomputeOperations = true
+        cacheEnvironment = true
+        optimizeClassLoading = true
+        deduceEnvironment = true
+        optimizeNetty = true
+        replaceLogbackXml = true
     }
 }
