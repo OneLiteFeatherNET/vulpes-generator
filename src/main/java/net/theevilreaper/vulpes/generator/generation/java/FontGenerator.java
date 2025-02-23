@@ -41,7 +41,6 @@ public class FontGenerator extends AbstractCodeGenerator<FontModel> implements J
         if (models.isEmpty()) return;
 
         var fieldSpecs = generateFonts(models).values();
-        //this.classBuilder.addJavadoc(defaultDocumentation);
         addClassModifiers(this.classBuilder);
         addJetbrainsAnnotation(this.classBuilder);
         addPrivateDefaultConstructor(this.classBuilder);
