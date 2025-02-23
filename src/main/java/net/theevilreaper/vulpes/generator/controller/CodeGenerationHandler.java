@@ -6,15 +6,14 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.QueryValue;
 import jakarta.inject.Inject;
-import net.theevilreaper.vulpes.generator.generation.GitProjectWorker;
-import net.theevilreaper.vulpes.generator.properties.GitlabProperties;
+import net.theevilreaper.vulpes.generator.git.GitWorker;
 import net.theevilreaper.vulpes.generator.registry.RegistryProvider;
 import net.theevilreaper.vulpes.generator.util.BranchFilter;
 import net.theevilreaper.vulpes.generator.util.FileHelper;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -27,49 +26,33 @@ import java.util.List;
 import java.nio.file.Files;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 import static net.theevilreaper.vulpes.generator.util.Constants.*;
 
 @Controller("/generator")
 public class CodeGenerationHandler {
 
     private final RegistryProvider registryProvider;
-    private final GitlabProperties gitlabProperties;
+    private final GitWorker gitWorker;
 
     @Inject
-    public CodeGenerationHandler(RegistryProvider registryProvider, GitlabProperties gitlabProperties) {
+    public CodeGenerationHandler(
+            @NotNull RegistryProvider registryProvider,
+            @NotNull GitWorker gitWorker) {
         this.registryProvider = registryProvider;
-        this.gitlabProperties = gitlabProperties;
+        this.gitWorker = gitWorker;
     }
 
     @Get(value = "/branches", produces = "application/json")
-    public HttpResponse<List<String>> getBranches(
-            @QueryValue(value = "full", defaultValue = "false") boolean full
-            ) {
-        List<String> refs = null;
-        try {
-            refs = Git.lsRemoteRepository()
-                    .setCredentialsProvider(
-                            new UsernamePasswordCredentialsProvider(
-                                    gitlabProperties.user(),
-                                    gitlabProperties.password()
-                            )
-                    )
-                    .setHeads(true)
-                    .setRemote(gitlabProperties.remoteUrl())
-                    .call()
-                    .stream().map(Ref::getName).collect(toList());
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-        var filtered = BranchFilter.filterBranches(refs, string -> string.contains("/renovate"));
+    public HttpResponse<List<String>> getBranches(@QueryValue(value = "full", defaultValue = "false") boolean full) {
+        List<String> gitRefs = gitWorker.getGitRefs();
+        var filtered = BranchFilter.filterBranches(gitRefs, string -> string.contains("/renovate"));
 
         if (full) {
             return HttpResponse.ok(filtered).contentType(MediaType.APPLICATION_JSON);
         } else {
             var branches =
-                    BranchFilter.filterBranches(refs, string -> !string.contains("/renovate"))
-                            .stream().map(string -> string.replace("refs/heads/", "")).collect(toList());
+                    BranchFilter.filterBranches(gitRefs, string -> !string.contains("/renovate"))
+                            .stream().map(string -> string.replace("refs/heads/", "")).toList();
             return HttpResponse.ok(branches).contentType(MediaType.APPLICATION_JSON);
         }
     }
@@ -82,7 +65,6 @@ public class CodeGenerationHandler {
         var tempPath = Files.createTempDirectory(TEMP_PREFIX);
         var output = tempPath.resolve(OUT_PUT_FOLDER);
         var tempGitlabCi = tempPath.resolve(GITLAB_CI_YML);
-        var basePath = Path.of("generated");
         Files.copy(
                 getClass().getClassLoader().getResourceAsStream(GITLAB_CI_YML),
                 tempGitlabCi
@@ -98,23 +80,19 @@ public class CodeGenerationHandler {
             }
             Map<String, Object> variables = (Map<String, Object>) objects.get("variables");
             variables.put("BRANCH", branch);
-            variables.put("GENERATION_URL", gitlabProperties.deployUrl());
+            variables.put("GENERATION_URL", gitWorker.getDeployUrl());
             objects.put("variables", variables);
             Files.write(gitlabCiFile, yaml.dumpAsMap(objects).getBytes());
         }
-        var rawGit =
-                Git.cloneRepository().setURI(gitlabProperties.pipelineUrl()).setCredentialsProvider(
-                        new UsernamePasswordCredentialsProvider(
-                                gitlabProperties.user(),
-                                gitlabProperties.password()
-                        )
-                ).setDirectory(output.toFile()).setCloneAllBranches(true);
+
+        CloneCommand cloneCommand = gitWorker.getCloneCommand(output);
         Git git = null;
         try {
-            git = rawGit.call();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
+            git = cloneCommand.call();
+        } catch (GitAPIException apiException) {
+            apiException.printStackTrace();
         }
+
         Files.copy(tempGitlabCi, gitlabCiFile, StandardCopyOption.REPLACE_EXISTING);
         var add = git.add();
         add.addFilepattern(gitlabCiFile.toString());
@@ -132,19 +110,8 @@ public class CodeGenerationHandler {
         } catch (GitAPIException e) {
             throw new RuntimeException(e);
         }
-        var push = git.push();
-        push.setCredentialsProvider(
-                new UsernamePasswordCredentialsProvider(
-                        gitlabProperties.user(),
-                        gitlabProperties.password()
-                )
-        );
-        try {
-            push.call();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-
+        PushCommand push = git.push();
+        gitWorker.push(push);
         return HttpResponse.ok().contentType(MediaType.APPLICATION_JSON);
     }
 
@@ -168,8 +135,7 @@ public class CodeGenerationHandler {
             throw new RuntimeException(e);
         }
 
-        var worker = new GitProjectWorker(output.toFile(), gitlabProperties.remoteUrl(), branch, gitlabProperties.user(), gitlabProperties.password());
-        worker.cloneAndCheckout();
+        gitWorker.cloneAndCheckout(branch, output);
         var zipStream = getClass().getClassLoader().getResourceAsStream(ZIP_FILE_NAME);
         if (zipStream != null) {
             var buildGradle = output.resolve(GRADLE_PROPERTIES);
