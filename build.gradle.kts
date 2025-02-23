@@ -68,20 +68,17 @@ tasks {
         from("${rootDir}/assets/gradle_template")
     }
 
-    register<Zip>("gradleServerTemplateZip") {
-        exclude("DS_Store")
-        archiveFileName.set("test-server.zip")
-        destinationDirectory.set(file("src/main/resources"))
-        from("${rootDir}/assets/test_server")
-    }
-
     register<Copy>("copyGitlabCiFile") {
         from("$rootDir/assets/gitlab/.gitlab-ci.yml")
         into("src/main/resources")
     }
 
+    inspectRuntimeClasspath {
+        dependsOn("processResources")
+    }
+
     processResources {
-        dependsOn("gradle template zip")
+        dependsOn("gradleTemplateZip")
         dependsOn("copyGitlabCiFile")
     }
 
