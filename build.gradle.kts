@@ -61,28 +61,21 @@ dependencies {
 }
 
 tasks {
-    create("gradle template zip", Zip::class) {
+    register<Zip>("gradleTemplateZip") {
         exclude("DS_Store")
         archiveFileName.set("gradle_template.zip")
         destinationDirectory.set(file("src/main/resources"))
         from("${rootDir}/assets/gradle_template")
     }
 
-    create("gradle server template zip", Zip::class) {
-        exclude("DS_STORE")
+    register<Zip>("gradleServerTemplateZip") {
+        exclude("DS_Store")
         archiveFileName.set("test-server.zip")
         destinationDirectory.set(file("src/main/resources"))
         from("${rootDir}/assets/test_server")
     }
 
-    create("gradle gitlab zip", Zip::class) {
-        exclude("DS_STORE")
-        archiveFileName.set("gitlab-ci.zip")
-        destinationDirectory.set(file("src/main/resources"))
-        from("${rootDir}/assets/gitlab")
-    }
-
-    create("copyGitlabCiFile", Copy::class) {
+    register<Copy>("copyGitlabCiFile") {
         from("$rootDir/assets/gitlab/.gitlab-ci.yml")
         into("src/main/resources")
     }
@@ -94,7 +87,6 @@ tasks {
 
     processResources {
         dependsOn("gradle template zip")
-        dependsOn("gradle server template zip")
         dependsOn("copyGitlabCiFile")
     }
 
