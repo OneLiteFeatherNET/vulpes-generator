@@ -12,7 +12,6 @@ import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
 import org.jetbrains.annotations.NotNull;
 
-import javax.lang.model.element.Modifier;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
