@@ -5,6 +5,7 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import jakarta.inject.Inject;
+import net.theevilreaper.vulpes.generator.object.BuildInformation;
 import net.theevilreaper.vulpes.generator.properties.GitlabProperties;
 import org.gitlab4j.api.Constants;
 import org.gitlab4j.api.GitLabApi;
@@ -39,18 +40,13 @@ public class BuildInformationHandler {
 
         var latestReleases = gitLabApi.getPackagesApi().getPackages(avesProject.getId(), filter, 1);
 
-/*        if (!latestReleases.hasNext()) {
-  *          return HttpResponse.ok(BuildInformation(mapOf("error"to"No releases found")))
+        if (!latestReleases.hasNext()) {
+            return HttpResponse.ok(new BuildInformation(Map.of("error", "No releases found")));
         }
-*/
         var release = latestReleases.first().getFirst();
         Map<String, String> data = new HashMap<>();
         data.put("version", release.getVersion());
         data.put("created", release.getCreatedAt().toString());
         return HttpResponse.ok(new BuildInformation(data));
     }
-
-    record BuildInformation(
-            Map<String, String> data
-    ){}
 }
