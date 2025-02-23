@@ -80,11 +80,6 @@ tasks {
         into("src/main/resources")
     }
 
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        options.compilerArgs.add("-parameters")
-    }
-
     processResources {
         dependsOn("gradle template zip")
         dependsOn("copyGitlabCiFile")
@@ -105,11 +100,10 @@ tasks {
         }
     }
 
-    compileKotlin {
-        compilerOptions {
-            freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = JvmTarget.JVM_21
-        }
+    compileJava {
+        options.encoding = "UTF-8"
+        options.compilerArgs.add("-parameters")
+        options.release = 21
     }
 }
 
