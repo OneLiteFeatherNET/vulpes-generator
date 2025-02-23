@@ -7,6 +7,7 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.QueryValue;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.git.GitWorker;
+import net.theevilreaper.vulpes.generator.properties.CommitProperties;
 import net.theevilreaper.vulpes.generator.registry.RegistryProvider;
 import net.theevilreaper.vulpes.generator.util.BranchFilter;
 import net.theevilreaper.vulpes.generator.util.FileHelper;
@@ -32,29 +33,30 @@ import static net.theevilreaper.vulpes.generator.util.Constants.*;
 public class CodeGenerationHandler {
 
     private final RegistryProvider registryProvider;
+    private final CommitProperties commitProperties;
     private final GitWorker gitWorker;
 
     @Inject
     public CodeGenerationHandler(
             @NotNull RegistryProvider registryProvider,
-            @NotNull GitWorker gitWorker) {
+            @NotNull CommitProperties commitProperties,
+            @NotNull GitWorker gitWorker
+    ) {
         this.registryProvider = registryProvider;
+        this.commitProperties = commitProperties;
         this.gitWorker = gitWorker;
     }
 
     @Get(value = "/branches", produces = "application/json")
     public HttpResponse<List<String>> getBranches(@QueryValue(value = "full", defaultValue = "false") boolean full) {
         List<String> gitRefs = gitWorker.getGitRefs();
-        var filtered = BranchFilter.filterBranches(gitRefs, string -> string.contains("/renovate"));
+        List<String> filtered = BranchFilter.filterBranches(gitRefs, string -> !string.contains("/renovate"));
 
         if (full) {
             return HttpResponse.ok(filtered).contentType(MediaType.APPLICATION_JSON);
-        } else {
-            var branches =
-                    BranchFilter.filterBranches(gitRefs, string -> !string.contains("/renovate"))
-                            .stream().map(string -> string.replace("refs/heads/", "")).toList();
-            return HttpResponse.ok(branches).contentType(MediaType.APPLICATION_JSON);
         }
+        List<String> branches = filtered.stream().map(string -> string.replace("refs/heads/", EMPTY_STRING)).toList();
+        return HttpResponse.ok(branches).contentType(MediaType.APPLICATION_JSON);
     }
 
     @Get(value = "/generate", produces = "application/json")
@@ -102,8 +104,8 @@ public class CodeGenerationHandler {
             throw new RuntimeException(e);
         }
         var commit = git.commit();
-        commit.setAuthor(COMMIT_NAME, COMMIT_MAIL);
-        commit.setMessage(COMMIT_MESSAGE);
+        commit.setAuthor(this.commitProperties.author(), this.commitProperties.mail());
+        commit.setMessage(this.commitProperties.message());
         commit.setSign(false);
         try {
             commit.call();

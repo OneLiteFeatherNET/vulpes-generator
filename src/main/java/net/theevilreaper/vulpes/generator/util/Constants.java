@@ -16,10 +16,6 @@ public final class Constants {
 
     public static final String GITLAB_CI_YML = ".gitlab-ci.yml";
 
-    public static final String COMMIT_NAME = "Vulpes Generator";
-    public static final String COMMIT_MAIL = "vulpes@madfix.me";
-    public static final String COMMIT_MESSAGE = "Update $gitlabCiFile";
-
     public static final String META_DATA_VARIABLE = "data";
 
     public static final String GRADLE_PROPERTIES = "gradle.properties";

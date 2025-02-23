@@ -39,3 +39,8 @@ gitlab:
     - "main"
     - "develop"
     - "feature-branch"
+
+commit:
+  commitName: "Vulpes"
+  commitMail: "vulpes@onelitefeather.com"
+  defaultMessage: "Initial commit"
