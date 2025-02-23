@@ -1,6 +1,5 @@
 package net.theevilreaper.vulpes.generator.registry;
 
-import jakarta.inject.Singleton;
 import net.theevilreaper.vulpes.api.model.VulpesModel;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import org.jetbrains.annotations.ApiStatus;
