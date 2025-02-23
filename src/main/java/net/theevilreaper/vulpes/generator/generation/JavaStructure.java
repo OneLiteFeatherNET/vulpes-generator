@@ -18,9 +18,8 @@ public interface JavaStructure {
      * Add a private default constructor to the given {@link TypeSpec.Builder}.
      *
      * @param spec the spec where the constructor should be added
-     * @return the {@link TypeSpec.Builder} with the added constructor
      */
-    default @NotNull TypeSpec.Builder addPrivateDefaultConstructor(@NotNull TypeSpec.Builder spec) {
+    default void addPrivateDefaultConstructor(@NotNull TypeSpec.Builder spec) {
         spec.addMethod(
                 MethodSpec.constructorBuilder()
                         //.addJavadoc(constructorDocumentation)
@@ -28,7 +27,6 @@ public interface JavaStructure {
                         .addComment("Nothing to do here")
                         .build()
         );
-        return spec;
     }
 
     /**
@@ -36,20 +34,18 @@ public interface JavaStructure {
      * It emits the [Modifier.PUBLIC] and [Modifier.FINAL] modifier combination to prevent class inheritance.
      *
      * @param spec the spec where the modifiers should be added
-     * @return the {@link TypeSpec.Builder} with the added modifiers
      */
-    default @NotNull TypeSpec.Builder addClassModifiers(@NotNull TypeSpec.Builder spec) {
-        return spec.addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+    default void addClassModifiers(@NotNull TypeSpec.Builder spec) {
+        spec.addModifiers(Modifier.PUBLIC, Modifier.FINAL);
     }
 
     /**
-     * Adds the [ApiStatus.Experimental] annotation to the given {@link TypeSpec.Builder}.
+     * Adds the {@link org.jetbrains.annotations.ApiStatus.NonExtendable} annotation to the given {@link TypeSpec.Builder}.
      *
      * @param spec the spec where the annotation should be added
-     * @return the {@link TypeSpec.Builder} with the added annotation
      */
-    default @NotNull TypeSpec.Builder addJetbrainsAnnotation(@NotNull TypeSpec.Builder spec) {
-        return spec.addAnnotation(ApiStatus.NonExtendable.class);
+    default void addJetbrainsAnnotation(@NotNull TypeSpec.Builder spec) {
+        spec.addAnnotation(ApiStatus.NonExtendable.class);
     }
 
     /**
@@ -57,19 +53,23 @@ public interface JavaStructure {
      * This method adds the {@link SuppressWarnings} annotation with the default warnings.
      *
      * @param spec the spec where the annotation should be added
-     * @return the {@link TypeSpec.Builder} with the added annotation
      */
-    default @NotNull TypeSpec.Builder addDefaultSuppressAnnotation(@NotNull TypeSpec.Builder spec) {
-        return this.addSuppressAnnotation(spec, DEFAULT_SUPPRESS_WARNINGS);
+    default void addDefaultSuppressAnnotation(@NotNull TypeSpec.Builder spec) {
+        this.addSuppressAnnotation(spec, DEFAULT_SUPPRESS_WARNINGS);
     }
 
-    default @NotNull TypeSpec.Builder addSuppressAnnotation(@NotNull TypeSpec.Builder spec, @NotNull Set<String> warnings) {
+    /**
+     * Adds the suppression annotation to the given {@link TypeSpec.Builder}.
+     *
+     * @param spec     the spec where the annotation should be added
+     * @param warnings the warnings which should be suppressed
+     */
+    default void addSuppressAnnotation(@NotNull TypeSpec.Builder spec, @NotNull Set<String> warnings) {
         String arguments = warnings.stream().map(w -> "\"" + w + "\"").collect(Collectors.joining(",", "{", "}"));
         spec.addAnnotation(
                 AnnotationSpec.builder(SuppressWarnings.class)
                         .addMember("value", arguments)
                         .build()
         );
-        return spec;
     }
 }
