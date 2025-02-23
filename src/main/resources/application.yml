@@ -24,4 +24,18 @@ mongodb:
   #pipelineUrl: ${GITLAB_PIPELINE_URL}
   #deployUrl: ${GITLAB_DEPLOY_URL}
   #dependencyUrl: ${GITLAB_DEPENDENCY_URL}
-
+# Section for gitlab configuration
+gitlab:
+  user: "your-gitlab-username"
+  password: "your-password"
+  accessToken: "your-access-token"
+  gitlabUrl: "https://gitlab.example.com"
+  baseProjectId: 12345
+  remoteUrl: "https://gitlab.example.com/your/repository.git"
+  pipelineUrl: "https://gitlab.example.com/api/v4/projects/12345/pipeline"
+  deployUrl: "https://gitlab.example.com/deploy"
+  dependencyUrl: "https://gitlab.example.com/dependencies"
+  branches:
+    - "main"
+    - "develop"
+    - "feature-branch"
