@@ -45,7 +45,6 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationMod
         var models = getModels();
         if (models.isEmpty()) return;
 
-        //this.classBuilder.addJavadoc(defaultDocumentation);
         addClassModifiers(this.classBuilder);
         addJetbrainsAnnotation(this.classBuilder);
         addPrivateDefaultConstructor(this.classBuilder);
@@ -66,8 +65,8 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationMod
                 .forEach(model -> {
                     if (fields.containsKey(model.name())) return;
                     FrameType frameType = FrameType.valueOf(model.frameType().toUpperCase());
-                    String title = (model.title() == null || model.title().isEmpty()) ? emptyComponent : getTextContent(model.title());
-                    String description = (model.description() == null || model.description().isEmpty()) ? emptyComponent : getTextContent(model.description());
+                    String title = (model.title() == null || model.title().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.title());
+                    String description = (model.description() == null || model.description().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.description());
                     Material material = (model.material() == null || model.material().isEmpty()) ? Material.STONE : Material.fromNamespaceId(model.material());
                     FieldSpec field = FieldSpec.builder(
                             className, model.name().toUpperCase()

@@ -26,7 +26,7 @@ import java.util.Map;
 import static net.theevilreaper.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
 @Singleton
-public class ItemGenerator extends AbstractCodeGenerator<ItemModel> implements JavaStructure {
+public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implements JavaStructure {
 
     private final ItemRepository itemRepository;
 
@@ -43,7 +43,7 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemModel> implements J
 
     @Override
     public void generate(@NotNull Path javaPath) {
-        var models = getModels();
+        List<ItemModel> models = getModels();
 
         if (models.isEmpty()) return;
 
