@@ -1,10 +1,10 @@
 package net.theevilreaper.vulpes.generator.controller
 
 import net.theevilreaper.vulpes.generator.properties.GitlabProperties
-import org.gitlab4j.api.Constants
 import org.gitlab4j.api.GitLabApi
 import org.gitlab4j.api.models.PackageFilter
 import org.gitlab4j.api.models.Project
+import org.gitlab4j.models.Constants
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
