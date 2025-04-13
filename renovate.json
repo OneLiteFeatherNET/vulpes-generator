@@ -8,20 +8,12 @@
   "labels": [
     "Renovate"
   ],
-  "commitMessagePrefix": "Update",
-  "commitMessageTopic": "{{depName}} from {{currentVersion}} to v{{newVersion}}",
   "packageRules": [
     {
       "matchUpdateTypes": [
         "patch"
       ],
-      "automerge": true,
-      "automergeType": "branch",
-      "groupName": "patch",
-      "schedule": [
-        "after 10pm and before 6:00am every day"
-      ],
-      "ignoreTests": true
+      "automerge": true
     },
     {
       "matchUpdateTypes": [
