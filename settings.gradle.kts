@@ -71,7 +71,7 @@ dependencyResolutionManagement {
             library("guava", "com.google.guava", "guava").version("33.3.1-jre")
             library("commons.io", "commons-io", "commons-io").version("2.17.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
-            library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.17.1")
+            library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.18.3")
 
             plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
