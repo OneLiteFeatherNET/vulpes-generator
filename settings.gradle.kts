@@ -62,7 +62,7 @@ dependencyResolutionManagement {
 
             library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("1.0.0-SNAPSHOT")
             library("vulpes.base", "dev.themeinerlp", "vulpes-base").version("1.0-SNAPSHOT+95bd27ce")
-            library("jetbrains.annotation", "org.jetbrains", "annotations").version("24.1.0")
+            library("jetbrains.annotation", "org.jetbrains", "annotations").version("26.0.2")
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
             library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.3.1")
 
