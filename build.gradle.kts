@@ -22,10 +22,7 @@ dependencies {
     implementation(mn.micronaut.data.processor)
     compileOnly(mn.micronaut.openapi.annotations)
 
-    implementation(libs.bundles.vulpes) {
-        exclude(group = "com.github.Minestom", module = "Minestom")
-        exclude(group = "net.worldseed.multipart", module = "WorldSeedEntityEngine")
-    }
+    implementation(libs.bundles.vulpes)
     implementation(libs.jetbrains.annotation)
     implementation(libs.javapoet)
     implementation(libs.microtus) {
