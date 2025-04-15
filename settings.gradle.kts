@@ -14,8 +14,8 @@ plugins {
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
         mavenCentral()
+        maven("https://reposilite.worldseed.online/public")
         maven {
             name = "OneLiteFeatherRepository"
             url = uri("https://repo.onelitefeather.dev/onelitefeather")
@@ -35,12 +35,14 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             version("micronaut", "4.4.4")
+            version("vulpes.base", "0.5.0")
+            version("vulpes.model", "1.0.1")
 
-            library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("1.0.0-SNAPSHOT")
-            library("vulpes.base", "dev.themeinerlp", "vulpes-base").version("1.0-SNAPSHOT+95bd27ce")
+            library("vulpes.model", "net.theevilreaper.vulpes.api", "vulpes-model").versionRef("vulpes.model")
+            library("vulpes.base", "net.thevilreaper.vulpes.base", "vulpes").versionRef("vulpes.base")
             library("jetbrains.annotation", "org.jetbrains", "annotations").version("26.0.2")
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
-            library("microtus", "net.onelitefeather.microtus", "Minestom").version("1.3.1")
+            library("microtus", "net.onelitefeather.microtus", "Microtus").version("1.5.1")
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.0.0.202409031743-r")
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.9")
@@ -51,14 +53,7 @@ dependencyResolutionManagement {
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
 
-
-            bundle(
-                "vulpes",
-                listOf(
-                    "vulpes.api",
-                    "vulpes.base"
-                )
-            )
+            bundle("vulpes", listOf("vulpes.model", "vulpes.base"))
         }
     }
 }
