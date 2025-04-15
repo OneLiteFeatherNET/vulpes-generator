@@ -14,7 +14,7 @@ plugins {
 
 dependencyResolutionManagement {
     repositories {
-        maven {  }
+        mavenLocal()
         mavenCentral()
         maven {
             name = "OneLiteFeatherRepository"
@@ -34,7 +34,6 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            version("kotlin", "2.0.21")
             version("micronaut", "4.4.4")
 
             library("vulpes.api", "net.theevilreaper.vulpes.api", "vulpes-spring-api").version("1.0.0-SNAPSHOT")
@@ -48,25 +47,7 @@ dependencyResolutionManagement {
             library("guava", "com.google.guava", "guava").version("33.3.1-jre")
             library("commons.io", "commons-io", "commons-io").version("2.17.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
-            library("jackson", "com.fasterxml.jackson.module", "jackson-module-kotlin").version("2.18.3")
 
-            //Spring
-            library("spring.starter.web", "org.springframework.boot", "spring-boot-starter-web").withoutVersion()
-            library(
-                "spring.starter.data.mongodb",
-                "org.springframework.boot",
-                "spring-boot-starter-data-mongodb"
-            ).withoutVersion()
-            library(
-                "spring.starter.webflux",
-                "org.springframework.boot",
-                "spring-boot-starter-webflux"
-            ).withoutVersion()
-            library("spring.starter.cache", "org.springframework.boot", "spring-boot-starter-cache").withoutVersion()
-            library("spring.starter.log4j2", "org.springframework.boot", "spring-boot-starter-log4j2").withoutVersion()
-
-
-            plugin("kotlin", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
 
