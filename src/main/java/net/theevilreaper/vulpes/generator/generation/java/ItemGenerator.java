@@ -7,9 +7,9 @@ import com.squareup.javapoet.JavaFile;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.kyori.adventure.text.Component;
-import net.minestom.server.item.Enchantment;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.enchant.Enchantment;
 import net.theevilreaper.vulpes.api.model.ItemModel;
 import net.theevilreaper.vulpes.api.repository.ItemRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
@@ -31,7 +31,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
     private final ItemRepository itemRepository;
 
     @Inject
-    protected ItemGenerator(@NotNull ItemRepository itemRepository) {
+    public ItemGenerator(@NotNull ItemRepository itemRepository) {
         super("ItemRegistry", BASE_PACKAGE + ".item");
         this.itemRepository = itemRepository;
     }
@@ -57,10 +57,10 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
         ClassName itemStackClass = ClassName.get(ItemStack.class);
         ClassName materialClass = ClassName.get(Material.class);
 
-        models.stream().filter(itemModel -> itemModel.name() != null && !itemModel.name().isEmpty())
+        models.stream().filter(itemModel -> itemModel.getName() != null && !itemModel.getName().isEmpty())
                         .forEach(model -> {
-                            if (itemFields.containsKey(model.name())) return;
-                            Material material = model.material() == null ? Material.STONE : Material.fromNamespaceId(model.material());
+                            if (itemFields.containsKey(model.getName())) return;
+                            Material material = model.getMaterial() == null ? Material.STONE : Material.fromNamespaceId(model.getMaterial());
 
                             var initBlock = CodeBlock.builder();
 
@@ -70,8 +70,8 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
                                     materialClass,
                                     material.namespace().path().toUpperCase()
                             );
-                            if (model.amount() != 0) {
-                                initBlock.add(".amount(\\$L)", model.amount());
+                            if (model.getAmount() != 0) {
+                                initBlock.add(".amount(\\$L)", model.getAmount());
                             }
 
                           /*  if (model.hasMetadata()) {
@@ -106,7 +106,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
                                 init.add(metadata.build());
                             }*/
                             initBlock.add(".build()");
-                            itemFields.put(model.name(), FieldSpec.builder(itemStackClass, model.name())
+                            itemFields.put(model.getName(), FieldSpec.builder(itemStackClass, model.getName())
                                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                                     .initializer(initBlock.build())
                                     .build());
@@ -134,8 +134,8 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
      * @return the generated fields
      */
     private @NotNull String getDisplayName(@NotNull ItemModel itemModel) {
-        var displayName = itemModel.displayName() == null ? "" : itemModel.displayName();
-        return displayName.isEmpty() ? "No display name provided for " + itemModel.name() : displayName;
+        var displayName = itemModel.getDisplayName() == null ? "" : itemModel.getDisplayName();
+        return displayName.isEmpty() ? "No display name provided for " + itemModel.getName() : displayName;
     }
 
     /**
