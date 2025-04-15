@@ -1,7 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.kotlin)
     alias(libs.plugins.micronaut.application)
     alias(libs.plugins.micronaut.aot)
     jacoco
