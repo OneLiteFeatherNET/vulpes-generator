@@ -5,7 +5,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import net.minestom.server.attribute.Attribute;
+import net.minestom.server.entity.attribute.Attribute;
 import net.theevilreaper.vulpes.api.model.AttributeModel;
 import net.theevilreaper.vulpes.api.repository.AttributeRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
@@ -50,13 +50,13 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeModel> im
         Map<String, FieldSpec> fields = new HashMap<>();
 
         for (AttributeModel attributeModel : attributeModels) {
-            if (attributeModel.modelName() == null || attributeModel.modelName().isEmpty()) continue;
+            if (attributeModel.getModelName() == null || attributeModel.getName().isEmpty()) continue;
 
-            FieldSpec fieldSpec = FieldSpec.builder(attributeClass, attributeModel.name())
+            FieldSpec fieldSpec = FieldSpec.builder(attributeClass, attributeModel.getName())
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer("new \\$T(\\$S, \\$Lf, \\$Lf", attributeClass, attributeModel.name(), attributeModel.defaultValue(), attributeModel.maximumValue())
+                    .initializer("new \\$T(\\$S, \\$Lf, \\$Lf", attributeClass, attributeModel.getName(), attributeModel.getDefaultValue(), attributeModel.getMaximumValue())
                     .build();
-            fields.put(attributeModel.name(), fieldSpec);
+            fields.put(attributeModel.getName(), fieldSpec);
         }
 
         this.classBuilder.addFields(fields.values());

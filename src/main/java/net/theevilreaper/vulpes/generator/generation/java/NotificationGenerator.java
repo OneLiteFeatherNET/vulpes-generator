@@ -61,15 +61,15 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationMod
     private Map<String, FieldSpec> getFields(List<NotificationModel> models) {
         Map<String, FieldSpec> fields = new HashMap<>();
         ClassName className = ClassName.get(Advancement.class);
-        models.stream().filter(model -> model.name() == null || !model.modelName().isEmpty())
+        models.stream().filter(model -> model.getName() == null || !model.getModelName().isEmpty())
                 .forEach(model -> {
-                    if (fields.containsKey(model.name())) return;
-                    FrameType frameType = FrameType.valueOf(model.frameType().toUpperCase());
-                    String title = (model.title() == null || model.title().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.title());
-                    String description = (model.description() == null || model.description().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.description());
-                    Material material = (model.material() == null || model.material().isEmpty()) ? Material.STONE : Material.fromNamespaceId(model.material());
+                    if (fields.containsKey(model.getName())) return;
+                    FrameType frameType = FrameType.valueOf(model.getFrameType().toUpperCase());
+                    String title = (model.getTitle() == null || model.getTitle().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getTitle());
+                    String description = (model.getDescription() == null || model.getDescription().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getDescription());
+                    Material material = (model.getMaterial() == null || model.getMaterial().isEmpty()) ? Material.STONE : Material.fromNamespaceId(model.getMaterial());
                     FieldSpec field = FieldSpec.builder(
-                            className, model.name().toUpperCase()
+                            className, model.getName().toUpperCase()
                     )
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                             .initializer(
@@ -87,7 +87,7 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationMod
                                     )
                             )
                             .build();
-                    fields.put(model.name(), field);
+                    fields.put(model.getName(), field);
                 });
 
         return fields;
