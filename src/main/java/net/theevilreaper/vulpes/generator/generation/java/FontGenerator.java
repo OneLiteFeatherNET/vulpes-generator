@@ -51,27 +51,27 @@ public class FontGenerator extends AbstractCodeGenerator<FontModel> implements J
         var fields = new HashMap<String, FieldSpec>();
         ClassName fontClass = ClassName.get(FontSymbol.class);
         for (FontModel model : models) {
-            if (model.name() == null || model.name().isEmpty() || model.chars().isEmpty()) continue;
+            if (model.getName() == null || model.getName().isEmpty() || model.getChars().isEmpty()) continue;
 
             var fontCode = CodeBlock.builder();
 
             fontCode.add("\\$T.builder()", FontSymbol.class);
-            fontCode.add(".symbols(\\$L)", model.chars().toArray());
+            fontCode.add(".symbols(\\$L)", model.getChars().toArray());
 
-            if (model.ascent() != 0) {
-                fontCode.add(".ascent(\\$L)", model.ascent());
+            if (model.getAscent() != 0) {
+                fontCode.add(".ascent(\\$L)", model.getAscent());
             }
 
-            if (model.height() != 0) {
-                fontCode.add(".height(\\$L)", model.height());
+            if (model.getHeight() != 0) {
+                fontCode.add(".height(\\$L)", model.getHeight());
             }
 
-            if (model.shift() != null && !model.shift().isEmpty()) {
-                fontCode.add(".shift(\\$L)", model.shift());
+            if (model.getShift() != null && !model.getShift().isEmpty()) {
+                fontCode.add(".shift(\\$L)", model.getShift());
             }
 
-            FieldSpec fieldValue = FieldSpec.builder(fontClass, model.name()).build();
-            fields.put(model.name(), fieldValue);
+            FieldSpec fieldValue = FieldSpec.builder(fontClass, model.getName()).build();
+            fields.put(model.getName(), fieldValue);
         }
 
         return fields;
