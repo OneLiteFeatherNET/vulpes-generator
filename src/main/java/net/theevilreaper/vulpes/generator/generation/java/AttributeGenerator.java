@@ -50,13 +50,19 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeModel> im
         Map<String, FieldSpec> fields = new HashMap<>();
 
         for (AttributeModel attributeModel : attributeModels) {
-            if (attributeModel.getModelName() == null || attributeModel.getName().isEmpty()) continue;
+            String attributeName = attributeModel.getName();
+            if (attributeModel.getModelName() == null || attributeName.isEmpty()) continue;
 
-            FieldSpec fieldSpec = FieldSpec.builder(attributeClass, attributeModel.getName())
+            FieldSpec fieldSpec = FieldSpec.builder(attributeClass, attributeName)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer("new \\$T(\\$S, \\$Lf, \\$Lf", attributeClass, attributeModel.getName(), attributeModel.getDefaultValue(), attributeModel.getMaximumValue())
+                    .initializer("new \\$T(\\$S, \\$Lf, \\$Lf",
+                            attributeClass,
+                            attributeName,
+                            attributeModel.getDefaultValue(),
+                            attributeModel.getMaximumValue()
+                    )
                     .build();
-            fields.put(attributeModel.getName(), fieldSpec);
+            fields.put(attributeName, fieldSpec);
         }
 
         this.classBuilder.addFields(fields.values());
