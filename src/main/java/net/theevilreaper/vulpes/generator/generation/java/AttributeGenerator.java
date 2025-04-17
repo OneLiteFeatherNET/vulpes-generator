@@ -34,7 +34,7 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeModel> im
     }
 
     @Override
-    protected List<AttributeModel> getModels() {
+    protected @NotNull List<AttributeModel> getModels() {
         return this.attributeRepository.findAll();
     }
 
@@ -43,7 +43,7 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeModel> im
         List<AttributeModel> attributeModels = this.getModels();
 
         if (attributeModels.isEmpty()) {
-            logger.info("No attributes found. Skipping the generation");
+            LOGGER.info("No attributes found. Skipping the generation");
             return;
         }
 

@@ -37,7 +37,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
     }
 
     @Override
-    protected List<ItemModel> getModels() {
+    protected @NotNull List<ItemModel> getModels() {
         return this.itemRepository.findAll();
     }
 

@@ -36,7 +36,7 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationMod
     }
 
     @Override
-    protected List<NotificationModel> getModels() {
+    protected @NotNull List<NotificationModel> getModels() {
         return this.notificationRepository.findAll();
     }
 

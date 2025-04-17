@@ -29,7 +29,7 @@ public class FontGenerator extends AbstractCodeGenerator<FontModel> implements J
     }
 
     @Override
-    protected List<FontModel> getModels() {
+    protected @NotNull List<FontModel> getModels() {
         return this.fontRepository.findAll();
     }
 
