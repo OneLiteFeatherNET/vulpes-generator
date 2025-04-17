@@ -5,7 +5,7 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import jakarta.inject.Inject;
-import net.theevilreaper.vulpes.generator.object.BuildInformation;
+import net.theevilreaper.vulpes.generator.domain.build.BuildInformationDTO;
 import net.theevilreaper.vulpes.generator.properties.GitlabProperties;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
@@ -36,7 +36,7 @@ public class BuildInformationHandler {
     }
 
     @Get(value = "/data", produces = MediaType.APPLICATION_JSON)
-    public @NotNull HttpResponse<BuildInformation> getBuildInformation() throws GitLabApiException {
+    public @NotNull HttpResponse<BuildInformationDTO> getBuildInformation() throws GitLabApiException {
         ProjectApi projectApi = gitLabApi.getProjectApi();
         List<Project> projects = projectApi.getProjects("aves");
 
@@ -44,12 +44,12 @@ public class BuildInformationHandler {
         Pager<Package> latestReleases = gitLabApi.getPackagesApi().getPackages(avesProject.getId(), standardFilter, 1);
 
         if (!latestReleases.hasNext()) {
-            return HttpResponse.ok(new BuildInformation(Map.of("error", "No releases found")));
+            return HttpResponse.ok(new BuildInformationDTO(Map.of("error", "No releases found")));
         }
         Package release = latestReleases.first().getFirst();
         Map<String, String> data = new HashMap<>();
         data.put("version", release.getVersion());
         data.put("created", release.getCreatedAt().toString());
-        return HttpResponse.ok(new BuildInformation(data));
+        return HttpResponse.ok(new BuildInformationDTO(data));
     }
 }
