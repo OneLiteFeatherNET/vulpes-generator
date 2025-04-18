@@ -47,7 +47,7 @@ dependencyResolutionManagement {
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.0.0.202409031743-r")
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.9")
             library("guava", "com.google.guava", "guava").version("33.3.1-jre")
-            library("commons.io", "commons-io", "commons-io").version("2.17.0")
+            library("commons.io", "commons-io", "commons-io").version("2.19.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
 
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
