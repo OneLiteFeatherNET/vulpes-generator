@@ -45,7 +45,7 @@ dependencyResolutionManagement {
             library("microtus", "net.onelitefeather.microtus", "Microtus").version("1.5.1")
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.0.0.202409031743-r")
-            library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.9")
+            library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.10")
             library("guava", "com.google.guava", "guava").version("33.4.8-jre")
             library("commons.io", "commons-io", "commons-io").version("2.19.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
