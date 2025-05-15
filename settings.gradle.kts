@@ -44,7 +44,7 @@ dependencyResolutionManagement {
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
             library("microtus", "net.onelitefeather.microtus", "Microtus").version("1.5.1")
 
-            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.2.0.202503040940-r")
+            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.2.1.202505142326-r")
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0-rc.10")
             library("guava", "com.google.guava", "guava").version("33.4.8-jre")
             library("commons.io", "commons-io", "commons-io").version("2.19.0")
