@@ -21,7 +21,7 @@ dependencies {
 
     compileOnly(mn.micronaut.openapi.annotations)
 
-    annotationProcessor("io.micronaut:micronaut-inject-java:4.8.13")
+    annotationProcessor("io.micronaut:micronaut-inject-java:4.8.14")
     implementation(mn.micronaut.data.processor)
 
 
