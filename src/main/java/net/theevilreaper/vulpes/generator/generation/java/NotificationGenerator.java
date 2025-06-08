@@ -67,7 +67,7 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationEnt
                     FrameType frameType = FrameType.valueOf(model.getFrameType().toUpperCase());
                     String title = (model.getTitle() == null || model.getTitle().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getTitle());
                     String description = (model.getDescription() == null || model.getDescription().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getDescription());
-                    Material material = (model.getMaterial() == null || model.getMaterial().isEmpty()) ? Material.STONE : Material.fromNamespaceId(model.getMaterial());
+                    Material material = (model.getMaterial() == null || model.getMaterial().isEmpty()) ? Material.STONE : Material.fromKey(model.getMaterial());
                     FieldSpec field = FieldSpec.builder(
                             className, model.getName().toUpperCase()
                     )

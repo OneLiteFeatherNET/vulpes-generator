@@ -22,14 +22,12 @@ dependencies {
 
     compileOnly(mn.micronaut.openapi.annotations)
 
+    implementation(platform(libs.mycelium.bom))
     implementation(mn.micronaut.data.processor)
     implementation(libs.bundles.vulpes)
     implementation(libs.jetbrains.annotation)
     implementation(libs.javapoet)
-    implementation(libs.microtus) {
-        exclude(group = "org.tinylog", module = "slf4j-tinylog")
-    }
-
+    implementation(libs.minestom)
     //Micronaut
     implementation(mn.micronaut.runtime)
     implementation(mn.validation)
