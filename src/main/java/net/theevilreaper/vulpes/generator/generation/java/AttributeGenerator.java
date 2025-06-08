@@ -6,8 +6,8 @@ import com.squareup.javapoet.JavaFile;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.minestom.server.entity.attribute.Attribute;
-import net.theevilreaper.vulpes.api.model.AttributeModel;
-import net.theevilreaper.vulpes.api.repository.AttributeRepository;
+import net.onelitefeather.vulpes.api.model.AttributeEntity;
+import net.onelitefeather.vulpes.api.repository.AttributeRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +21,7 @@ import java.util.Map;
 import static net.theevilreaper.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
 @Singleton
-public class AttributeGenerator extends AbstractCodeGenerator<AttributeModel> implements JavaStructure {
+public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> implements JavaStructure {
 
     private final AttributeRepository attributeRepository;
     private final ClassName attributeClass;
@@ -34,13 +34,13 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeModel> im
     }
 
     @Override
-    protected List<AttributeModel> getModels() {
+    protected List<AttributeEntity> getModels() {
         return this.attributeRepository.findAll();
     }
 
     @Override
     public void generate(@NotNull Path javaPath) {
-        List<AttributeModel> attributeModels = this.getModels();
+        List<AttributeEntity> attributeModels = this.getModels();
 
         if (attributeModels.isEmpty()) {
             logger.info("No attributes found. Skipping the generation");
@@ -49,7 +49,7 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeModel> im
 
         Map<String, FieldSpec> fields = new HashMap<>();
 
-        for (AttributeModel attributeModel : attributeModels) {
+        for (AttributeEntity attributeModel : attributeModels) {
             String attributeName = attributeModel.getName();
             if (attributeModel.getModelName() == null || attributeName.isEmpty()) continue;
 

@@ -10,8 +10,8 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.enchant.Enchantment;
-import net.theevilreaper.vulpes.api.model.ItemModel;
-import net.theevilreaper.vulpes.api.repository.ItemRepository;
+import net.onelitefeather.vulpes.api.model.ItemEntity;
+import net.onelitefeather.vulpes.api.repository.ItemRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +26,7 @@ import java.util.Map;
 import static net.theevilreaper.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
 @Singleton
-public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implements JavaStructure {
+public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements JavaStructure {
 
     private final ItemRepository itemRepository;
 
@@ -37,13 +37,13 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
     }
 
     @Override
-    protected List<ItemModel> getModels() {
+    protected List<ItemEntity> getModels() {
         return this.itemRepository.findAll();
     }
 
     @Override
     public void generate(@NotNull Path javaPath) {
-        List<ItemModel> models = getModels();
+        List<ItemEntity> models = getModels();
 
         if (models.isEmpty()) return;
 
@@ -133,7 +133,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemModel> implem
      * @param itemModel the models to generate the fields for
      * @return the generated fields
      */
-    private @NotNull String getDisplayName(@NotNull ItemModel itemModel) {
+    private @NotNull String getDisplayName(@NotNull ItemEntity itemModel) {
         var displayName = itemModel.getDisplayName() == null ? "" : itemModel.getDisplayName();
         return displayName.isEmpty() ? "No display name provided for " + itemModel.getName() : displayName;
     }
