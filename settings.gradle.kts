@@ -15,7 +15,7 @@ plugins {
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        maven("https://reposilite.worldseed.online/public")
+        maven("https://reposilite.atlasengine.ca/public")
         maven {
             name = "OneLiteFeatherRepository"
             url = uri("https://repo.onelitefeather.dev/onelitefeather")
