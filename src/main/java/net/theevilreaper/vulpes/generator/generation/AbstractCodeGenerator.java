@@ -3,7 +3,7 @@ package net.theevilreaper.vulpes.generator.generation;
 import com.google.common.base.CaseFormat;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
-import net.theevilreaper.vulpes.api.model.VulpesModel;
+import net.onelitefeather.vulpes.api.model.VulpesModel;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

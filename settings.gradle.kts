@@ -36,9 +36,9 @@ dependencyResolutionManagement {
         create("libs") {
             version("micronaut", "4.5.3")
             version("vulpes.base", "0.5.1")
-            version("vulpes.model", "1.1.0")
+            version("vulpes.model", "1.2.0")
 
-            library("vulpes.model", "net.theevilreaper.vulpes.api", "vulpes-model").versionRef("vulpes.model")
+            library("vulpes.model", "net.onelitefeather.vulpes", "vulpes-model").versionRef("vulpes.model")
             library("vulpes.base", "net.theevilreaper.vulpes.base", "vulpes").versionRef("vulpes.base")
             library("jetbrains.annotation", "org.jetbrains", "annotations").version("26.0.2")
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")

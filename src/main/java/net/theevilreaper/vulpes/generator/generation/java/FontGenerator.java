@@ -5,8 +5,8 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import net.theevilreaper.vulpes.api.model.FontModel;
-import net.theevilreaper.vulpes.api.repository.FontRepository;
+import net.onelitefeather.vulpes.api.model.FontEntity;
+import net.onelitefeather.vulpes.api.repository.FontRepository;
 import net.theevilreaper.vulpes.font.FontSymbol;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @Singleton
-public class FontGenerator extends AbstractCodeGenerator<FontModel> implements JavaStructure {
+public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements JavaStructure {
 
     private final FontRepository fontRepository;
 
@@ -29,7 +29,7 @@ public class FontGenerator extends AbstractCodeGenerator<FontModel> implements J
     }
 
     @Override
-    protected List<FontModel> getModels() {
+    protected List<FontEntity> getModels() {
         return this.fontRepository.findAll();
     }
 
@@ -47,11 +47,11 @@ public class FontGenerator extends AbstractCodeGenerator<FontModel> implements J
         this.classBuilder.addFields(fieldSpecs);
     }
 
-    private @NotNull Map<String, FieldSpec> generateFonts(@NotNull List<FontModel> models) {
+    private @NotNull Map<String, FieldSpec> generateFonts(@NotNull List<FontEntity> models) {
         var fields = new HashMap<String, FieldSpec>();
         ClassName fontClass = ClassName.get(FontSymbol.class);
-        for (FontModel model : models) {
-            if (model.getName() == null || model.getName().isEmpty() || model.getChars().isEmpty()) continue;
+        for (FontEntity model : models) {
+            if (model.getVariableName() == null || model.getVariableName().isEmpty() || model.getChars().isEmpty()) continue;
 
             var fontCode = CodeBlock.builder();
 
@@ -66,12 +66,8 @@ public class FontGenerator extends AbstractCodeGenerator<FontModel> implements J
                 fontCode.add(".height(\\$L)", model.getHeight());
             }
 
-            if (model.getShift() != null && !model.getShift().isEmpty()) {
-                fontCode.add(".shift(\\$L)", model.getShift());
-            }
-
-            FieldSpec fieldValue = FieldSpec.builder(fontClass, model.getName()).build();
-            fields.put(model.getName(), fieldValue);
+            FieldSpec fieldValue = FieldSpec.builder(fontClass, model.getVariableName()).build();
+            fields.put(model.getVariableName(), fieldValue);
         }
 
         return fields;

@@ -1,6 +1,6 @@
 package net.theevilreaper.vulpes.generator.registry;
 
-import net.theevilreaper.vulpes.api.model.VulpesModel;
+import net.onelitefeather.vulpes.api.model.VulpesModel;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnmodifiableView;

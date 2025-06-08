@@ -10,8 +10,8 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.advancements.Advancement;
 import net.minestom.server.advancements.FrameType;
 import net.minestom.server.item.Material;
-import net.theevilreaper.vulpes.api.model.NotificationModel;
-import net.theevilreaper.vulpes.api.repository.NotificationRepository;
+import net.onelitefeather.vulpes.api.model.NotificationEntity;
+import net.onelitefeather.vulpes.api.repository.NotificationRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ import java.util.Map;
 import static net.theevilreaper.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
 @Singleton
-public class NotificationGenerator extends AbstractCodeGenerator<NotificationModel> implements JavaStructure {
+public class NotificationGenerator extends AbstractCodeGenerator<NotificationEntity> implements JavaStructure {
 
     private final NotificationRepository notificationRepository;
 
@@ -36,7 +36,7 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationMod
     }
 
     @Override
-    protected List<NotificationModel> getModels() {
+    protected List<NotificationEntity> getModels() {
         return this.notificationRepository.findAll();
     }
 
@@ -58,7 +58,7 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationMod
         writeFiles(List.of(javaFile), javaPath);
     }
 
-    private Map<String, FieldSpec> getFields(List<NotificationModel> models) {
+    private Map<String, FieldSpec> getFields(List<NotificationEntity> models) {
         Map<String, FieldSpec> fields = new HashMap<>();
         ClassName className = ClassName.get(Advancement.class);
         models.stream().filter(model -> model.getName() == null || !model.getModelName().isEmpty())
