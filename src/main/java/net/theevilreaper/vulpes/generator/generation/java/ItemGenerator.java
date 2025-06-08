@@ -60,7 +60,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
         models.stream().filter(itemModel -> itemModel.getName() != null && !itemModel.getName().isEmpty())
                         .forEach(model -> {
                             if (itemFields.containsKey(model.getName())) return;
-                            Material material = model.getMaterial() == null ? Material.STONE : Material.fromNamespaceId(model.getMaterial());
+                            Material material = model.getMaterial() == null ? Material.STONE : Material.fromKey(model.getMaterial());
 
                             var initBlock = CodeBlock.builder();
 
@@ -68,7 +68,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                                     "\\$T.builder(\\$T.\\$L)",
                                     itemStackClass,
                                     materialClass,
-                                    material.namespace().path().toUpperCase()
+                                    material
                             );
                             if (model.getAmount() != 0) {
                                 initBlock.add(".amount(\\$L)", model.getAmount());
