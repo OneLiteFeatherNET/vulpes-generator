@@ -18,13 +18,11 @@ dependencies {
     annotationProcessor(mn.micronaut.http.validation)
     annotationProcessor(mn.micronaut.data.processor)
     annotationProcessor(mn.micronaut.openapi)
+    annotationProcessor("io.micronaut:micronaut-inject-java:4.8.14")
 
     compileOnly(mn.micronaut.openapi.annotations)
 
-    annotationProcessor("io.micronaut:micronaut-inject-java:4.8.14")
     implementation(mn.micronaut.data.processor)
-
-
     implementation(libs.bundles.vulpes)
     implementation(libs.jetbrains.annotation)
     implementation(libs.javapoet)
