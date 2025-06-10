@@ -18,7 +18,7 @@ dependencies {
     annotationProcessor(mn.micronaut.http.validation)
     annotationProcessor(mn.micronaut.data.processor)
     annotationProcessor(mn.micronaut.openapi)
-    annotationProcessor("io.micronaut:micronaut-inject-java:4.8.15")
+    annotationProcessor("io.micronaut:micronaut-inject-java:4.8.16")
 
     compileOnly(mn.micronaut.openapi.annotations)
 
