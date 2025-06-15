@@ -47,7 +47,7 @@ dependencyResolutionManagement {
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
             library("minestom","net.minestom", "minestom-snapshots").withoutVersion()
 
-            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.2.1.202505142326-r")
+            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.3.0.202506031305-r")
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0")
             library("guava", "com.google.guava", "guava").version("33.4.8-jre")
             library("commons.io", "commons-io", "commons-io").version("2.19.0")
