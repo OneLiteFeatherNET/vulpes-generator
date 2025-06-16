@@ -47,7 +47,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
 
         if (models.isEmpty()) return;
 
-               // this.classSpec.addJavadoc(defaultDocumentation)
+        // this.classSpec.addJavadoc(defaultDocumentation)
         addClassModifiers(this.classBuilder);
         addJetbrainsAnnotation(this.classBuilder);
         addPrivateDefaultConstructor(this.classBuilder);
@@ -57,22 +57,25 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
         ClassName itemStackClass = ClassName.get(ItemStack.class);
         ClassName materialClass = ClassName.get(Material.class);
 
-        models.stream().filter(itemModel -> itemModel.getName() != null && !itemModel.getName().isEmpty())
-                        .forEach(model -> {
-                            if (itemFields.containsKey(model.getName())) return;
-                            Material material = model.getMaterial() == null ? Material.STONE : Material.fromKey(model.getMaterial());
+        models.stream().filter(itemModel -> {
+                    String variableName = itemModel.getVariableName();
+                    return variableName != null && !variableName.isEmpty();
+                })
+                .forEach(model -> {
+                    if (itemFields.containsKey(model.getVariableName())) return;
+                    Material material = model.getMaterial() == null ? Material.STONE : Material.fromKey(model.getMaterial());
 
-                            var initBlock = CodeBlock.builder();
+                    var initBlock = CodeBlock.builder();
 
-                            initBlock.add(
-                                    "\\$T.builder(\\$T.\\$L)",
-                                    itemStackClass,
-                                    materialClass,
-                                    material
-                            );
-                            if (model.getAmount() != 0) {
-                                initBlock.add(".amount(\\$L)", model.getAmount());
-                            }
+                    initBlock.add(
+                            "\\$T.builder(\\$T.\\$L)",
+                            itemStackClass,
+                            materialClass,
+                            material
+                    );
+                    if (model.getAmount() != 0) {
+                        initBlock.add(".amount(\\$L)", model.getAmount());
+                    }
 
                           /*  if (model.hasMetadata()) {
                                 val metadata = CodeBlock.builder();
@@ -105,12 +108,12 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                                 metadata.add(")");
                                 init.add(metadata.build());
                             }*/
-                            initBlock.add(".build()");
-                            itemFields.put(model.getName(), FieldSpec.builder(itemStackClass, model.getName())
-                                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                                    .initializer(initBlock.build())
-                                    .build());
-                        });
+                    initBlock.add(".build()");
+                    itemFields.put(model.getVariableName(), FieldSpec.builder(itemStackClass, model.getVariableName())
+                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                            .initializer(initBlock.build())
+                            .build());
+                });
 
         filesToGenerate.clear();
         this.classBuilder.addFields(itemFields.values());
@@ -135,7 +138,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
      */
     private @NotNull String getDisplayName(@NotNull ItemEntity itemModel) {
         var displayName = itemModel.getDisplayName() == null ? "" : itemModel.getDisplayName();
-        return displayName.isEmpty() ? "No display name provided for " + itemModel.getName() : displayName;
+        return displayName.isEmpty() ? "No display name provided for " + itemModel.getUiName() : displayName;
     }
 
     /**

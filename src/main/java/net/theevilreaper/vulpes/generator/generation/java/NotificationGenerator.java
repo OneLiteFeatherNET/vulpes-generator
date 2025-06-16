@@ -61,15 +61,15 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationEnt
     private Map<String, FieldSpec> getFields(List<NotificationEntity> models) {
         Map<String, FieldSpec> fields = new HashMap<>();
         ClassName className = ClassName.get(Advancement.class);
-        models.stream().filter(model -> model.getName() == null || !model.getModelName().isEmpty())
+        models.stream().filter(model -> model.getVariableName() == null || !model.getVariableName().isEmpty())
                 .forEach(model -> {
-                    if (fields.containsKey(model.getName())) return;
+                    if (fields.containsKey(model.getVariableName())) return;
                     FrameType frameType = FrameType.valueOf(model.getFrameType().toUpperCase());
                     String title = (model.getTitle() == null || model.getTitle().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getTitle());
-                    String description = (model.getDescription() == null || model.getDescription().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getDescription());
+                    String description = (model.getComment() == null || model.getComment().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getComment());
                     Material material = (model.getMaterial() == null || model.getMaterial().isEmpty()) ? Material.STONE : Material.fromKey(model.getMaterial());
                     FieldSpec field = FieldSpec.builder(
-                            className, model.getName().toUpperCase()
+                            className, model.getVariableName().toUpperCase()
                     )
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                             .initializer(
@@ -87,7 +87,7 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationEnt
                                     )
                             )
                             .build();
-                    fields.put(model.getName(), field);
+                    fields.put(model.getVariableName(), field);
                 });
 
         return fields;

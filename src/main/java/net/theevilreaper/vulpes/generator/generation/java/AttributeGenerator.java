@@ -50,8 +50,8 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
         Map<String, FieldSpec> fields = new HashMap<>();
 
         for (AttributeEntity attributeModel : attributeModels) {
-            String attributeName = attributeModel.getName();
-            if (attributeModel.getModelName() == null || attributeName.isEmpty()) continue;
+            String attributeName = attributeModel.getVariableName();
+            if (attributeName.isEmpty()) continue;
 
             FieldSpec fieldSpec = FieldSpec.builder(attributeClass, attributeName)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
