@@ -14,15 +14,6 @@
         "patch"
       ],
       "automerge": true
-    },
-    {
-      "matchUpdateTypes": [
-        "minor"
-      ],
-      "automerge": false,
-      "schedule": [
-        "before 6:00am every friday"
-      ]
     }
   ]
 }
