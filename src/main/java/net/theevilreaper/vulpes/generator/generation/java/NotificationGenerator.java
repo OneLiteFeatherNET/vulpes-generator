@@ -14,6 +14,8 @@ import net.onelitefeather.vulpes.api.model.NotificationEntity;
 import net.onelitefeather.vulpes.api.repository.NotificationRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
+import net.theevilreaper.vulpes.generator.util.FrameTypeParser;
+import net.theevilreaper.vulpes.generator.util.MaterialParser;
 import org.jetbrains.annotations.NotNull;
 
 import javax.lang.model.element.Modifier;
@@ -61,13 +63,13 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationEnt
     private Map<String, FieldSpec> getFields(List<NotificationEntity> models) {
         Map<String, FieldSpec> fields = new HashMap<>();
         ClassName className = ClassName.get(Advancement.class);
-        models.stream().filter(model -> model.getVariableName() == null || !model.getVariableName().isEmpty())
+        models.stream().filter(this::filterByVariableName)
                 .forEach(model -> {
                     if (fields.containsKey(model.getVariableName())) return;
-                    FrameType frameType = FrameType.valueOf(model.getFrameType().toUpperCase());
+                    FrameType frameType = FrameTypeParser.fromKey(model.getFrameType());
                     String title = (model.getTitle() == null || model.getTitle().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getTitle());
                     String description = (model.getComment() == null || model.getComment().isEmpty()) ? EMPTY_COMPONENT : getTextContent(model.getComment());
-                    Material material = (model.getMaterial() == null || model.getMaterial().isEmpty()) ? Material.STONE : Material.fromKey(model.getMaterial());
+                    Material material = MaterialParser.fromKey(model.getMaterial());
                     FieldSpec field = FieldSpec.builder(
                             className, model.getVariableName().toUpperCase()
                     )
@@ -91,6 +93,10 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationEnt
                 });
 
         return fields;
+    }
+
+    private boolean filterByVariableName(@NotNull NotificationEntity model) {
+        return model.getVariableName() != null && !model.getVariableName().isEmpty();
     }
 
     @Override

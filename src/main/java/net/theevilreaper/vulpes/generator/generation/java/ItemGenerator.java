@@ -14,6 +14,7 @@ import net.onelitefeather.vulpes.api.model.ItemEntity;
 import net.onelitefeather.vulpes.api.repository.ItemRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
+import net.theevilreaper.vulpes.generator.util.MaterialParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,7 +64,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                 })
                 .forEach(model -> {
                     if (itemFields.containsKey(model.getVariableName())) return;
-                    Material material = model.getMaterial() == null ? Material.STONE : Material.fromKey(model.getMaterial());
+                    Material material = MaterialParser.fromKey(model.getMaterial());
 
                     var initBlock = CodeBlock.builder();
 
