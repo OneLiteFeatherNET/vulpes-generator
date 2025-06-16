@@ -36,7 +36,7 @@ dependencyResolutionManagement {
         create("libs") {
             version("micronaut", "4.5.3")
             version("vulpes.base", "0.5.1")
-            version("vulpes.model", "1.2.0")
+            version("vulpes.model", "1.3.0")
             version("mycelium", "1.2.3")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
