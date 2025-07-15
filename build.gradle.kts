@@ -4,9 +4,6 @@ plugins {
     jacoco
 }
 
-group = "net.theevilreaper"
-version = "0.0.1-SNAPSHOT"
-
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
@@ -98,7 +95,7 @@ tasks {
 }
 
 application {
-    mainClass = "net.theevilreaper.vulpes.generator.GeneratorApplication"
+    mainClass = "net.onelitefeather.vulpes.generator.VulpesGenerator"
 }
 
 graalvmNative.toolchainDetection = false
@@ -109,8 +106,7 @@ micronaut {
     processing {
         incremental(true)
         annotations(
-            "net.theevilreaper.vulpes.api.*",
-            "net.theevilreaper.vulpes.generator.*",
+            "net.onelitefeather.vulpes.generator.*"
         )
     }
     aot {

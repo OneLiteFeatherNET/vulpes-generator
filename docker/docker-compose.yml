@@ -1,18 +1,12 @@
-# docker compose up -d
 services:
-  mariadb:
-    image: mariadb
-    container_name: 'mariadb_vulpes'
+  mariadb_vulpes:
+    image: mariadb:latest
+    container_name: mariadb_vulpes
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: vulpes
+      MYSQL_DATABASE: vulpes
     ports:
       - "3336:3306"
-    shm_size: 128mb
-    environment:
-      MARIADB_ROOT_PASSWORD: vulpes
-      MARIADB_DATABASE: vulpes
     volumes:
-      - ./mariadb/data/:/var/lib/mysql
-    networks:
-      - vulpes_go_net
-networks:
-  vulpes_go_net:
-    driver: bridge
+      - ./mariadb_data:/var/lib/mysql
