@@ -12,9 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.git.GitWorker;
 import net.theevilreaper.vulpes.generator.properties.CommitProperties;
-import net.theevilreaper.vulpes.generator.registry.RegistryProvider;
-import net.theevilreaper.vulpes.generator.util.BranchFilter;
-import net.theevilreaper.vulpes.generator.util.FileHelper;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
@@ -23,11 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
 import java.nio.file.Files;
 import java.util.Map;
 
@@ -36,52 +30,16 @@ import static net.theevilreaper.vulpes.generator.util.Constants.*;
 @Controller("/generator")
 public class CodeGenerationHandler {
 
-    private final RegistryProvider registryProvider;
     private final CommitProperties commitProperties;
     private final GitWorker gitWorker;
 
     @Inject
     public CodeGenerationHandler(
-            @NotNull RegistryProvider registryProvider,
             @NotNull CommitProperties commitProperties,
             @NotNull GitWorker gitWorker
     ) {
-        this.registryProvider = registryProvider;
         this.commitProperties = commitProperties;
         this.gitWorker = gitWorker;
-    }
-
-    @Operation(
-            summary = "Get all branches",
-            description = "Returns a list of all branches in the git repository, excluding renovate branches.",
-            tags = {"Branches"}
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "An error occurred while retrieving branches",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = String.class)
-            )
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Branches retrieved successfully",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = List.class)
-            )
-    )
-    @Get(value = "/branches", produces = "application/json")
-    public HttpResponse<List<String>> getBranches(@QueryValue(value = "full", defaultValue = "false") boolean full) {
-        List<String> gitRefs = gitWorker.getGitRefs();
-        List<String> filtered = BranchFilter.filterBranches(gitRefs, string -> !string.contains("/renovate"));
-
-        if (full) {
-            return HttpResponse.ok(filtered).contentType(MediaType.APPLICATION_JSON);
-        }
-        List<String> branches = filtered.stream().map(string -> string.replace("refs/heads/", EMPTY_STRING)).toList();
-        return HttpResponse.ok(branches).contentType(MediaType.APPLICATION_JSON);
     }
 
     @Operation(
@@ -161,78 +119,5 @@ public class CodeGenerationHandler {
         PushCommand push = git.push();
         gitWorker.push(push);
         return HttpResponse.ok().contentType(MediaType.APPLICATION_JSON);
-    }
-
-    @Operation(
-            summary = "Download a generated vulpes code base",
-            description = "Downloads a zip file containing the generated vulpes code base from the specified branch.",
-            tags = {"download"}
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "The download was successful",
-            content = @Content(
-                    mediaType = "application/octet-stream",
-                    schema = @Schema(implementation = File.class)
-            )
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "An error occurred during download",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = String.class)
-            )
-    )
-    @Get(value = "/download", produces = "application/octet-stream")
-    public @NotNull HttpResponse<File> download(
-            @QueryValue(value = "branch", defaultValue = "master") String branch
-    ) {
-        Path tempPath = null;
-        try {
-            tempPath = Files.createTempDirectory(TEMP_PREFIX);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        var output = tempPath.resolve(OUT_PUT_FOLDER);
-        var zipFile = tempPath.resolve(OUT_PUT_FOLDER + ".zip");
-        var javaPath = output.resolve(JAVA_MAIM_FOLDER);
-
-        try {
-            Files.createDirectories(output);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        gitWorker.cloneAndCheckout(branch, output);
-        var zipStream = getClass().getClassLoader().getResourceAsStream(ZIP_FILE_NAME);
-        if (zipStream != null) {
-            var buildGradle = output.resolve(GRADLE_PROPERTIES);
-            applyVulpesData(buildGradle);
-            registryProvider.getGeneratorRegistry().triggerAll(javaPath);
-            try {
-                Files.createFile(zipFile);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            FileHelper.zipFile(output, zipFile);
-        }
-        return HttpResponse.ok(zipFile.toFile()).contentType(MediaType.APPLICATION_OCTET_STREAM);
-    }
-
-    /**
-     * Applies some vulpes relevant data to a file from gradle.
-     *
-     * @param
-     */
-    private void applyVulpesData(Path buildGradle) {
-        /*buildGradle.let {
-            val properties = Properties()
-            properties.load(it.reader())
-            properties["vulpesGroupId"] = BASE_PACKAGE
-            properties["vulpesBaseUrl"] = this.properties.dependencyUrl
-            properties["vulpesVersion"] = version
-            properties.store(it.writer(), "Generated Config")
-        }*/
     }
 }
