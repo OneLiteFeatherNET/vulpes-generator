@@ -1,8 +1,6 @@
 package net.theevilreaper.vulpes.generator.git;
 
-import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
-import net.theevilreaper.vulpes.generator.properties.GitlabProperties;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
@@ -35,56 +33,45 @@ import java.util.Set;
  * gitWorker.cloneAndCheckout("main", Paths.get("/local/path"));
  * }
  * </pre>
- *
- * <p>
- * This class uses {@link GitlabProperties} for configuration and is managed as a singleton by Micronaut.
- * </p>
- *
- * @see GitlabProperties
  */
 @Singleton
-@Requires(beans = GitlabProperties.class) // Ensures GitWorker is only created if GitlabProperties exists
 public final class GitWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitWorker.class);
 
-    /**
-     * Default branches that will be cloned if none are specified in {@link GitlabProperties}.
-     */
     private static final Set<String> DEFAULT_BRANCHES = Set.of("master", "main", "develop");
 
-    private final GitlabProperties gitlabProperties;
     private final UsernamePasswordCredentialsProvider passwordCredentialsProvider;
 
     /**
      * Constructs a new GitWorker instance.
      *
-     * @param gitlabProperties The GitLab configuration properties injected by Micronaut.
+     * @param username the username
+     * @param password the password
      */
-    public GitWorker(@NotNull GitlabProperties gitlabProperties) {
-        this.gitlabProperties = gitlabProperties;
+    public GitWorker(@NotNull String username, @NotNull String password) {
         this.passwordCredentialsProvider = new UsernamePasswordCredentialsProvider(
-                gitlabProperties.user(),
-                gitlabProperties.password()
+                username,
+                password
         );
     }
 
     /**
      * Clones a remote Git repository and checks out the specified reference.
      * <p>
-     * This method attempts to clone the repository defined in {@link GitlabProperties#remoteUrl()} to
      * the given local path and then checks out the specified reference (branch, commit, or tag).
      * </p>
      *
-     * @param reference The reference (branch, commit hash, or tag) to check out.
-     * @param path      The local directory where the repository should be cloned.
+     * @param url       the URL of the remote Git repository to clone.
+     * @param reference the reference (branch, commit hash, or tag) to check out.
+     * @param path      the local directory where the repository should be cloned.
      */
-    public void cloneAndCheckout(@NotNull String reference, @NotNull Path path) {
+    public void cloneAndCheckout(@NotNull String url, @NotNull String reference, @NotNull Path path) {
         try {
             // Initialize the Git clone command with the necessary credentials
             CloneCommand rawGit = Git.cloneRepository()
                     .setCredentialsProvider(this.passwordCredentialsProvider)
-                    .setURI(gitlabProperties.remoteUrl())
+                    .setURI(url)
                     .setDirectory(path.toFile())
                     .setBranchesToClone(getBranches());
 
@@ -111,7 +98,7 @@ public final class GitWorker {
             return Git.lsRemoteRepository()
                     .setCredentialsProvider(passwordCredentialsProvider)
                     .setHeads(true)
-                    .setRemote(gitlabProperties.remoteUrl())
+                    .setRemote("")
                     .call()
                     .stream().map(Ref::getName).toList();
         } catch (Exception exception) {
@@ -123,11 +110,10 @@ public final class GitWorker {
         return Git.cloneRepository()
                 .setCredentialsProvider(passwordCredentialsProvider)
                 .setDirectory(output.toFile())
-                .setCloneAllBranches(true) ;
+                .setCloneAllBranches(true);
     }
 
     /**
-     *
      * @param git
      */
     public void push(@NotNull PushCommand git) {
@@ -138,20 +124,12 @@ public final class GitWorker {
         }
     }
 
-    public @NotNull String getDeployUrl() {
-        return this.gitlabProperties.deployUrl();
-    }
-
     /**
      * Retrieves the list of branches that should be cloned from the remote repository.
-     * <p>
-     * If no branches are explicitly configured in {@link GitlabProperties#branches()},
-     * the default branches ("master", "main", "develop") will be used.
-     * </p>
-     *
-     * @return A collection of branch names to be cloned.
+     * @return a collection of branch names to be cloned.
      */
     private @NotNull Collection<String> getBranches() {
-        return this.gitlabProperties.branches().isEmpty() ? DEFAULT_BRANCHES : this.gitlabProperties.branches();
+        return DEFAULT_BRANCHES;
+        // return this.gitlabProperties.branches().isEmpty() ? DEFAULT_BRANCHES : this.gitlabProperties.branches();
     }
 }
