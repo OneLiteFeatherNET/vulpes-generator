@@ -5,6 +5,10 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.QueryValue;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.git.GitWorker;
 import net.theevilreaper.vulpes.generator.properties.CommitProperties;
@@ -47,6 +51,27 @@ public class CodeGenerationHandler {
         this.gitWorker = gitWorker;
     }
 
+    @Operation(
+            summary = "Get all branches",
+            description = "Returns a list of all branches in the git repository, excluding renovate branches.",
+            tags = {"Branches"}
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "An error occurred while retrieving branches",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = String.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Branches retrieved successfully",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class)
+            )
+    )
     @Get(value = "/branches", produces = "application/json")
     public HttpResponse<List<String>> getBranches(@QueryValue(value = "full", defaultValue = "false") boolean full) {
         List<String> gitRefs = gitWorker.getGitRefs();
@@ -59,6 +84,27 @@ public class CodeGenerationHandler {
         return HttpResponse.ok(branches).contentType(MediaType.APPLICATION_JSON);
     }
 
+    @Operation(
+            summary = "Generate a new vulpes version",
+            description = "Generates a new code base for vulpes based on the provided branch",
+            tags = {"generation"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "The generation was successful",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Object.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "An error occurred during generation",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = String.class)
+            )
+    )
     @Get(value = "/generate", produces = "application/json")
     public HttpResponse<Object> generate(
             @QueryValue(value = "branch") String branch,
@@ -117,6 +163,27 @@ public class CodeGenerationHandler {
         return HttpResponse.ok().contentType(MediaType.APPLICATION_JSON);
     }
 
+    @Operation(
+            summary = "Download a generated vulpes code base",
+            description = "Downloads a zip file containing the generated vulpes code base from the specified branch.",
+            tags = {"download"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "The download was successful",
+            content = @Content(
+                    mediaType = "application/octet-stream",
+                    schema = @Schema(implementation = File.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "An error occurred during download",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = String.class)
+            )
+    )
     @Get(value = "/download", produces = "application/octet-stream")
     public @NotNull HttpResponse<File> download(
             @QueryValue(value = "branch", defaultValue = "master") String branch
