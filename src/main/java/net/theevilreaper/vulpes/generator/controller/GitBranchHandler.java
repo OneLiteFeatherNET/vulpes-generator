@@ -23,6 +23,27 @@ public class GitBranchHandler {
         this.gitWorker = gitWorker;
     }
 
+    @Operation(
+            summary = "Get all branches",
+            description = "Returns a list of all branches in the git repository, excluding renovate branches.",
+            tags = {"Branches"}
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "An error occurred while retrieving branches",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = String.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Branches retrieved successfully",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = List.class)
+            )
+    )
     @Get(value = "/branches", produces = "application/json")
     public HttpResponse<List<String>> getBranches(@QueryValue(value = "full", defaultValue = "false") boolean full) {
         List<String> gitRefs = gitWorker.getGitRefs();

@@ -39,7 +39,27 @@ public class DownloadController {
         this.gitWorker = gitWorker;
     }
 
-
+    @Operation(
+            summary = "Download a generated vulpes code base",
+            description = "Downloads a zip file containing the generated vulpes code base from the specified branch.",
+            tags = {"download"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "The download was successful",
+            content = @Content(
+                    mediaType = "application/octet-stream",
+                    schema = @Schema(implementation = File.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "An error occurred during download",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = String.class)
+            )
+    )
     @Get(produces = "application/octet-stream")
     public @NotNull HttpResponse<File> download(
             @QueryValue(value = "branch", defaultValue = "master") String branch
