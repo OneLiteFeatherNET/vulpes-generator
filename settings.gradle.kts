@@ -48,7 +48,6 @@ dependencyResolutionManagement {
             library("minestom","net.minestom", "minestom").withoutVersion()
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.3.0.202506031305-r")
-            library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0")
             library("guava", "com.google.guava", "guava").version("33.4.8-jre")
             library("commons.io", "commons-io", "commons-io").version("2.20.0")
             library("commons.compress", "org.apache.commons", "commons-compress").version("1.28.0")
