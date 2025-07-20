@@ -45,7 +45,7 @@ dependencyResolutionManagement {
             library("vulpes.base", "net.theevilreaper.vulpes.base", "vulpes").versionRef("vulpes.base")
             library("jetbrains.annotation", "org.jetbrains", "annotations").version("26.0.2")
             library("javapoet", "com.squareup", "javapoet").version("1.13.0")
-            library("minestom","net.minestom", "minestom-snapshots").withoutVersion()
+            library("minestom","net.minestom", "minestom").withoutVersion()
 
             library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.3.0.202506031305-r")
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0")
