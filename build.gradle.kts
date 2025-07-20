@@ -44,7 +44,6 @@ dependencies {
     implementation(mn.micronaut.mongo.core)
 
     implementation(libs.jgit)
-    implementation(libs.gitlab4j)
     implementation(libs.guava)
     implementation(libs.commons.io)
     implementation(libs.commons.compress)
