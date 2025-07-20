@@ -17,34 +17,39 @@ java {
 }
 
 dependencies {
-    implementation(libs.jetbrains.annotation)
-    implementation(libs.microtus)
+    implementation(platform(libs.mycelium.bom))
+    implementation(libs.adventure)
+    implementation(libs.minestom)
+
+    testImplementation(libs.minestom)
+    testImplementation(libs.cyano)
+    testImplementation(libs.junit.api)
+    testImplementation(libs.junit.params)
+    testImplementation(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.junit.engine)
 }
 
 publishing {
-    publications {
-        if (System.getenv().containsKey("CI")) {
-            repositories {
-                maven {
-                    name = "GitLab"
-                    url = uri(vulpesBaseUrl)
-                    credentials(HttpHeaderCredentials::class.java) {
-                        name = "Deploy-Token"
-                        value = System.getenv("PUBLISH_TOKEN")
-                    }
-                    authentication {
-                        create<HttpHeaderAuthentication>("header")
-                    }
-                }
-            }
+    publishing {
+        publications.create<MavenPublication>("maven") {
+            from(components["java"])
         }
 
-        create<MavenPublication>("maven") {
-            artifactId  = "vulpes"
-            groupId = vulpesGroupId
-            version = vulpesVersion
-
-            from(components["java"])
+        repositories {
+            maven {
+                authentication {
+                    credentials(PasswordCredentials::class) {
+                        username = System.getenv("ONELITEFEATHER_MAVEN_USERNAME")
+                        password = System.getenv("ONELITEFEATHER_MAVEN_PASSWORD")
+                    }
+                }
+                name = "OneLiteFeatherRepository"
+                url = if (project.version.toString().contains("SNAPSHOT")) {
+                    uri("https://repo.onelitefeather.dev/onelitefeather-snapshots")
+                } else {
+                    uri("https://repo.onelitefeather.dev/onelitefeather-releases")
+                }
+            }
         }
     }
 }
