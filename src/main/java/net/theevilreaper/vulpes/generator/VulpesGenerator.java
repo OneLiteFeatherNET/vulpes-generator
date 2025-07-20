@@ -21,6 +21,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
         ),
         tags = {
                 @Tag(name = "generation", description = "Entity generation"),
+                @Tag(name = "download", description = "Download generation"),
+                @Tag(name = "build", description = "Build information"),
         }
 )
 @Import(
