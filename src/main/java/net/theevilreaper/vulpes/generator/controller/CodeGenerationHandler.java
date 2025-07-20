@@ -82,7 +82,7 @@ public class CodeGenerationHandler {
             }
             Map<String, Object> variables = (Map<String, Object>) objects.get("variables");
             variables.put("BRANCH", branch);
-            variables.put("GENERATION_URL", gitWorker.getDeployUrl());
+            variables.put("GENERATION_URL", "fix_url_later");
             objects.put("variables", variables);
             Files.write(gitlabCiFile, yaml.dumpAsMap(objects).getBytes());
         }
@@ -137,7 +137,7 @@ public class CodeGenerationHandler {
             throw new RuntimeException(e);
         }
 
-        gitWorker.cloneAndCheckout(branch, output);
+        gitWorker.cloneAndCheckout("", branch, output);
         var zipStream = getClass().getClassLoader().getResourceAsStream(ZIP_FILE_NAME);
         if (zipStream != null) {
             var buildGradle = output.resolve(GRADLE_PROPERTIES);
