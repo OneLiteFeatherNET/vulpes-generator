@@ -1,46 +1,26 @@
 micronaut:
-  server:
-    port: ${PORT:8080}
   application:
-    name: Vulpes Generator
-  logger:
-    level:
-      io.micronaut: DEBUG
-mongodb:
-  uri: mongodb://localhost:27017
-  database: test
-    #mongodb:
-    #   uri: ${MONGODB_URI}
-    #  database: ${MONGODB_DATABASE}
+    name: vulpes-generator
+  server:
+    port: 8080
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
 
-    #gitlab:
-    # user: ${GITLAB_USER}
-    #password: ${GITLAB_PASSWORD}
-    #accessTokens:
-  # - ${GITLAB_ACCESS_TOKEN}
-  #gitlabUrl: ${GITLAB_URL}
-  #baseProjectID: ${GITLAB_PROJECT}
-  #remoteUrl: ${GITLAB_REMOTE_URL}
-  #pipelineUrl: ${GITLAB_PIPELINE_URL}
-  #deployUrl: ${GITLAB_DEPLOY_URL}
-  #dependencyUrl: ${GITLAB_DEPENDENCY_URL}
-# Section for gitlab configuration
-gitlab:
-  user: "your-gitlab-username"
-  password: "your-password"
-  accessToken: "your-access-token"
-  gitlabUrl: "https://gitlab.example.com"
-  baseProjectId: 12345
-  remoteUrl: "https://gitlab.example.com/your/repository.git"
-  pipelineUrl: "https://gitlab.example.com/api/v4/projects/12345/pipeline"
-  deployUrl: "https://gitlab.example.com/deploy"
-  dependencyUrl: "https://gitlab.example.com/dependencies"
-  branches:
-    - "main"
-    - "develop"
-    - "feature-branch"
+# Git configuration
+git:
+  repo:
+    url: https://github.com/yourusername/your-repo.git
+  commit:
+    author: Vulpes Generator <generator@onelitefeather.net>
 
-commit:
-  commitName: "Vulpes"
-  commitMail: "vulpes@onelitefeather.com"
-  defaultMessage: "Initial commit"
+# Logging configuration
+logger:
+  levels:
+    net.onelitefeather.vulpes: INFO
+    io.micronaut: INFO
