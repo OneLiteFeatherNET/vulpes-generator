@@ -51,7 +51,7 @@ dependencyResolutionManagement {
             library("gitlab4j", "org.gitlab4j", "gitlab4j-api").version("6.0.0")
             library("guava", "com.google.guava", "guava").version("33.4.8-jre")
             library("commons.io", "commons-io", "commons-io").version("2.20.0")
-            library("commons.compress", "org.apache.commons", "commons-compress").version("1.27.1")
+            library("commons.compress", "org.apache.commons", "commons-compress").version("1.28.0")
 
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
