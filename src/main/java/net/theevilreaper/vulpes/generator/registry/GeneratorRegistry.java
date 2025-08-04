@@ -21,7 +21,7 @@ public sealed interface GeneratorRegistry permits VulpesGeneratorRegistry {
     /**
      * Adds a new generator to the registry.
      *
-     * @param generator The generator to register.
+     * @param generator the generator to register.
      */
     void add(@NotNull Generator generator);
 
