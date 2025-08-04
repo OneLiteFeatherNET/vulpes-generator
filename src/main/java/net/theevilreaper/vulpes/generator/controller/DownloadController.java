@@ -5,6 +5,10 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.QueryValue;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.git.GitWorker;
 import net.theevilreaper.vulpes.generator.properties.CommitProperties;
@@ -80,7 +84,7 @@ public class DownloadController {
             throw new RuntimeException(e);
         }
 
-        gitWorker.cloneAndCheckout(branch, output);
+        gitWorker.cloneAndCheckout(branch, "", output);
         var zipStream = getClass().getClassLoader().getResourceAsStream(ZIP_FILE_NAME);
         if (zipStream != null) {
             var buildGradle = output.resolve(GRADLE_PROPERTIES);
