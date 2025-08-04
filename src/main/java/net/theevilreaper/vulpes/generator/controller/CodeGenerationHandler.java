@@ -86,7 +86,7 @@ public class CodeGenerationHandler {
             }
             Map<String, Object> variables = (Map<String, Object>) objects.get("variables");
             variables.put("BRANCH", branch);
-            variables.put("GENERATION_URL", gitWorker.getDeployUrl());
+            variables.put("GENERATION_URL", "fix_url_later");
             objects.put("variables", variables);
             Files.write(gitlabCiFile, yaml.dumpAsMap(objects).getBytes());
         }
