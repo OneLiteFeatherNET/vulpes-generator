@@ -4,8 +4,8 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
+import io.micronaut.context.annotation.Prototype;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.advancements.Advancement;
 import net.minestom.server.advancements.FrameType;
@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static net.theevilreaper.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
-@Singleton
+@Prototype
 public class NotificationGenerator extends AbstractCodeGenerator<NotificationEntity> implements JavaStructure {
 
     private final NotificationRepository notificationRepository;

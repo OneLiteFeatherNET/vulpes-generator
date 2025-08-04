@@ -3,8 +3,8 @@ package net.theevilreaper.vulpes.generator.generation.java;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
+import io.micronaut.context.annotation.Prototype;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import net.minestom.server.entity.attribute.Attribute;
 import net.onelitefeather.vulpes.api.model.AttributeEntity;
 import net.onelitefeather.vulpes.api.repository.AttributeRepository;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 import static net.theevilreaper.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
-@Singleton
+@Prototype
 public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> implements JavaStructure {
 
     private final AttributeRepository attributeRepository;
