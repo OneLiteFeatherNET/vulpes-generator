@@ -27,12 +27,13 @@ public abstract class AbstractCodeGenerator<T extends VulpesModel> implements Ge
     private TypeSpec.Kind classType;
 
     protected List<JavaFile> filesToGenerate = new ArrayList<>();
-    protected TypeSpec.Builder classBuilder = getClassType(classType);
+    protected TypeSpec.Builder classBuilder;
 
     protected AbstractCodeGenerator(@NotNull String className, @NotNull String packageName, TypeSpec.Kind classType) {
         this.className = className;
         this.packageName = packageName;
         this.classType = classType;
+        this.classBuilder = getClassType(this.classType);
     }
 
     protected AbstractCodeGenerator(@NotNull String className, @NotNull String packageName) {
