@@ -1,20 +1,18 @@
 package net.theevilreaper.vulpes.generator.registry;
 
+import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
-import net.onelitefeather.vulpes.api.model.VulpesModel;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.Generator;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.jetbrains.annotations.ApiStatus.*;
 
@@ -31,7 +29,7 @@ import static org.jetbrains.annotations.ApiStatus.*;
 @Singleton
 final class VulpesGeneratorRegistry implements GeneratorRegistry {
 
-    private final Map<Class<? extends Generator>, Generator> generators;
+    private final Map<Class<? extends Generator>, Provider<Generator>> generators;
 
     /**
      * Creates a new instance of the registry.
@@ -45,7 +43,7 @@ final class VulpesGeneratorRegistry implements GeneratorRegistry {
      */
     @Override
     public void add(@NotNull Generator generator) {
-        generators.put(generator.getClass(), generator);
+        generators.put(generator.getClass(), () -> generator);
     }
 
     /**
@@ -69,7 +67,7 @@ final class VulpesGeneratorRegistry implements GeneratorRegistry {
      */
     @Override
     public void triggerAll(@NotNull Path path) {
-        this.generators.values().forEach(generator -> generator.generate(path));
+        this.generators.values().forEach(generator -> generator.get().generate(path));
     }
 
     /**
@@ -78,6 +76,10 @@ final class VulpesGeneratorRegistry implements GeneratorRegistry {
     @Override
     @Contract(pure = true)
     public @NotNull @UnmodifiableView Map<Class<? extends Generator>, Generator> getAll() {
-        return Collections.unmodifiableMap(generators);
+        return generators.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().get()
+                ));
     }
 }
