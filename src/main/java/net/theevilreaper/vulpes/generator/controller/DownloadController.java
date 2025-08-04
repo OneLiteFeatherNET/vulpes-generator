@@ -11,8 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.git.GitWorker;
-import net.theevilreaper.vulpes.generator.properties.CommitProperties;
-import net.theevilreaper.vulpes.generator.registry.RegistryProvider;
+import net.theevilreaper.vulpes.generator.registry.GeneratorRegistry;
 import net.theevilreaper.vulpes.generator.util.FileHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,16 +29,15 @@ import static net.theevilreaper.vulpes.generator.util.Constants.ZIP_FILE_NAME;
 @Controller("/download")
 public class DownloadController {
 
-    private final RegistryProvider registryProvider;
+    private final GeneratorRegistry registry;
     private final GitWorker gitWorker;
 
     @Inject
     public DownloadController(
-            @NotNull RegistryProvider registryProvider,
-            @NotNull CommitProperties commitProperties,
+            @NotNull GeneratorRegistry registry,
             @NotNull GitWorker gitWorker
     ) {
-        this.registryProvider = registryProvider;
+        this.registry = registry;
         this.gitWorker = gitWorker;
     }
 
@@ -89,7 +87,7 @@ public class DownloadController {
         if (zipStream != null) {
             var buildGradle = output.resolve(GRADLE_PROPERTIES);
             applyVulpesData(buildGradle);
-            registryProvider.getGeneratorRegistry().triggerAll(javaPath);
+            registry.triggerAll(javaPath);
             try {
                 Files.createFile(zipFile);
             } catch (IOException e) {
