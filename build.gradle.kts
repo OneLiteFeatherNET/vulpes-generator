@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.commons.compress)
 
     testImplementation(mn.junit.jupiter.api)
+    testImplementation(mn.junit.jupiter.params)
     testRuntimeOnly(mn.junit.jupiter.engine)
 }
 
