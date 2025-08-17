@@ -25,6 +25,7 @@ public class BuildInformationHandler {
 
     @Operation(
             summary = "Get build information",
+            operationId = "getBuildData",
             description = "Returns the latest build information including version and creation date.",
             tags = {"build"}
     )

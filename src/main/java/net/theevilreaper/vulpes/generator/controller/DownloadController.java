@@ -45,6 +45,7 @@ public class DownloadController {
 
     @Operation(
             summary = "Download a generated vulpes code base",
+            operationId = "download",
             description = "Downloads a zip file containing the generated vulpes code base from the specified branch.",
             tags = {"download"}
     )

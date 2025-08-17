@@ -44,6 +44,7 @@ public class CodeGenerationHandler {
 
     @Operation(
             summary = "Generate a new vulpes version",
+            operationId = "generate",
             description = "Generates a new code base for vulpes based on the provided branch",
             tags = {"generation"}
     )

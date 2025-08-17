@@ -29,6 +29,7 @@ public class GitBranchHandler {
 
     @Operation(
             summary = "Get all branches",
+            operationId = "getBranches",
             description = "Returns a list of all branches in the git repository, excluding renovate branches.",
             tags = {"Branches"}
     )
