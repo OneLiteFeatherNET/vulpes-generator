@@ -6,10 +6,14 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import io.micronaut.context.annotation.Prototype;
 import jakarta.inject.Inject;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.EnchantmentList;
 import net.minestom.server.item.enchant.Enchantment;
+import net.minestom.server.registry.RegistryKey;
 import net.onelitefeather.vulpes.api.model.ItemEntity;
 import net.onelitefeather.vulpes.api.repository.ItemRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
@@ -75,22 +79,32 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                             material
                     );
                     if (model.getAmount() != 0) {
-                        initBlock.add(".amount(\\$L)", model.getAmount());
+                        initBlock.addStatement(".amount(\\$L)", model.getAmount());
+                    }
+
+                    if (model.getDisplayName() != null) {
+                        Component parsedName = Component.text(model.getDisplayName());
+                        initBlock.addStatement(".customName(\\$L)", parsedName);
+                    }
+
+                    if (!model.getEnchantments().isEmpty()) {
+                        Map<RegistryKey<Enchantment>, Integer> enchantmentData = new HashMap<>();
+
+                        for (Map.Entry<String, Short> stringShortEntry : model.getEnchantments().entrySet()) {
+                            RegistryKey<Enchantment> enchantment = MinecraftServer.getEnchantmentRegistry().getKey(Key.key(stringShortEntry.getKey()));
+                            enchantmentData.put(enchantment, stringShortEntry.getValue().intValue());
+                        }
+
+                        EnchantmentList enchantmentList = new EnchantmentList(enchantmentData);
+                        initBlock.addStatement(".set(DataComponents.ENCHANTMENTS, \\$L)", enchantmentList);
                     }
 
                           /*  if (model.hasMetadata()) {
                                 val metadata = CodeBlock.builder();
 
-                                metadata.add(".meta($META_DATA_VARIABLE -> ");
-                                metadata.indent();
-                                metadata.add("$META_DATA_VARIABLE.");
 
                                 if (model.customModelId != null) {
                                     metadata.add("customModelData(\$L)", model.customModelId);
-                                }
-
-                                if (model.hasDisplayName()) {
-                                    metadata.add(".displayName(\$T.text(\$S))", Component::class.java, getDisplayName(model));
                                 }
 
                                 if (model.hasFlags()) {
@@ -100,14 +114,6 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                                 if (model.hasLoreLines()) {
                                     metadata.add(buildLore(model.lore!!));
                                 }
-
-                                if (model.hasEnchantments()) {
-                                    metadata.add(buildEnchantments(model.enchantments!!));
-                                }
-
-                                metadata.unindent();
-                                metadata.add(")");
-                                init.add(metadata.build());
                             }*/
                     initBlock.add(".build()");
                     itemFields.put(model.getVariableName(), FieldSpec.builder(itemStackClass, model.getVariableName())
