@@ -3,8 +3,8 @@ package net.theevilreaper.vulpes.generator.generation.java;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
+import io.micronaut.context.annotation.Prototype;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.api.model.FontEntity;
 import net.onelitefeather.vulpes.api.repository.FontRepository;
 import net.theevilreaper.vulpes.font.FontSymbol;
@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Singleton
+@Prototype
 public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements JavaStructure {
 
     private final FontRepository fontRepository;
