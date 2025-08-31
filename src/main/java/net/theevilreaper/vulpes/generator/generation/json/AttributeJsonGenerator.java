@@ -4,15 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import net.kyori.adventure.key.Key;
 import net.onelitefeather.vulpes.api.model.AttributeEntity;
 import net.onelitefeather.vulpes.api.repository.AttributeRepository;
 import net.theevilreaper.vulpes.generator.generation.FileGenerator;
-import net.theevilreaper.vulpes.generator.generation.Generator;
 import net.theevilreaper.vulpes.generator.gson.GsonHolder;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +35,6 @@ public class AttributeJsonGenerator extends FileGenerator {
             throw new RuntimeException(e);
         }
 
-
         List<AttributeEntity> entities = this.attributeRepository.findAll();
 
         JsonArray elements = new JsonArray();
@@ -52,8 +48,7 @@ public class AttributeJsonGenerator extends FileGenerator {
             elements.add(jsonObject);
         }
 
-
-
+        save(filePath, GsonHolder.GSON, elements);
     }
 
     @Override
