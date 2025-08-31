@@ -1,13 +1,5 @@
 rootProject.name = "vulpes-generator"
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-        maven("https://eldonexus.de/repository/maven-public/")
-    }
-}
-
 plugins {
     id("io.micronaut.platform.catalog") version "4.5.4"
 }
@@ -15,7 +7,6 @@ plugins {
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        maven("https://reposilite.atlasengine.ca/public")
         maven {
             name = "OneLiteFeatherRepository"
             url = uri("https://repo.onelitefeather.dev/onelitefeather")
