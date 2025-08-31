@@ -50,9 +50,11 @@ public class FontJsonGenerator extends FileGenerator {
             jsonObject.addProperty("height", entity.getHeight());
             jsonObject.addProperty("ascent", entity.getAscent());
 
-            JsonArray chars = new JsonArray();
-            entity.getChars().forEach(chars::add);
-            jsonObject.add("chars", chars);
+            if (entity.getChars() != null) {
+                JsonArray chars = new JsonArray();
+                entity.getChars().forEach(chars::add);
+                jsonObject.add("chars", chars);
+            }
 
             elements.add(entity.getVariableName());
         }
