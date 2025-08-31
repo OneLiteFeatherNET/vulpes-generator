@@ -38,7 +38,7 @@ dependencyResolutionManagement {
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
-            library("vulpes.model", "net.onelitefeather.vulpes", "vulpes-model").versionRef("vulpes.model")
+            library("vulpes.model", "net.onelitefeather", "vulpes-model").versionRef("vulpes.model")
             //library("vulpes.base", "net.theevilreaper.vulpes.base", "vulpes").versionRef("vulpes.base")
             library("jetbrains.annotation", "org.jetbrains", "annotations").versionRef("jetbrains.annotation")
             library("javapoet", "com.squareup", "javapoet").versionRef("javapoet")
