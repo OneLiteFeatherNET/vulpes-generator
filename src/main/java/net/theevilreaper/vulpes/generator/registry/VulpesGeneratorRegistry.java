@@ -34,7 +34,7 @@ final class VulpesGeneratorRegistry implements GeneratorRegistry {
     /**
      * Creates a new instance of the registry.
      */
-    private VulpesGeneratorRegistry() {
+    public VulpesGeneratorRegistry() {
         this.generators = new ConcurrentHashMap<>();
     }
 
