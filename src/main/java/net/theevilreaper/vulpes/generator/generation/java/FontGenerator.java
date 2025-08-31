@@ -7,7 +7,6 @@ import io.micronaut.context.annotation.Prototype;
 import jakarta.inject.Inject;
 import net.onelitefeather.vulpes.api.model.FontEntity;
 import net.onelitefeather.vulpes.api.repository.FontRepository;
-import net.theevilreaper.vulpes.font.FontSymbol;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
 import org.jetbrains.annotations.NotNull;
@@ -49,8 +48,8 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
 
     private @NotNull Map<String, FieldSpec> generateFonts(@NotNull List<FontEntity> models) {
         var fields = new HashMap<String, FieldSpec>();
-        ClassName fontClass = ClassName.get(FontSymbol.class);
-        for (FontEntity model : models) {
+        //ClassName fontClass = ClassName.get(Font.class);
+       /* for (FontEntity model : models) {
             if (model.getVariableName() == null || model.getVariableName().isEmpty() || model.getChars().isEmpty()) continue;
 
             var fontCode = CodeBlock.builder();
@@ -68,7 +67,7 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
 
             FieldSpec fieldValue = FieldSpec.builder(fontClass, model.getVariableName()).build();
             fields.put(model.getVariableName(), fieldValue);
-        }
+        }*/
 
         return fields;
     }
