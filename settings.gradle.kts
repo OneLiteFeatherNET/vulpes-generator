@@ -36,26 +36,33 @@ dependencyResolutionManagement {
         create("libs") {
             version("micronaut", "4.5.4")
             version("vulpes.base", "0.5.1")
-            version("vulpes.model", "1.4.0")
+            version("vulpes.model", "1.5.1")
             version("mycelium", "1.4.3")
+            version("jetbrains.annotation", "26.0.2")
+            version("javapoet", "1.13.0")
+            version("jgit", "7.3.0.202506031305-r")
+            version("guava", "33.4.8-jre")
+            version("commons.io", "2.20.0")
+            version("commons.compress", "1.28.0")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
             library("vulpes.model", "net.onelitefeather.vulpes", "vulpes-model").versionRef("vulpes.model")
-            library("vulpes.base", "net.theevilreaper.vulpes.base", "vulpes").versionRef("vulpes.base")
-            library("jetbrains.annotation", "org.jetbrains", "annotations").version("26.0.2")
-            library("javapoet", "com.squareup", "javapoet").version("1.13.0")
+            //library("vulpes.base", "net.theevilreaper.vulpes.base", "vulpes").versionRef("vulpes.base")
+            library("jetbrains.annotation", "org.jetbrains", "annotations").versionRef("jetbrains.annotation")
+            library("javapoet", "com.squareup", "javapoet").versionRef("javapoet")
             library("minestom","net.minestom", "minestom").withoutVersion()
 
-            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").version("7.3.0.202506031305-r")
-            library("guava", "com.google.guava", "guava").version("33.4.8-jre")
-            library("commons.io", "commons-io", "commons-io").version("2.20.0")
-            library("commons.compress", "org.apache.commons", "commons-compress").version("1.28.0")
+            library("jgit", "org.eclipse.jgit", "org.eclipse.jgit").versionRef("jgit")
+            library("guava", "com.google.guava", "guava").versionRef("guava")
+            library("commons.io", "commons-io", "commons-io").versionRef("commons.io")
+            library("commons.compress", "org.apache.commons", "commons-compress").versionRef("commons.compress")
 
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
 
-            bundle("vulpes", listOf("vulpes.model", "vulpes.base"))
+            bundle("vulpes", listOf("vulpes.model", /*"vulpes.base"*/))
+            bundle("apache.commons", listOf("commons-io", "commons-io"))
         }
     }
 }
