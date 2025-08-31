@@ -25,7 +25,6 @@ import static org.jetbrains.annotations.ApiStatus.*;
  * @since 0.1.0
  */
 @Internal
-@NonExtendable
 @Singleton
 final class VulpesGeneratorRegistry implements GeneratorRegistry {
 
