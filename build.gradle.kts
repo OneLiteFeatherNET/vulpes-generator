@@ -48,8 +48,12 @@ dependencies {
     implementation(libs.commons.io)
     implementation(libs.commons.compress)
 
+    testImplementation(mn.micronaut.test.junit5)
+    testImplementation(mn.mockito.core)
+    testImplementation(mn.mockito.junit.jupiter)
     testImplementation(mn.junit.jupiter.api)
     testImplementation(mn.junit.jupiter.params)
+    testImplementation(libs.bundles.vulpes)
     testRuntimeOnly(mn.junit.jupiter.engine)
 }
 
