@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 @MicronautTest
-public class FontJsonGeneratorTest {
+class FontJsonGeneratorTest {
 
     @TempDir
     Path tempDir;
