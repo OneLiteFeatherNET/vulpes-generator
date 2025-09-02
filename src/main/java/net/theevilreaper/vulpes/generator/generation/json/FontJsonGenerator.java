@@ -56,7 +56,7 @@ public class FontJsonGenerator extends FileGenerator {
                 jsonObject.add("chars", chars);
             }
 
-            elements.add(entity.getVariableName());
+            elements.add(jsonObject);
         }
 
         save(filePath, GsonHolder.GSON, elements);
