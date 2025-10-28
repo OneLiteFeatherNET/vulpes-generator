@@ -25,7 +25,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            version("micronaut", "4.6.0")
+            version("micronaut", "4.6.1")
             version("vulpes.base", "0.5.1")
             version("vulpes.model", "1.6.0")
             version("mycelium", "1.4.5")
