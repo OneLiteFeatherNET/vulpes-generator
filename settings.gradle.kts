@@ -28,7 +28,7 @@ dependencyResolutionManagement {
             version("micronaut", "4.6.1")
             version("vulpes.base", "0.5.1")
             version("vulpes.model", "1.6.0")
-            version("mycelium", "1.4.5")
+            version("mycelium", "1.5.2")
             version("jetbrains.annotation", "26.0.2-1")
             version("javapoet", "1.13.0")
             version("jgit", "7.4.0.202509020913-r")
