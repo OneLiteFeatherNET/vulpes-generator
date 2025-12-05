@@ -88,7 +88,7 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                     }
 
                     if (!model.getEnchantments().isEmpty()) {
-                        Map<RegistryKey<Enchantment>, Integer> enchantmentData = new HashMap<>();
+                        Map<RegistryKey<@NotNull Enchantment>, Integer> enchantmentData = new HashMap<>();
 
                         for (Map.Entry<String, Short> stringShortEntry : model.getEnchantments().entrySet()) {
                             RegistryKey<Enchantment> enchantment = MinecraftServer.getEnchantmentRegistry().getKey(Key.key(stringShortEntry.getKey()));
@@ -98,23 +98,6 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                         EnchantmentList enchantmentList = new EnchantmentList(enchantmentData);
                         initBlock.addStatement(".set(DataComponents.ENCHANTMENTS, \\$L)", enchantmentList);
                     }
-
-                          /*  if (model.hasMetadata()) {
-                                val metadata = CodeBlock.builder();
-
-
-                                if (model.customModelId != null) {
-                                    metadata.add("customModelData(\$L)", model.customModelId);
-                                }
-
-                                if (model.hasFlags()) {
-                                    metadata.add(buildItemFlags(model.flags!!));
-                                }
-
-                                if (model.hasLoreLines()) {
-                                    metadata.add(buildLore(model.lore!!));
-                                }
-                            }*/
                     initBlock.add(".build()");
                     itemFields.put(model.getVariableName(), FieldSpec.builder(itemStackClass, model.getVariableName())
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
