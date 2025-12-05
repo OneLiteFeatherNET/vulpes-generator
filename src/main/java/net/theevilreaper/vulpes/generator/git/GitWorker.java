@@ -101,7 +101,7 @@ public final class GitWorker {
                     .setRemote("")
                     .call()
                     .stream().map(Ref::getName).toList();
-        } catch (Exception exception) {
+        } catch (Exception _) {
             return List.of();
         }
     }

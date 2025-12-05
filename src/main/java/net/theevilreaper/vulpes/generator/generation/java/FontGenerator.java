@@ -1,7 +1,5 @@
 package net.theevilreaper.vulpes.generator.generation.java;
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import io.micronaut.context.annotation.Prototype;
 import jakarta.inject.Inject;

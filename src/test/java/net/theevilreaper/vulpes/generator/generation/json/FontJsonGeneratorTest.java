@@ -62,7 +62,7 @@ class FontJsonGeneratorTest {
         JsonArray dataArray = null;
         try (var reader = Files.newBufferedReader(file, UTF_8)){
             dataArray = GsonHolder.GSON.fromJson(reader, JsonArray.class);
-        } catch (Exception e) {
+        } catch (Exception _) {
             fail("Unable to read file");
         }
 

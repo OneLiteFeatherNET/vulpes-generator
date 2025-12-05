@@ -38,7 +38,7 @@ public class VulpesGenerator {
      *
      * @param args the arguments passed to the application
      */
-    public static void main(String[] args) {
+    static void main(String[] args) {
         Micronaut.run(VulpesGenerator.class, args);
     }
 }

@@ -68,7 +68,7 @@ class NotificationJsonGeneratorTest {
 
         try (var reader = Files.newBufferedReader(file, UTF_8)) {
             dataArray = GsonHolder.GSON.fromJson(reader, JsonArray.class);
-        } catch (Exception exception) {
+        } catch (Exception _) {
             fail("Unable to load notification file");
         }
 
