@@ -15,6 +15,7 @@ import net.minestom.server.item.component.EnchantmentList;
 import net.minestom.server.item.enchant.Enchantment;
 import net.minestom.server.registry.RegistryKey;
 import net.onelitefeather.vulpes.api.model.ItemEntity;
+import net.onelitefeather.vulpes.api.model.item.ItemEnchantmentEntity;
 import net.onelitefeather.vulpes.api.repository.ItemRepository;
 import net.theevilreaper.vulpes.generator.generation.AbstractCodeGenerator;
 import net.theevilreaper.vulpes.generator.generation.JavaStructure;
@@ -90,11 +91,11 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                     if (!model.getEnchantments().isEmpty()) {
                         Map<RegistryKey<@NotNull Enchantment>, Integer> enchantmentData = new HashMap<>();
 
-                        for (Map.Entry<String, Short> stringShortEntry : model.getEnchantments().entrySet()) {
-                            RegistryKey<Enchantment> enchantment = MinecraftServer.getEnchantmentRegistry().getKey(Key.key(stringShortEntry.getKey()));
-                            enchantmentData.put(enchantment, stringShortEntry.getValue().intValue());
+                        for (ItemEnchantmentEntity enchantment : model.getEnchantments()) {
+                            Key key = Key.key(enchantment.getName());
+                            RegistryKey<Enchantment> minecraftEnchantment = MinecraftServer.getEnchantmentRegistry().getKey(key);
+                            enchantmentData.put(minecraftEnchantment, ((int) enchantment.getLevel()));
                         }
-
                         EnchantmentList enchantmentList = new EnchantmentList(enchantmentData);
                         initBlock.addStatement(".set(DataComponents.ENCHANTMENTS, \\$L)", enchantmentList);
                     }

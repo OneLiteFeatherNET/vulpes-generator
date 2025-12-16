@@ -52,7 +52,7 @@ public class FontJsonGenerator extends FileGenerator {
 
             if (entity.getChars() != null) {
                 JsonArray chars = new JsonArray();
-                entity.getChars().forEach(chars::add);
+                entity.getChars().forEach(string -> chars.add(string.getLine()));
                 jsonObject.add("chars", chars);
             }
 
