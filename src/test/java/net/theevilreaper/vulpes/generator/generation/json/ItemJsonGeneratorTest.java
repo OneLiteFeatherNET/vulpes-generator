@@ -22,7 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@MicronautTest
+@MicronautTest(startApplication = false)
 class ItemJsonGeneratorTest {
     @TempDir
     Path tempDir;
