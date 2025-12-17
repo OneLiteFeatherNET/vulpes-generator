@@ -30,6 +30,7 @@ dependencies {
     implementation(mn.micronaut.jdbc.hikari)
     implementation(mn.micronaut.hibernate.jpa)
     implementation(mn.mariadb.java.client)
+    implementation(mn.micronaut.data.jpa)
 
     // Jackson
     implementation(mn.jackson.core)
@@ -50,6 +51,8 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.commons.io)
     implementation(libs.commons.compress)
+
+    runtimeOnly(mn.snakeyaml)
 
     // Tests
     testImplementation(mn.micronaut.test.junit5)
@@ -115,7 +118,10 @@ micronaut {
     testRuntime("junit5")
     processing {
         incremental(true)
-        annotations("net.onelitefeather.vulpes.*")
+        annotations(
+            "net.onelitefeather.vulpes.*",
+            "net.theevilreaper.vulpes.*"
+        )
     }
     aot {
         // Please review carefully the optimizations enabled below
