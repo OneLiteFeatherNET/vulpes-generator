@@ -14,46 +14,48 @@ java {
 }
 
 dependencies {
+    // Annotation processing
     annotationProcessor(mn.micronaut.serde.processor)
-    annotationProcessor(mn.micronaut.http.validation)
     annotationProcessor(mn.micronaut.data.processor)
     annotationProcessor(mn.micronaut.openapi)
     annotationProcessor(mn.micronaut.inject.java)
 
     compileOnly(mn.micronaut.openapi.annotations)
 
-    implementation(platform(libs.mycelium.bom))
-    implementation(mn.micronaut.data.processor)
-    implementation(libs.bundles.vulpes)
-    implementation(libs.jetbrains.annotation)
-    implementation(libs.javapoet)
-    implementation(libs.minestom)
-    //Micronaut
+    // Micronaut runtime
     implementation(mn.micronaut.runtime)
-    implementation(mn.validation)
-    implementation(mn.snakeyaml)
-    implementation(mn.log4j)
-    implementation(mn.slf4j.api)
-    implementation(mn.slf4j.simple)
+    implementation(mn.micronaut.http.client)
+
+    // SQL (JPA / read-only)
+    implementation(mn.micronaut.jdbc.hikari)
+    implementation(mn.micronaut.hibernate.jpa)
+    implementation(mn.mariadb.java.client)
+
+    // Jackson
     implementation(mn.jackson.core)
     implementation(mn.jackson.databind)
     implementation(mn.jackson.datatype.jsr310)
 
-    implementation(mn.micronaut.data.document.processor)
-    implementation(mn.micronaut.data.mongodb)
-    implementation(mn.micronaut.mongo.core)
+    // Logging (empfohlen)
+    implementation(mn.logback.classic)
 
+    // Misc
+    implementation(platform(libs.mycelium.bom))
+    implementation(libs.bundles.vulpes)
+    implementation(libs.jetbrains.annotation)
+    implementation(libs.javapoet)
+    implementation(libs.minestom)
     implementation(libs.jgit)
     implementation(libs.guava)
     implementation(libs.commons.io)
     implementation(libs.commons.compress)
 
+    // Tests
     testImplementation(mn.micronaut.test.junit5)
     testImplementation(mn.mockito.core)
     testImplementation(mn.mockito.junit.jupiter)
     testImplementation(mn.junit.jupiter.api)
     testImplementation(mn.junit.jupiter.params)
-    testImplementation(libs.bundles.vulpes)
     testRuntimeOnly(mn.junit.jupiter.engine)
 }
 
@@ -112,10 +114,7 @@ micronaut {
     testRuntime("junit5")
     processing {
         incremental(true)
-        annotations(
-            "net.theevilreaper.vulpes.api.*",
-            "net.theevilreaper.vulpes.generator.*",
-        )
+        annotations("net.onelitefeather.vulpes.*")
     }
     aot {
         // Please review carefully the optimizations enabled below

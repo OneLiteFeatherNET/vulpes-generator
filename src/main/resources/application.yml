@@ -5,12 +5,45 @@ micronaut:
     name: Vulpes Generator
   logger:
     level:
+      root: INFO
       io.micronaut: DEBUG
-mongodb:
-  uri: mongodb://localhost:27017
-  database: test
+  http:
+    services:
+      github:
+        url: https://api.github.com
+        connect-timeout: 2s
+        read-timeout: 5s
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui
 
 commit:
   commitName: "Vulpes"
   commitMail: "vulpes@onelitefeather.com"
   defaultMessage: "Initial commit"
+
+datasources:
+  default:
+    url: ${DB_URL:jdbc:mariadb://localhost:3336/vulpes}
+    driverClassName: org.mariadb.jdbc.Driver
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:vulpes}
+    read-only: true
+    maximum-pool-size: 10
+
+jpa:
+  default:
+    entity-scan:
+      packages:
+        - net.theevilreaper.vulpes.persistence.entity
+    properties:
+      hibernate:
+        hbm2ddl.auto: none
+        dialect: org.hibernate.dialect.MariaDBDialect
+        show_sql: ${SHOW_SQL:false}
+        format_sql: true
