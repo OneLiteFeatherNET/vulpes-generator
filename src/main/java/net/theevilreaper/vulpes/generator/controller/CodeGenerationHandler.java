@@ -17,7 +17,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -79,7 +78,7 @@ public class CodeGenerationHandler {
         Files.createDirectories(output);
         var gitlabCiFile = output.resolve(GITLAB_CI_YML);
 
-        var yaml = new Yaml();
+        /*var yaml = new Yaml();
         try (BufferedReader in = Files.newBufferedReader(tempGitlabCi)) {
             Map<String, Object> objects = yaml.load(in);
             if (image != null) {
@@ -90,7 +89,7 @@ public class CodeGenerationHandler {
             variables.put("GENERATION_URL", "fix_url_later");
             objects.put("variables", variables);
             Files.write(gitlabCiFile, yaml.dumpAsMap(objects).getBytes());
-        }
+        }*/
 
         CloneCommand cloneCommand = gitWorker.getCloneCommand(output);
         Git git = null;
