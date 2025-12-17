@@ -1,0 +1,16 @@
+micronaut:
+  application:
+    banner:
+      enabled: false
+  aot:
+    optimize-service-loading: false
+    optimize-class-loading: false
+    precompute-operations: false
+
+datasources:
+  default:
+    enabled: false
+
+jpa:
+  default:
+    enabled: false
