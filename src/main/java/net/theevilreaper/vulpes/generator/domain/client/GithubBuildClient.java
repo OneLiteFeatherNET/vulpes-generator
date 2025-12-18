@@ -7,6 +7,14 @@ import net.theevilreaper.vulpes.generator.domain.release.GitRelease;
 
 import java.util.List;
 
+/**
+ * The intention behind the {@link GithubBuildClient} is to provide method endpoints to fetch some specific
+ * release data from a Github repository.
+ *
+ * @author theEvilReaper
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 @Client("github")
 public interface GithubBuildClient {
 
