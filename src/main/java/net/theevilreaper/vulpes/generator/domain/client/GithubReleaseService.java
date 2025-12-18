@@ -41,7 +41,6 @@ public class GithubReleaseService {
             );
 
             return GitReleaseDTO.fromRelease(release);
-
         } catch (HttpClientResponseException _) {
             return fallbackToTags();
         }
