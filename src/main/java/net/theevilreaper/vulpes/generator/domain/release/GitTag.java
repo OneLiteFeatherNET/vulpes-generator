@@ -12,4 +12,10 @@ import io.micronaut.serde.annotation.Serdeable;
  */
 @Serdeable
 public record GitTag(String name) {
+
+    public GitTag {
+        if (name == null) {
+            name = "Unknown";
+        }
+    }
 }
