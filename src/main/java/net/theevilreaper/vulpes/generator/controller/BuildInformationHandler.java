@@ -51,9 +51,6 @@ public class BuildInformationHandler {
     @Get(value = "/data", produces = MediaType.APPLICATION_JSON)
     public @NotNull HttpResponse<GitReleaseDTO> getBuildInformation() {
         GitReleaseDTO latestVersion = this.releaseService.getLatestVersion();
-        if (latestVersion == null) {
-            return HttpResponse.notFound();
-        }
         return HttpResponse.ok(latestVersion);
     }
 }
