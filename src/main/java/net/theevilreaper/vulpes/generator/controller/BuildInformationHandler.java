@@ -4,6 +4,8 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,7 +24,8 @@ public class BuildInformationHandler {
     /**
      * Creates a new instance of the {@link BuildInformationHandler}
      *
-     * @param releaseService the {@link GithubReleaseService} to use for retrieving the latest release information.
+     * @param releaseService the {@link GithubReleaseService} to use for retrieving
+     *                       the latest release information.
      */
     @Inject
     public BuildInformationHandler(GithubReleaseService releaseService) {
@@ -49,6 +52,7 @@ public class BuildInformationHandler {
             )
     )
     @Get(value = "/data", produces = MediaType.APPLICATION_JSON)
+    @ExecuteOn(TaskExecutors.BLOCKING)
     public @NotNull HttpResponse<GitReleaseDTO> getBuildInformation() {
         GitReleaseDTO latestVersion = this.releaseService.getLatestVersion();
         return HttpResponse.ok(latestVersion);
