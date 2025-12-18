@@ -1,6 +1,7 @@
 package net.theevilreaper.vulpes.generator.domain.client;
 
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Header;
 import io.micronaut.http.client.annotation.Client;
 import net.theevilreaper.vulpes.generator.domain.release.GitTag;
 import net.theevilreaper.vulpes.generator.domain.release.GitRelease;
@@ -8,7 +9,8 @@ import net.theevilreaper.vulpes.generator.domain.release.GitRelease;
 import java.util.List;
 
 /**
- * The intention behind the {@link GithubBuildClient} is to provide method endpoints to fetch some specific
+ * The intention behind the {@link GithubBuildClient} is to provide method
+ * endpoints to fetch some specific
  * release data from a Github repository.
  *
  * @author theEvilReaper
@@ -16,6 +18,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @Client("github")
+@Header(name = "User-Agent", value = "Vulpes-Generator")
 public interface GithubBuildClient {
 
     /**

@@ -19,8 +19,10 @@ public class GithubReleaseService {
     /**
      * Creates a new instance of the {@link GithubReleaseService}
      *
-     * @param client the {@link GithubBuildClient} to use for retrieving the latest release information.
-     * @param config the {@link GithubConfiguration} to use for retrieving the repository information.
+     * @param client the {@link GithubBuildClient} to use for retrieving the latest
+     *               release information.
+     * @param config the {@link GithubConfiguration} to use for retrieving the
+     *               repository information.
      */
     @Inject
     public GithubReleaseService(GithubBuildClient client, GithubConfiguration config) {
@@ -39,7 +41,9 @@ public class GithubReleaseService {
                     config.owner(),
                     config.repo()
             );
-
+            if (release == null) {
+                return fallbackToTags();
+            }
             return GitReleaseDTO.fromRelease(release);
         } catch (HttpClientResponseException _) {
             return fallbackToTags();
