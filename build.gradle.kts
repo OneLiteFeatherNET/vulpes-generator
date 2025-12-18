@@ -43,6 +43,7 @@ dependencies {
 
     // Misc
     implementation(platform(libs.mycelium.bom))
+    implementation(mn.micronaut.http.client)
     implementation(libs.bundles.vulpes)
     implementation(libs.jetbrains.annotation)
     implementation(libs.javapoet)

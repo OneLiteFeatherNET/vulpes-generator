@@ -4,25 +4,39 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.domain.build.BuildInformationDTO;
+import net.theevilreaper.vulpes.generator.domain.client.GithubReleaseService;
+import net.theevilreaper.vulpes.generator.domain.release.GitReleaseDTO;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller("/build")
 public class BuildInformationHandler {
 
+    private final GithubReleaseService releaseService;
 
+    /**
+     * Creates a new instance of the {@link BuildInformationHandler}
+     *
+     * @param releaseService the {@link GithubReleaseService} to use for retrieving
+     *                       the latest release information.
+     */
     @Inject
-    public BuildInformationHandler() {
+    public BuildInformationHandler(GithubReleaseService releaseService) {
+        this.releaseService = releaseService;
     }
 
+    /**
+     * Returns the latest build information with a specific level of detail.
+     *
+     * @return the latest build information
+     */
     @Operation(
             summary = "Get build information",
             operationId = "getBuildData",
@@ -38,11 +52,9 @@ public class BuildInformationHandler {
             )
     )
     @Get(value = "/data", produces = MediaType.APPLICATION_JSON)
-    public @NotNull HttpResponse<BuildInformationDTO> getBuildInformation() {
-        //TODO: Reimplement it with Github integration
-        Map<String, String> data = new HashMap<>();
-        data.put("version", "1.0.0");
-        data.put("created", System.currentTimeMillis() + "");
-        return HttpResponse.ok(new BuildInformationDTO(data));
+    @ExecuteOn(TaskExecutors.BLOCKING)
+    public @NotNull HttpResponse<GitReleaseDTO> getBuildInformation() {
+        GitReleaseDTO latestVersion = this.releaseService.getLatestVersion();
+        return HttpResponse.ok(latestVersion);
     }
 }

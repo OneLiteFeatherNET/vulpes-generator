@@ -12,7 +12,7 @@ micronaut:
       github:
         url: https://api.github.com
         connect-timeout: 2s
-        read-timeout: 5s
+        read-timeout: 30s
   router:
     static-resources:
       swagger:
