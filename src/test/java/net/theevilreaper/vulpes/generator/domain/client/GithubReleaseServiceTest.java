@@ -49,6 +49,19 @@ class GithubReleaseServiceTest {
     }
 
     @Test
+    void fallsBackToTagsWhenReleaseIsNull() {
+        when(client.latestRelease("owner", "repo"))
+                .thenReturn(null);
+
+        GitTag tag = new GitTag("v1.2.3");
+        when(client.tags("owner", "repo"))
+                .thenReturn(List.of(tag));
+
+        GitReleaseDTO dto = service.getLatestVersion();
+        assertEquals(dto, GitReleaseDTO.fromTag("v1.2.3"));
+    }
+
+    @Test
     void fallsBackToTagsWhenReleaseFails() {
         when(client.latestRelease("owner", "repo"))
                 .thenThrow(mock(HttpClientResponseException.class));
