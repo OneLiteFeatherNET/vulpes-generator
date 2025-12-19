@@ -1,8 +1,9 @@
-package net.theevilreaper.vulpes.generator.controller.git;
+package net.theevilreaper.vulpes.generator.controller.git.branch;
 
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
+import net.theevilreaper.vulpes.generator.controller.git.GitBranchController;
 import net.theevilreaper.vulpes.generator.domain.client.GithubService;
 import org.junit.jupiter.api.Test;
 

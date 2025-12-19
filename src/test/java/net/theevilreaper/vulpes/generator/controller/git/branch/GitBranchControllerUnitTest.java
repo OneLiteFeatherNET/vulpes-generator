@@ -1,6 +1,7 @@
-package net.theevilreaper.vulpes.generator.controller.git;
+package net.theevilreaper.vulpes.generator.controller.git.branch;
 
 import io.micronaut.http.HttpResponse;
+import net.theevilreaper.vulpes.generator.controller.git.GitBranchController;
 import net.theevilreaper.vulpes.generator.domain.client.GithubService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

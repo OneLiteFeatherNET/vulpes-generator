@@ -1,4 +1,4 @@
-package net.theevilreaper.vulpes.generator.controller.git;
+package net.theevilreaper.vulpes.generator.controller.git.release;
 
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
