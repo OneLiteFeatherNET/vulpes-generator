@@ -48,10 +48,17 @@ public interface GithubClient {
     /**
      * Returns all branches for the given repository
      *
-     * @param owner the owner of the repository
-     * @param repo  the repository name
+     * @param owner   the owner of the repository
+     * @param repo    the repository name
+     * @param perPage the number of items per page
+     * @param page    the page number
      * @return a list of branches
      */
     @Get("/repos/{owner}/{repo}/branches{?per_page,page}")
-    HttpResponse<List<GitBranch>> branches(String owner, String repo, @PathVariable("per_page") Integer perPage, @Nullable Integer page);
+    HttpResponse<List<GitBranch>> branches(
+            String owner,
+            String repo,
+            @Nullable @PathVariable("per_page") Integer perPage,
+            @Nullable Integer page
+    );
 }

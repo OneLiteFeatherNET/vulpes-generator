@@ -23,8 +23,7 @@ public class GitReleaseController {
     /**
      * Creates a new instance of the {@link GitReleaseController}
      *
-     * @param releaseService the {@link GithubService} to use for retrieving
-     *                       the latest release information.
+     * @param releaseService the {@link GithubService} to use for retrieving the latest release information.
      */
     @Inject
     public GitReleaseController(GithubService releaseService) {
