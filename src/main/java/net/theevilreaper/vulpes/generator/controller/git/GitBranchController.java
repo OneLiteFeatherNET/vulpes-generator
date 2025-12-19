@@ -56,7 +56,7 @@ public class GitBranchController {
             return HttpResponse.ok(gitRefs);
         }
 
-        List<String> filtered = BranchFilter.filterBranches(gitRefs, string -> !string.contains("/renovate"));
+        List<String> filtered = BranchFilter.filterBranches(gitRefs, string -> !string.contains("renovate"));
         return HttpResponse.ok(filtered);
     }
 }
