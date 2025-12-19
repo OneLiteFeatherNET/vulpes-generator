@@ -3,6 +3,7 @@ package net.theevilreaper.vulpes.generator.controller.git.branch;
 import io.micronaut.http.HttpResponse;
 import net.theevilreaper.vulpes.generator.controller.git.GitBranchController;
 import net.theevilreaper.vulpes.generator.domain.client.GithubService;
+import net.theevilreaper.vulpes.generator.domain.configuration.BranchFilterConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,9 @@ class GitBranchControllerUnitTest {
     @BeforeEach
     void setUp() {
         githubService = mock(GithubService.class);
-        controller = new GitBranchController(githubService);
+        BranchFilterConfiguration config =
+                new BranchFilterConfiguration(List.of("renovate"));
+        controller = new GitBranchController(githubService, config);
     }
 
     @Test

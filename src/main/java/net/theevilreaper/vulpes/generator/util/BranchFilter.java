@@ -1,5 +1,6 @@
 package net.theevilreaper.vulpes.generator.util;
 
+import net.theevilreaper.vulpes.generator.domain.configuration.BranchFilterConfiguration;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,12 +13,17 @@ public final class BranchFilter {
     /**
      * Filters the branches and returns a list with the filtered branches.
      *
-     * @param branches  The branches which should be filtered
-     * @param predicate The predicate which should be used for the filtering
+     * @param branches            the branches which should be filtered
+     * @param filterConfiguration the filter configuration to use
      * @return a list with the filtered branches
      */
-    public static @NotNull List<String> filterBranches(@NotNull List<String> branches, @NotNull Predicate<String> predicate) {
-        return branches.stream().filter(predicate).toList();
+    public static @NotNull List<String> filterBranches(@NotNull List<String> branches, @NotNull BranchFilterConfiguration filterConfiguration) {
+        System.out.println("Excluding branches: " + filterConfiguration.exclude());
+        return branches.stream().filter(entry ->
+                        filterConfiguration.exclude().stream()
+                                .noneMatch(entry::startsWith)
+                )
+                .toList();
     }
 
     private BranchFilter() {

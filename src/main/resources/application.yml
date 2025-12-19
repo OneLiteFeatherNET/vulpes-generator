@@ -47,3 +47,8 @@ jpa:
         dialect: org.hibernate.dialect.MariaDBDialect
         show_sql: ${SHOW_SQL:false}
         format_sql: true
+
+filter:
+  exclude:
+    - renovate
+    - dependabot

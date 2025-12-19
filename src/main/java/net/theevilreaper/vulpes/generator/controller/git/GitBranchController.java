@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.domain.client.GithubService;
+import net.theevilreaper.vulpes.generator.domain.configuration.BranchFilterConfiguration;
 import net.theevilreaper.vulpes.generator.util.BranchFilter;
 
 import java.util.List;
@@ -19,10 +20,12 @@ import java.util.List;
 public class GitBranchController {
 
     private final GithubService githubService;
+    private final BranchFilterConfiguration filterConfiguration;
 
     @Inject
-    public GitBranchController(GithubService githubService) {
+    public GitBranchController(GithubService githubService, BranchFilterConfiguration filterConfiguration) {
         this.githubService = githubService;
+        this.filterConfiguration = filterConfiguration;
     }
 
     @Operation(
@@ -56,7 +59,7 @@ public class GitBranchController {
             return HttpResponse.ok(gitRefs);
         }
 
-        List<String> filtered = BranchFilter.filterBranches(gitRefs, string -> !string.contains("renovate"));
+        List<String> filtered = BranchFilter.filterBranches(gitRefs, filterConfiguration);
         return HttpResponse.ok(filtered);
     }
 }

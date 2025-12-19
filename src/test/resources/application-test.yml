@@ -16,3 +16,8 @@ datasources:
 jpa:
   default:
     enabled: false
+
+filter:
+  exclude:
+    - renovate
+    - dependabot
