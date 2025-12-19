@@ -1,10 +1,11 @@
 package net.theevilreaper.vulpes.generator.domain.configuration;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
+import net.theevilreaper.vulpes.generator.domain.client.GithubClient;
 
 /**
  * Configuration which is required to communicate with Github to retrieve release information
- * over the {@link net.theevilreaper.vulpes.generator.domain.client.GithubBuildClient}.
+ * over the {@link GithubClient}.
  *
  * @param owner the owner / organization of the repository
  * @param repo  the repository name

@@ -1,4 +1,4 @@
-package net.theevilreaper.vulpes.generator.controller;
+package net.theevilreaper.vulpes.generator.controller.git;
 
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -11,23 +11,23 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
-import net.theevilreaper.vulpes.generator.domain.client.GithubReleaseService;
+import net.theevilreaper.vulpes.generator.domain.client.GithubService;
 import net.theevilreaper.vulpes.generator.domain.release.GitReleaseDTO;
 import org.jetbrains.annotations.NotNull;
 
 @Controller("/build")
-public class BuildInformationHandler {
+public class GitReleaseController {
 
-    private final GithubReleaseService releaseService;
+    private final GithubService releaseService;
 
     /**
-     * Creates a new instance of the {@link BuildInformationHandler}
+     * Creates a new instance of the {@link GitReleaseController}
      *
-     * @param releaseService the {@link GithubReleaseService} to use for retrieving
+     * @param releaseService the {@link GithubService} to use for retrieving
      *                       the latest release information.
      */
     @Inject
-    public BuildInformationHandler(GithubReleaseService releaseService) {
+    public GitReleaseController(GithubService releaseService) {
         this.releaseService = releaseService;
     }
 

@@ -17,22 +17,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GithubReleaseServiceTest {
+class GithubServiceTest {
 
     @Mock
-    GithubBuildClient client;
+    GithubClient client;
 
     @Mock
     GithubConfiguration config;
 
-    GithubReleaseService service;
+    GithubService service;
 
     @BeforeEach
     void setUp() {
         when(config.owner()).thenReturn("owner");
         when(config.repo()).thenReturn("repo");
 
-        service = new GithubReleaseService(client, config);
+        service = new GithubService(client, config);
     }
 
     @Test
