@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.micronaut.application)
     alias(libs.plugins.micronaut.aot)
     jacoco
+    id("org.openapi.generator") version "7.17.0"
 }
 
 group = "net.theevilreaper"
@@ -38,8 +39,11 @@ dependencies {
     implementation(mn.jackson.databind)
     implementation(mn.jackson.datatype.jsr310)
 
-    // Logging (empfohlen)
+    // Logging
     implementation(mn.logback.classic)
+
+    implementation(mn.micronaut.openapi)
+    implementation(mn.swagger.core)
 
     // Misc
     implementation(platform(libs.mycelium.bom))
@@ -93,6 +97,10 @@ tasks {
         }
     }
 
+    this.openApiGenerate {
+        dependsOn("compileJava")
+    }
+
     test {
         finalizedBy(project.tasks.jacocoTestReport)
         useJUnitPlatform()
@@ -105,6 +113,7 @@ tasks {
         options.encoding = "UTF-8"
         options.compilerArgs.add("-parameters")
         options.release = 25
+        options.forkOptions.jvmArgs = listOf("-Dmicronaut.openapi.views.spec=rapidoc.enabled=true,openapi-explorer.enabled=true,swagger-ui.enabled=true,swagger-ui.theme=flattop")
     }
 }
 
