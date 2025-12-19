@@ -1,5 +1,6 @@
 package net.theevilreaper.vulpes.generator.util;
 
+import net.theevilreaper.vulpes.generator.domain.configuration.BranchFilterConfiguration;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -14,11 +15,12 @@ class BranchFilterTest {
     @Disabled
     @Test
     void testBranchFiltering() {
-       /* List<String> filteredBranches = BranchFilter.filterBranches(EXISTING_BRANCHES, branch -> !branch.equalsIgnoreCase("dev"));
+        BranchFilterConfiguration filters = new BranchFilterConfiguration(EXISTING_BRANCHES);
+        List<String> filteredBranches = BranchFilter.filterBranches(EXISTING_BRANCHES, filters);
         assertEquals(2, filteredBranches.size());
         List<String> expectedBranches = List.of("master", "develop");
         for (int i = 0; i < expectedBranches.size(); i++) {
             assertTrue(filteredBranches.contains(expectedBranches.get(i)));
-        }*/
+        }
     }
 }
