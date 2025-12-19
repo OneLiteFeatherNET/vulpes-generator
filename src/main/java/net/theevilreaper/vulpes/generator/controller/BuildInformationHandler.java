@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
-import net.theevilreaper.vulpes.generator.domain.build.BuildInformationDTO;
 import net.theevilreaper.vulpes.generator.domain.client.GithubReleaseService;
 import net.theevilreaper.vulpes.generator.domain.release.GitReleaseDTO;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +47,7 @@ public class BuildInformationHandler {
             description = "Build information retrieved successfully.",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(implementation = BuildInformationDTO.class)
+                    schema = @Schema(implementation = GitReleaseDTO.class)
             )
     )
     @Get(value = "/data", produces = MediaType.APPLICATION_JSON)
