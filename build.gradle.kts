@@ -118,7 +118,7 @@ tasks {
 }
 
 application {
-    mainClass = "net.theevilreaper.vulpes.generator.GeneratorApplication"
+    mainClass = "net.theevilreaper.vulpes.generator.VulpesGenerator"
 }
 
 graalvmNative.toolchainDetection = false
