@@ -1,4 +1,4 @@
-package net.theevilreaper.vulpes.generator.properties;
+package net.theevilreaper.vulpes.generator.domain.configuration;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
 
@@ -27,7 +27,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
  * </pre>
  */
 @ConfigurationProperties("commit")
-public record CommitProperties(
+public record CommitConfiguration(
         String author,
         String mail,
         String message
@@ -39,7 +39,7 @@ public record CommitProperties(
      * @param mail The commit author's email (defaults to "vulpes@onelitefeather.com" if null).
      * @param message The default commit message (defaults to "Default commit message" if null).
      */
-    public CommitProperties {
+    public CommitConfiguration {
         if (mail == null) {
             mail = "vulpes@onelitefeather.com";
         }

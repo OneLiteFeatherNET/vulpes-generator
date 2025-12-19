@@ -11,33 +11,31 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.theevilreaper.vulpes.generator.git.GitWorker;
-import net.theevilreaper.vulpes.generator.properties.CommitProperties;
+import net.theevilreaper.vulpes.generator.domain.configuration.CommitConfiguration;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
-import java.util.Map;
 
 import static net.theevilreaper.vulpes.generator.util.Constants.*;
 
 @Controller("/generator")
 public class CodeGenerationHandler {
 
-    private final CommitProperties commitProperties;
+    private final CommitConfiguration commitConfiguration;
     private final GitWorker gitWorker;
 
     @Inject
     public CodeGenerationHandler(
-            @NotNull CommitProperties commitProperties,
+            @NotNull CommitConfiguration commitConfiguration,
             @NotNull GitWorker gitWorker
     ) {
-        this.commitProperties = commitProperties;
+        this.commitConfiguration = commitConfiguration;
         this.gitWorker = gitWorker;
     }
 
@@ -108,8 +106,8 @@ public class CodeGenerationHandler {
             throw new RuntimeException(e);
         }
         var commit = git.commit();
-        commit.setAuthor(this.commitProperties.author(), this.commitProperties.mail());
-        commit.setMessage(this.commitProperties.message());
+        commit.setAuthor(this.commitConfiguration.author(), this.commitConfiguration.mail());
+        commit.setMessage(this.commitConfiguration.message());
         commit.setSign(false);
         try {
             commit.call();
