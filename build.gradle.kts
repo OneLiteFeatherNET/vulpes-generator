@@ -18,8 +18,9 @@ dependencies {
     // Annotation processing
     annotationProcessor(mn.micronaut.serde.processor)
     annotationProcessor(mn.micronaut.data.processor)
-    annotationProcessor(mn.micronaut.openapi)
     annotationProcessor(mn.micronaut.inject.java)
+    annotationProcessor(mn.micronaut.openapi)
+    annotationProcessor(mn.micronaut.validation.processor)
 
     compileOnly(mn.micronaut.openapi.annotations)
 
@@ -140,7 +141,7 @@ micronaut {
         convertYamlToJava = false
         precomputeOperations = true
         cacheEnvironment = true
-        optimizeClassLoading = true
+        optimizeClassLoading = false
         deduceEnvironment = true
         optimizeNetty = true
         replaceLogbackXml = true
