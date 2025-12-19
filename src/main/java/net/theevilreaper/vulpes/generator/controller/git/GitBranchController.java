@@ -1,30 +1,28 @@
-package net.theevilreaper.vulpes.generator.controller;
+package net.theevilreaper.vulpes.generator.controller.git;
 
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.QueryValue;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
-import net.theevilreaper.vulpes.generator.git.GitWorker;
+import net.theevilreaper.vulpes.generator.domain.client.GithubService;
 import net.theevilreaper.vulpes.generator.util.BranchFilter;
 
 import java.util.List;
 
-import static net.theevilreaper.vulpes.generator.util.Constants.EMPTY_STRING;
-
 @Controller("/git")
-public class GitBranchHandler {
+public class GitBranchController {
 
-    private final GitWorker gitWorker;
+    private final GithubService githubService;
 
     @Inject
-    public GitBranchHandler(GitWorker gitWorker) {
-        this.gitWorker = gitWorker;
+    public GitBranchController(GithubService githubService) {
+        this.githubService = githubService;
     }
 
     @Operation(
@@ -50,14 +48,15 @@ public class GitBranchHandler {
             )
     )
     @Get(value = "/branches", produces = "application/json")
-    public HttpResponse<List<String>> getBranches(@QueryValue(value = "full", defaultValue = "false") boolean full) {
-        List<String> gitRefs = gitWorker.getGitRefs();
-        List<String> filtered = BranchFilter.filterBranches(gitRefs, string -> !string.contains("/renovate"));
+    @ExecuteOn(TaskExecutors.BLOCKING)
+    public HttpResponse<List<String>> getBranches() {
+        List<String> gitRefs = this.githubService.getBranches();
 
-        if (full) {
-            return HttpResponse.ok(filtered).contentType(MediaType.APPLICATION_JSON);
+        if (gitRefs.isEmpty()) {
+            return HttpResponse.ok(gitRefs);
         }
-        List<String> branches = filtered.stream().map(string -> string.replace("refs/heads/", EMPTY_STRING)).toList();
-        return HttpResponse.ok(branches).contentType(MediaType.APPLICATION_JSON);
+
+        List<String> filtered = BranchFilter.filterBranches(gitRefs, string -> !string.contains("renovate"));
+        return HttpResponse.ok(filtered);
     }
 }

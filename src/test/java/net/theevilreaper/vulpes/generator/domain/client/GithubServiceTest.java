@@ -1,7 +1,9 @@
 package net.theevilreaper.vulpes.generator.domain.client;
 
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import net.theevilreaper.vulpes.generator.domain.configuration.GithubConfiguration;
+import net.theevilreaper.vulpes.generator.domain.release.GitBranch;
 import net.theevilreaper.vulpes.generator.domain.release.GitRelease;
 import net.theevilreaper.vulpes.generator.domain.release.GitReleaseDTO;
 import net.theevilreaper.vulpes.generator.domain.release.GitTag;
@@ -17,22 +19,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GithubReleaseServiceTest {
+class GithubServiceTest {
 
     @Mock
-    GithubBuildClient client;
+    GithubClient client;
 
     @Mock
     GithubConfiguration config;
 
-    GithubReleaseService service;
+    GithubService service;
 
     @BeforeEach
     void setUp() {
         when(config.owner()).thenReturn("owner");
         when(config.repo()).thenReturn("repo");
 
-        service = new GithubReleaseService(client, config);
+        service = new GithubService(client, config);
     }
 
     @Test
@@ -83,7 +85,35 @@ class GithubReleaseServiceTest {
                 .thenReturn(List.of());
 
         GitReleaseDTO dto = service.getLatestVersion();
-
         assertEquals(dto, GitReleaseDTO.unknown());
+    }
+
+    @Test
+    void returnsBranchNamesWhenResponseIsSuccessful() {
+        // Mocked response
+        List<GitBranch> branches = List.of(
+                new GitBranch("main", true),
+                new GitBranch("develop", false)
+        );
+        HttpResponse<List<GitBranch>> response = mock(HttpResponse.class);
+        when(response.code()).thenReturn(200);
+        when(response.body()).thenReturn(branches);
+
+        when(client.branches("owner", "repo", 100, 1)).thenReturn(response);
+
+        List<String> result = service.getBranches();
+        assertEquals(List.of("main", "develop"), result);
+    }
+
+    @Test
+    void returnsEmptyListWhenResponseIsNot200() {
+        HttpResponse<List<GitBranch>> response = mock(HttpResponse.class);
+        when(response.code()).thenReturn(404);
+
+        when(client.branches("owner", "repo", 100, 1)).thenReturn(response);
+
+        List<String> result = service.getBranches();
+
+        assertEquals(List.of(), result);
     }
 }

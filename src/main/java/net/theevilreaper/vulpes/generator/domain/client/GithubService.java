@@ -1,9 +1,11 @@
 package net.theevilreaper.vulpes.generator.domain.client;
 
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.theevilreaper.vulpes.generator.domain.configuration.GithubConfiguration;
+import net.theevilreaper.vulpes.generator.domain.release.GitBranch;
 import net.theevilreaper.vulpes.generator.domain.release.GitReleaseDTO;
 import net.theevilreaper.vulpes.generator.domain.release.GitRelease;
 import net.theevilreaper.vulpes.generator.domain.release.GitTag;
@@ -11,23 +13,40 @@ import net.theevilreaper.vulpes.generator.domain.release.GitTag;
 import java.util.List;
 
 @Singleton
-public class GithubReleaseService {
+public class GithubService {
 
-    private final GithubBuildClient client;
+    private final GithubClient client;
     private final GithubConfiguration config;
 
     /**
-     * Creates a new instance of the {@link GithubReleaseService}
+     * Creates a new instance of the {@link GithubService}
      *
-     * @param client the {@link GithubBuildClient} to use for retrieving the latest
+     * @param client the {@link GithubClient} to use for retrieving the latest
      *               release information.
      * @param config the {@link GithubConfiguration} to use for retrieving the
      *               repository information.
      */
     @Inject
-    public GithubReleaseService(GithubBuildClient client, GithubConfiguration config) {
+    public GithubService(GithubClient client, GithubConfiguration config) {
         this.client = client;
         this.config = config;
+    }
+
+    /**
+     * Returns a list of all branches in the repository.
+     *
+     * @return a list of all branches
+     */
+    public List<String> getBranches() {
+        HttpResponse<List<GitBranch>> response = client.branches(config.owner(), config.repo(), 100, 1);
+        if (response.code() != 200) {
+            return List.of();
+        }
+
+        List<GitBranch> branches = response.body();
+        return branches.stream()
+                .map(GitBranch::name)
+                .toList();
     }
 
     /**
