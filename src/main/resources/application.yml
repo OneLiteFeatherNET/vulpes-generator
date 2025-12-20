@@ -40,7 +40,7 @@ jpa:
   default:
     entity-scan:
       packages:
-        - net.theevilreaper.vulpes.persistence.entity
+        - net.onelitefeather.vulpes
     properties:
       hibernate:
         hbm2ddl.auto: none
