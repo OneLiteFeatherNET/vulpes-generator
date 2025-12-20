@@ -130,8 +130,7 @@ micronaut {
     processing {
         incremental(true)
         annotations(
-            "net.onelitefeather.vulpes.*",
-            "net.theevilreaper.vulpes.*"
+            "net.onelitefeather.vulpes.*"
         )
     }
     aot {
