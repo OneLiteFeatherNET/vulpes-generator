@@ -14,11 +14,14 @@ import net.onelitefeather.vulpes.generator.git.GitWorker;
 import net.onelitefeather.vulpes.generator.registry.GeneratorRegistry;
 import net.onelitefeather.vulpes.generator.util.FileHelper;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.GRADLE_PROPERTIES;
 import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
@@ -29,16 +32,17 @@ import static net.onelitefeather.vulpes.generator.util.Constants.ZIP_FILE_NAME;
 @Controller("/download")
 public class VulpesDownloadController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(VulpesDownloadController.class);
     private final GeneratorRegistry registry;
-    private final GitWorker gitWorker;
+    private final GitProjectWorker gitProjectWorker;
 
     @Inject
     public VulpesDownloadController(
             @NotNull GeneratorRegistry registry,
-            @NotNull GitWorker gitWorker
+            @NotNull GitProjectWorker gitProjectWorker
     ) {
         this.registry = registry;
-        this.gitWorker = gitWorker;
+        this.gitProjectWorker = gitProjectWorker;
     }
 
     @Operation(
@@ -65,7 +69,7 @@ public class VulpesDownloadController {
     )
     @Get(produces = "application/octet-stream")
     public @NotNull HttpResponse<File> download(
-            @QueryValue(value = "branch", defaultValue = "master") String branch
+            @QueryValue(value = "branch", defaultValue = "develop") String branch
     ) {
         Path tempPath;
         try {
@@ -83,11 +87,15 @@ public class VulpesDownloadController {
             throw new RuntimeException(e);
         }
 
-        gitWorker.cloneAndCheckout(branch, "", output);
+        Git git = gitProjectWorker.cloneBaseRepo(output, List.of("refs/heads/" + branch));
+
+        if (git == null) {
+            LOGGER.warn("Git clone operation failed for branch: {}", branch);
+            return HttpResponse.serverError();
+        }
+
         var zipStream = getClass().getClassLoader().getResourceAsStream(ZIP_FILE_NAME);
         if (zipStream != null) {
-            var buildGradle = output.resolve(GRADLE_PROPERTIES);
-            applyVulpesData(buildGradle);
             registry.triggerAll(javaPath);
             try {
                 Files.createFile(zipFile);
@@ -96,22 +104,6 @@ public class VulpesDownloadController {
             }
             FileHelper.zipFile(output, zipFile);
         }
-        return HttpResponse.ok(zipFile.toFile()).contentType(MediaType.APPLICATION_OCTET_STREAM);
-    }
-
-    /**
-     * Applies some vulpes relevant data to a file from gradle.
-     *
-     * @param
-     */
-    private void applyVulpesData(Path buildGradle) {
-        /*buildGradle.let {
-            val properties = Properties()
-            properties.load(it.reader())
-            properties["vulpesGroupId"] = BASE_PACKAGE
-            properties["vulpesBaseUrl"] = this.properties.dependencyUrl
-            properties["vulpesVersion"] = version
-            properties.store(it.writer(), "Generated Config")
-        }*/
+        return HttpResponse.ok(zipFile.toFile());
     }
 }

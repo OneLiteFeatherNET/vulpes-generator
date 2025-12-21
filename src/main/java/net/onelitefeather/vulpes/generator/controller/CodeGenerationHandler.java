@@ -28,15 +28,15 @@ import static net.onelitefeather.vulpes.generator.util.Constants.*;
 public class CodeGenerationHandler {
 
     private final CommitConfiguration commitConfiguration;
-    private final GitWorker gitWorker;
+    private final GitProjectWorker gitProjectWorker;
 
     @Inject
     public CodeGenerationHandler(
             @NotNull CommitConfiguration commitConfiguration,
-            @NotNull GitWorker gitWorker
+            @NotNull GitProjectWorker gitProjectWorker
     ) {
         this.commitConfiguration = commitConfiguration;
-        this.gitWorker = gitWorker;
+        this.gitProjectWorker = gitProjectWorker;
     }
 
     @Operation(
@@ -89,33 +89,6 @@ public class CodeGenerationHandler {
             Files.write(gitlabCiFile, yaml.dumpAsMap(objects).getBytes());
         }*/
 
-        CloneCommand cloneCommand = gitWorker.getCloneCommand(output);
-        Git git = null;
-        try {
-            git = cloneCommand.call();
-        } catch (GitAPIException apiException) {
-            apiException.printStackTrace();
-        }
-
-        Files.copy(tempGitlabCi, gitlabCiFile, StandardCopyOption.REPLACE_EXISTING);
-        var add = git.add();
-        add.addFilepattern(gitlabCiFile.toString());
-        try {
-            add.call();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-        var commit = git.commit();
-        commit.setAuthor(this.commitConfiguration.author(), this.commitConfiguration.mail());
-        commit.setMessage(this.commitConfiguration.message());
-        commit.setSign(false);
-        try {
-            commit.call();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-        PushCommand push = git.push();
-        gitWorker.push(push);
         return HttpResponse.ok().contentType(MediaType.APPLICATION_JSON);
     }
 }
