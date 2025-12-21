@@ -10,16 +10,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
-import net.onelitefeather.vulpes.generator.git.GitWorker;
 import net.onelitefeather.vulpes.generator.domain.configuration.CommitConfiguration;
-import org.eclipse.jgit.api.CloneCommand;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import net.onelitefeather.vulpes.generator.git.GitProjectWorker;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.*;

@@ -1,8 +1,8 @@
-package net.theevilreaper.vulpes.generator.git;
+package net.onelitefeather.vulpes.generator.git;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import net.theevilreaper.vulpes.generator.domain.configuration.GithubConfiguration;
+import net.onelitefeather.vulpes.generator.domain.configuration.GithubConfiguration;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
