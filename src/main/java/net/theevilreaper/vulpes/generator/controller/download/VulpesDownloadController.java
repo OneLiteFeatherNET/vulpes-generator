@@ -1,4 +1,4 @@
-package net.onelitefeather.vulpes.generator.controller;
+package net.onelitefeather.vulpes.generator.controller.download;
 
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
