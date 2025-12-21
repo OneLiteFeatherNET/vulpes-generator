@@ -31,6 +31,8 @@ dependencies {
     // SQL (JPA / read-only)
     implementation(mn.micronaut.jdbc.hikari)
     implementation(mn.micronaut.hibernate.jpa)
+    implementation(mn.micronaut.data.hibernate.jpa)
+    implementation(mn.micronaut.data.tx.hibernate)
     implementation(mn.mariadb.java.client)
     implementation(mn.micronaut.data.jpa)
 

@@ -10,16 +10,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
-import net.onelitefeather.vulpes.generator.git.GitWorker;
 import net.onelitefeather.vulpes.generator.domain.configuration.CommitConfiguration;
-import org.eclipse.jgit.api.CloneCommand;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import net.onelitefeather.vulpes.generator.git.GitProjectWorker;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.Files;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.*;
@@ -28,15 +23,15 @@ import static net.onelitefeather.vulpes.generator.util.Constants.*;
 public class CodeGenerationHandler {
 
     private final CommitConfiguration commitConfiguration;
-    private final GitWorker gitWorker;
+    private final GitProjectWorker gitProjectWorker;
 
     @Inject
     public CodeGenerationHandler(
             @NotNull CommitConfiguration commitConfiguration,
-            @NotNull GitWorker gitWorker
+            @NotNull GitProjectWorker gitProjectWorker
     ) {
         this.commitConfiguration = commitConfiguration;
-        this.gitWorker = gitWorker;
+        this.gitProjectWorker = gitProjectWorker;
     }
 
     @Operation(
@@ -89,33 +84,6 @@ public class CodeGenerationHandler {
             Files.write(gitlabCiFile, yaml.dumpAsMap(objects).getBytes());
         }*/
 
-        CloneCommand cloneCommand = gitWorker.getCloneCommand(output);
-        Git git = null;
-        try {
-            git = cloneCommand.call();
-        } catch (GitAPIException apiException) {
-            apiException.printStackTrace();
-        }
-
-        Files.copy(tempGitlabCi, gitlabCiFile, StandardCopyOption.REPLACE_EXISTING);
-        var add = git.add();
-        add.addFilepattern(gitlabCiFile.toString());
-        try {
-            add.call();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-        var commit = git.commit();
-        commit.setAuthor(this.commitConfiguration.author(), this.commitConfiguration.mail());
-        commit.setMessage(this.commitConfiguration.message());
-        commit.setSign(false);
-        try {
-            commit.call();
-        } catch (GitAPIException e) {
-            throw new RuntimeException(e);
-        }
-        PushCommand push = git.push();
-        gitWorker.push(push);
         return HttpResponse.ok().contentType(MediaType.APPLICATION_JSON);
     }
 }

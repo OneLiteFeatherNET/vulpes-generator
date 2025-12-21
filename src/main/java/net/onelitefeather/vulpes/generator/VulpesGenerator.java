@@ -1,6 +1,5 @@
 package net.onelitefeather.vulpes.generator;
 
-import io.micronaut.context.annotation.Import;
 import io.micronaut.runtime.Micronaut;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
@@ -24,12 +23,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
                 @Tag(name = "download", description = "Download generation"),
                 @Tag(name = "build", description = "Build information"),
         }
-)
-@Import(
-        packages = {
-                "net.theevilreaper.vulpes.*",
-        },
-        annotated = "*"
 )
 public class VulpesGenerator {
 
