@@ -72,27 +72,6 @@ dependencies {
 }
 
 tasks {
-    register<Zip>("gradleTemplateZip") {
-        exclude("DS_Store")
-        archiveFileName.set("gradle_template.zip")
-        destinationDirectory.set(file("src/main/resources"))
-        from("${rootDir}/assets/gradle_template")
-    }
-
-    register<Copy>("copyGitlabCiFile") {
-        from("$rootDir/assets/gitlab/.gitlab-ci.yml")
-        into("src/main/resources")
-    }
-
-    inspectRuntimeClasspath {
-        dependsOn("processResources")
-    }
-
-    processResources {
-        dependsOn("gradleTemplateZip")
-        dependsOn("copyGitlabCiFile")
-    }
-
     jacocoTestReport {
         dependsOn(project.tasks.test)
         reports {
