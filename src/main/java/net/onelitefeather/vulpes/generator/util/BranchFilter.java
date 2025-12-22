@@ -17,7 +17,6 @@ public final class BranchFilter {
      * @return a list with the filtered branches
      */
     public static @NotNull List<String> filterBranches(@NotNull List<String> branches, @NotNull BranchFilterConfiguration filterConfiguration) {
-        System.out.println("Excluding branches: " + filterConfiguration.exclude());
         return branches.stream().filter(entry ->
                         filterConfiguration.exclude().stream()
                                 .noneMatch(entry::startsWith)
