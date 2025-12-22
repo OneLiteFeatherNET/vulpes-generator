@@ -52,3 +52,10 @@ filter:
   exclude:
     - renovate
     - dependabot
+
+github:
+  owner: ${GITHUB_OWNER:OneLiteFeatherNET}
+  repo: ${GITHUB_REPO:vulpes}
+  clone-url: ${GITHUB_CLONE_URL:https://github.com/onelitefeather/vulpes.git}
+  username: ${GITHUB_USERNAME:vulpes}
+  password: ${GITHUB_PASSWORD:}
