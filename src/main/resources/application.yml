@@ -56,6 +56,6 @@ filter:
 github:
   owner: ${GITHUB_OWNER:OneLiteFeatherNET}
   repo: ${GITHUB_REPO:vulpes}
-  clone-url: ${GITHUB_CLONE_URL:https://github.com/onelitefeather/vulpes.git}
+  clone-url: ${GITHUB_CLONE_URL:https://github.com/OneLiteFeatherNET/vulpes-base.git}
   username: ${GITHUB_USERNAME:vulpes}
   password: ${GITHUB_PASSWORD:}
