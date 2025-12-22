@@ -26,7 +26,6 @@ import java.util.List;
 import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 import static net.onelitefeather.vulpes.generator.util.Constants.OUT_PUT_FOLDER;
 import static net.onelitefeather.vulpes.generator.util.Constants.TEMP_PREFIX;
-import static net.onelitefeather.vulpes.generator.util.Constants.ZIP_FILE_NAME;
 
 @Controller("/download")
 public class VulpesDownloadController {
@@ -93,16 +92,13 @@ public class VulpesDownloadController {
             return HttpResponse.serverError();
         }
 
-        var zipStream = getClass().getClassLoader().getResourceAsStream(ZIP_FILE_NAME);
-        if (zipStream != null) {
-            registry.triggerAll(javaPath);
-            try {
-                Files.createFile(zipFile);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            FileHelper.zipFile(output, zipFile);
+        registry.triggerAll(javaPath);
+        try {
+            Files.createFile(zipFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        FileHelper.zipFile(output, zipFile);
         return HttpResponse.ok(zipFile.toFile());
     }
 }
