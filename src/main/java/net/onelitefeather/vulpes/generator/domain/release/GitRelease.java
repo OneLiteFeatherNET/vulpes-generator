@@ -10,8 +10,10 @@ import java.time.OffsetDateTime;
  *
  * @param tagName     the tag name of the release
  * @param name        the name of the release
- * @param htmlUrl     the url to the release on github
+ * @param htmlUrl     the url to the release on Github
  * @param publishedAt the date when the release was published
+ * @param prerelease  whether the release is a prerelease or not
+ * @param targetCommitish the commit hash of the release or branch
  * @author theEvilReaper
  * @version 1.0.0
  * @since 1.0.0
@@ -24,7 +26,11 @@ public record GitRelease(
         @JsonProperty("html_url")
         String htmlUrl,
         @JsonProperty("published_at")
-        OffsetDateTime publishedAt
+        OffsetDateTime publishedAt,
+        @JsonProperty("prerelease")
+        boolean prerelease,
+        @JsonProperty("target_commitish")
+        String targetCommitish
 ) {
 
 }

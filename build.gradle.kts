@@ -5,7 +5,7 @@ plugins {
     id("org.openapi.generator") version "7.17.0"
 }
 
-group = "net.theevilreaper"
+group = "net.onelitefeather"
 version = "0.0.1-SNAPSHOT"
 
 java {
