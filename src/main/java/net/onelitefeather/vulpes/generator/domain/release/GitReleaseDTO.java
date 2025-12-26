@@ -28,7 +28,8 @@ public record GitReleaseDTO(
         @Schema(description = "Whether the release is a prerelease or not", example = "false", requiredMode = Schema.RequiredMode.REQUIRED)
         boolean prerelease,
         @Schema(description = "The commit hash of the release or branch", example = "master", requiredMode = Schema.RequiredMode.REQUIRED)
-        String targetCommit
+        // The naming of this comes from the official api https://docs.github.com/en/rest/releases/releases. Search for target_commitish
+        String targetCommitish
 ) {
 
     /**

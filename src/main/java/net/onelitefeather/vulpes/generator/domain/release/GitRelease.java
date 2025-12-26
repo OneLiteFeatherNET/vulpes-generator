@@ -30,6 +30,7 @@ public record GitRelease(
         @JsonProperty("prerelease")
         boolean prerelease,
         @JsonProperty("target_commitish")
+        // The naming of this comes from the official api https://docs.github.com/en/rest/releases/releases. Search for target_commitish
         String targetCommitish
 ) {
 
