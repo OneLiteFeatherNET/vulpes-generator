@@ -37,7 +37,7 @@ class GitReleaseControllerIntegrationTest {
 
     @Test
     void getBuildInformationEndpoint() {
-        GitReleaseDTO dto = new GitReleaseDTO("v1.2.3", null, OffsetDateTime.now());
+        GitReleaseDTO dto = new GitReleaseDTO("v1.2.3", null, OffsetDateTime.now(), false, "master");
         when(service.getLatestVersion()).thenReturn(dto);
 
         HttpRequest<?> request = HttpRequest.GET("/build/data");

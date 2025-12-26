@@ -26,7 +26,7 @@ class GitReleaseControllerUnitTest {
 
     @Test
     void returnsLatestVersion() {
-        GitReleaseDTO dto = new GitReleaseDTO("v1.2.3", "", OffsetDateTime.now());
+        GitReleaseDTO dto = new GitReleaseDTO("v1.2.3", "", OffsetDateTime.now(), true, "develop");
         when(service.getLatestVersion()).thenReturn(dto);
 
         HttpResponse<GitReleaseDTO> response = controller.getBuildInformation();
