@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import net.onelitefeather.vulpes.generator.domain.generation.GenerationResponse;
 
 @Controller("/vulpes")
 public class VulpesGenerationController {
@@ -23,11 +24,11 @@ public class VulpesGenerationController {
             description = "The generation was successful",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Object.class)
+                    schema = @Schema(implementation = GenerationResponse.class)
             )
     )
     @Get("/generate")
-    public HttpResponse<Object> generateProject(@QueryValue(value = "branch") String branch) {
+    public HttpResponse<GenerationResponse> generateProject(@QueryValue(value = "branch") String branch) {
         return HttpResponse.ok();
     }
 }

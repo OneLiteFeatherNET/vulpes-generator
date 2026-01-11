@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import net.onelitefeather.vulpes.generator.domain.generation.GenerationResponse;
 
 @Controller("/pack")
 public class PackGenerationController {
@@ -22,11 +23,11 @@ public class PackGenerationController {
             description = "The generation was successful",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Object.class)
+                    schema = @Schema(implementation = GenerationResponse.class)
             )
     )
     @Get("/generate")
-    public HttpResponse<Object> generateResourcePack() {
+    public HttpResponse<GenerationResponse> generateResourcePack() {
         return HttpResponse.ok();
     }
 
