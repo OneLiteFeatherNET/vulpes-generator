@@ -4,43 +4,43 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.QueryValue;
+import io.micronaut.http.server.types.files.SystemFile;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
-import net.onelitefeather.vulpes.generator.git.GitProjectWorker;
-import net.onelitefeather.vulpes.generator.registry.GeneratorRegistry;
+import net.onelitefeather.vulpes.generator.domain.client.GithubService;
+import net.onelitefeather.vulpes.generator.domain.generation.GenerationResponse;
+import net.onelitefeather.vulpes.generator.domain.generation.VulpesGenerationService;
+import net.onelitefeather.vulpes.generator.domain.generation.exception.GenerationException;
 import net.onelitefeather.vulpes.generator.util.FileHelper;
-import org.eclipse.jgit.api.Git;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
-import static net.onelitefeather.vulpes.generator.util.Constants.OUT_PUT_FOLDER;
-import static net.onelitefeather.vulpes.generator.util.Constants.TEMP_PREFIX;
-
 @Controller("/download")
+@ExecuteOn(TaskExecutors.BLOCKING)
 public class VulpesDownloadController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VulpesDownloadController.class);
-    private final GeneratorRegistry registry;
-    private final GitProjectWorker gitProjectWorker;
+
+    private final VulpesGenerationService generationService;
+    private final GithubService githubService;
 
     @Inject
     public VulpesDownloadController(
-            @NotNull GeneratorRegistry registry,
-            @NotNull GitProjectWorker gitProjectWorker
+            VulpesGenerationService generationService,
+            GithubService githubService
     ) {
-        this.registry = registry;
-        this.gitProjectWorker = gitProjectWorker;
+        this.generationService = generationService;
+        this.githubService = githubService;
     }
 
     @Operation(
@@ -58,47 +58,62 @@ public class VulpesDownloadController {
             )
     )
     @ApiResponse(
-            responseCode = "500",
-            description = "An error occurred during download",
+            responseCode = "400",
+            description = "Invalid branch or no branches available",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = String.class)
+                    schema = @Schema(implementation = GenerationResponse.GenerationErrorResponseDTO.class)
             )
     )
-    @Get(produces = "application/octet-stream")
-    public @NotNull HttpResponse<File> download(
+    @ApiResponse(
+            responseCode = "500",
+            description = "An error occurred during generation",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = GenerationResponse.GenerationErrorResponseDTO.class)
+            )
+    )
+    @Get()
+    public @NotNull HttpResponse<Object> download(
             @QueryValue(value = "branch", defaultValue = "develop") String branch
     ) {
-        Path tempPath;
+        List<String> activeBranches = this.githubService.getBranches();
+
+        if (activeBranches.isEmpty()) {
+            return HttpResponse.badRequest(
+                    new GenerationResponse.GenerationErrorResponseDTO("No branches available")
+            );
+        }
+
+        if (!activeBranches.contains(branch)) {
+            return HttpResponse.badRequest(
+                    new GenerationResponse.GenerationErrorResponseDTO(
+                            "Branch '" + branch + "' does not exist. Available branches: " + String.join(", ", activeBranches)
+                    )
+            );
+        }
+
         try {
-            tempPath = Files.createTempDirectory(TEMP_PREFIX);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        var output = tempPath.resolve(OUT_PUT_FOLDER);
-        var zipFile = tempPath.resolve(OUT_PUT_FOLDER + ".zip");
-        var javaPath = output.resolve(JAVA_MAIM_FOLDER);
+            Path generatedProject = this.generationService.getVulpesGeneration(branch);
+            Path zipFile = generatedProject.getParent().resolve("vulpes-" + branch + ".zip");
+            FileHelper.zipFile(generatedProject, zipFile);
 
-        try {
-            Files.createDirectories(output);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            SystemFile systemFile = new SystemFile(zipFile.toFile()).attach("vulpes-" + branch + ".zip");
+            return HttpResponse.ok(systemFile);
+        } catch (GenerationException exception) {
+            LOGGER.error("Generation failed for branch: {}", branch, exception);
+            return HttpResponse.serverError(
+                    new GenerationResponse.GenerationErrorResponseDTO(
+                            "Generation failed: " + exception.getMessage()
+                    )
+            );
+        } catch (Exception exception) {
+            LOGGER.error("Failed to create zip file for branch: {}", branch, exception);
+            return HttpResponse.serverError(
+                    new GenerationResponse.GenerationErrorResponseDTO(
+                            "Failed to create zip file: " + exception.getMessage()
+                    )
+            );
         }
-
-        Git git = gitProjectWorker.cloneBaseRepo(output, List.of("refs/heads/" + branch));
-
-        if (git == null) {
-            LOGGER.warn("Git clone operation failed for branch: {}", branch);
-            return HttpResponse.serverError();
-        }
-
-        registry.triggerAll(javaPath);
-        try {
-            Files.createFile(zipFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        FileHelper.zipFile(output, zipFile);
-        return HttpResponse.ok(zipFile.toFile());
     }
 }

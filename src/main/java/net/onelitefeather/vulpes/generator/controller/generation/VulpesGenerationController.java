@@ -8,10 +8,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.inject.Inject;
 import net.onelitefeather.vulpes.generator.domain.generation.GenerationResponse;
+import net.onelitefeather.vulpes.generator.domain.generation.VulpesGenerationService;
 
 @Controller("/vulpes")
 public class VulpesGenerationController {
+
+    private final VulpesGenerationService generationService;
+
+    @Inject
+    public VulpesGenerationController(VulpesGenerationService generationService) {
+        this.generationService = generationService;
+    }
 
     @Operation(
             summary = "Generate a new Vulpes version",
