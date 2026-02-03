@@ -13,7 +13,6 @@ import net.minestom.server.item.Material;
 import net.onelitefeather.vulpes.api.model.NotificationEntity;
 import net.onelitefeather.vulpes.api.repository.NotificationRepository;
 import net.onelitefeather.vulpes.generator.generation.AbstractCodeGenerator;
-import net.onelitefeather.vulpes.generator.generation.JavaStructure;
 import net.onelitefeather.vulpes.generator.util.FrameTypeParser;
 import net.onelitefeather.vulpes.generator.util.MaterialParser;
 import org.jetbrains.annotations.NotNull;

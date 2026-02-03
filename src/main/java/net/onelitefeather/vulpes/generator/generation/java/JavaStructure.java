@@ -1,4 +1,4 @@
-package net.onelitefeather.vulpes.generator.generation;
+package net.onelitefeather.vulpes.generator.generation.java;
 
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.MethodSpec;

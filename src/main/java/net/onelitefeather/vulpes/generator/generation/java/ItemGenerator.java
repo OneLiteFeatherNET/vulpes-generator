@@ -18,7 +18,6 @@ import net.onelitefeather.vulpes.api.model.ItemEntity;
 import net.onelitefeather.vulpes.api.model.item.ItemEnchantmentEntity;
 import net.onelitefeather.vulpes.api.repository.ItemRepository;
 import net.onelitefeather.vulpes.generator.generation.AbstractCodeGenerator;
-import net.onelitefeather.vulpes.generator.generation.JavaStructure;
 import net.onelitefeather.vulpes.generator.util.MaterialParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

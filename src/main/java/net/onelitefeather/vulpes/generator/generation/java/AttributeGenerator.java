@@ -9,7 +9,6 @@ import net.minestom.server.entity.attribute.Attribute;
 import net.onelitefeather.vulpes.api.model.AttributeEntity;
 import net.onelitefeather.vulpes.api.repository.AttributeRepository;
 import net.onelitefeather.vulpes.generator.generation.AbstractCodeGenerator;
-import net.onelitefeather.vulpes.generator.generation.JavaStructure;
 import org.jetbrains.annotations.NotNull;
 
 import javax.lang.model.element.Modifier;

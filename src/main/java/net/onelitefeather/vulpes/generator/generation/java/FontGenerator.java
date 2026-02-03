@@ -6,7 +6,6 @@ import jakarta.inject.Inject;
 import net.onelitefeather.vulpes.api.model.FontEntity;
 import net.onelitefeather.vulpes.api.repository.FontRepository;
 import net.onelitefeather.vulpes.generator.generation.AbstractCodeGenerator;
-import net.onelitefeather.vulpes.generator.generation.JavaStructure;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
