@@ -1,6 +1,5 @@
 package net.onelitefeather.vulpes.generator.generation;
 
-import com.google.common.base.CaseFormat;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 import net.onelitefeather.vulpes.api.model.VulpesModel;
@@ -112,16 +111,6 @@ public abstract class AbstractCodeGenerator<T extends VulpesModel> implements Ge
     public void cleanup() {
         this.filesToGenerate.clear();
         this.classBuilder = getClassType(this.classType);
-    }
-
-    /**
-     * Changes the format of the given name from UPPER_CAMEL to UPPER_UNDERSCORE.
-     *
-     * @param name the name to change format
-     * @return the name in UPPER_UNDERSCORE format
-     */
-    protected String changeFormat(String name) {
-        return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name);
     }
 
     /**
