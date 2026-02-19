@@ -34,7 +34,7 @@ dependencyResolutionManagement {
             version("vulpes.base", "0.5.1")
             version("vulpes.model", "1.7.1")
             version("mycelium", "1.6.1")
-            version("jetbrains.annotation", "26.0.2-1")
+            version("jetbrains.annotation", "26.1.0")
             version("javapoet", "1.13.0")
             version("jgit", "7.5.0.202512021534-r")
             version("guava", "33.5.0-jre")
