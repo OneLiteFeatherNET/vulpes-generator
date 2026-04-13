@@ -1,4 +1,4 @@
-FROM docker.io/eclipse-temurin:25-jdk-alpine
+FROM docker.io/eclipse-temurin:26-jdk-alpine
 VOLUME /tmp
 ARG JAR_FILE
 COPY ${JAR_FILE} app.jar
