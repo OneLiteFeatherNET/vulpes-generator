@@ -38,7 +38,7 @@ dependencyResolutionManagement {
             version("javapoet", "1.13.0")
             version("jgit", "7.6.0.202603022253-r")
             version("guava", "33.6.0-jre")
-            version("commons.io", "2.21.0")
+            version("commons.io", "2.22.0")
             version("commons.compress", "1.28.0")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
