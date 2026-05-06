@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.micronaut.application)
     alias(libs.plugins.micronaut.aot)
     jacoco
-    id("org.openapi.generator") version "7.21.0"
+    id("org.openapi.generator") version "7.22.0"
 }
 
 group = "net.onelitefeather"
