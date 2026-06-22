@@ -59,3 +59,25 @@ github:
   clone-url: ${GITHUB_CLONE_URL:https://github.com/OneLiteFeatherNET/vulpes-base.git}
   username: ${GITHUB_USERNAME:vulpes}
   password: ${GITHUB_PASSWORD:}
+
+# OpenTelemetry — tracing is disabled unless OTEL_TRACES_EXPORTER=otlp is set
+# (do this in the Docker/prod container). HTTP (server/client) and JDBC spans
+# are instrumented automatically once enabled.
+otel:
+  service:
+    name: ${OTEL_SERVICE_NAME:vulpes-generator}
+  traces:
+    exporter: ${OTEL_TRACES_EXPORTER:none}
+  metrics:
+    exporter: none
+  logs:
+    exporter: none
+  exporter:
+    otlp:
+      protocol: grpc
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:`http://localhost:4317`}
+  exclusions:
+    - /swagger
+    - /swagger/.*
+    - /swagger-ui
+    - /swagger-ui/.*

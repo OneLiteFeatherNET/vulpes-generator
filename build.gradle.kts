@@ -45,6 +45,17 @@ dependencies {
 
     // Logging
     implementation(mn.logback.classic)
+    // Distributed tracing (OpenTelemetry). Spans/export are only active when
+    // OTEL_TRACES_EXPORTER=otlp is set (prod/Docker) — see application.yml.
+    implementation(mn.micronaut.tracing.opentelemetry.http)
+    implementation(mn.micronaut.tracing.opentelemetry.jdbc)
+    implementation(libs.opentelemetry.exporter.otlp)
+    // Structured JSON logging for Grafana Loki + trace/log correlation.
+    // logstash encoder renders JSON; the OTel MDC appender injects trace_id/span_id.
+    implementation(libs.logstash.logback.encoder)
+    implementation(libs.opentelemetry.logback.mdc)
+    // Enables the <if>/<then>/<else> conditional in logback.xml.
+    runtimeOnly(libs.janino)
 
     implementation(mn.micronaut.openapi)
     implementation(mn.swagger.core)
@@ -125,7 +136,9 @@ micronaut {
         optimizeClassLoading = false
         deduceEnvironment = true
         optimizeNetty = true
-        replaceLogbackXml = true
+        // Keep logback.xml parsed at runtime so its <if> JSON/plain switch and the
+        // OpenTelemetry MDC appender work (AOT replacement would inline a static config).
+        replaceLogbackXml = false
     }
 }
 
