@@ -40,6 +40,9 @@ dependencyResolutionManagement {
             version("guava", "33.6.0-jre")
             version("commons.io", "2.22.0")
             version("commons.compress", "1.28.0")
+            version("logstash.logback.encoder", "8.1")
+            version("janino", "3.1.12")
+            version("opentelemetry.instrumentation.alpha", "2.20.1-alpha")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
@@ -53,6 +56,13 @@ dependencyResolutionManagement {
             library("guava", "com.google.guava", "guava").versionRef("guava")
             library("commons.io", "commons-io", "commons-io").versionRef("commons.io")
             library("commons.compress", "org.apache.commons", "commons-compress").versionRef("commons.compress")
+
+            // Observability — JSON logging + OpenTelemetry (see build.gradle.kts).
+            // OTLP exporter version is managed by the Micronaut platform BOM.
+            library("logstash.logback.encoder", "net.logstash.logback", "logstash-logback-encoder").versionRef("logstash.logback.encoder")
+            library("janino", "org.codehaus.janino", "janino").versionRef("janino")
+            library("opentelemetry.exporter.otlp", "io.opentelemetry", "opentelemetry-exporter-otlp").withoutVersion()
+            library("opentelemetry.logback.mdc", "io.opentelemetry.instrumentation", "opentelemetry-logback-mdc-1.0").versionRef("opentelemetry.instrumentation.alpha")
 
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
