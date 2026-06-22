@@ -1,14 +1,40 @@
 <configuration>
+    <!--
+      Logging is human-readable by default (local dev) and switches to structured
+      JSON on stdout when LOG_JSON=true (set this in the Docker/prod container) so
+      Grafana Loki can index the fields. The OpenTelemetry MDC appender injects
+      trace_id/span_id/trace_flags into the MDC for log <-> trace correlation.
+    -->
+    <property name="LOG_JSON" value="${LOG_JSON:-false}"/>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- encoders are assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
-        <encoder>
-            <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n</pattern>
-        </encoder>
+    <if condition='"true".equalsIgnoreCase(property("LOG_JSON"))'>
+        <then>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <fieldNames>
+                        <timestamp>timestamp</timestamp>
+                        <message>message</message>
+                        <logger>logger</logger>
+                        <thread>thread</thread>
+                        <level>level</level>
+                    </fieldNames>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+                    <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </else>
+    </if>
+
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+        <appender-ref ref="STDOUT"/>
     </appender>
 
-    <root level="info">
-        <appender-ref ref="STDOUT" />
+    <root level="INFO">
+        <appender-ref ref="OTEL"/>
     </root>
 </configuration>
