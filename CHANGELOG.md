@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.1.0...v0.1.1) (2026-06-22)
+
+
+### Bug Fixes
+
+* **publish:** publish only the thin jar (dist artifacts exceed repo limit) ([#124](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/124)) ([c776624](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/c7766249257c4fe27b86b084a9785600c5dd42b5))
+* **publish:** publish only the thin jar (dist tar/zip exceed repo limit) ([c776624](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/c7766249257c4fe27b86b084a9785600c5dd42b5))
+
 ## [0.1.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.0.1...v0.1.0) (2026-06-22)
 
 
