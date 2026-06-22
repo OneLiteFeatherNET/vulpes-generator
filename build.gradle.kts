@@ -2,11 +2,12 @@ plugins {
     alias(libs.plugins.micronaut.application)
     alias(libs.plugins.micronaut.aot)
     jacoco
+    `maven-publish`
     id("org.openapi.generator") version "7.23.0"
 }
 
-group = "net.onelitefeather"
-version = "0.0.1-SNAPSHOT"
+// group comes from gradle.properties; strip the release-please annotation comment.
+version = (version as String).substringBefore('#').trim()
 
 java {
     toolchain {
@@ -125,5 +126,65 @@ micronaut {
         deduceEnvironment = true
         optimizeNetty = true
         replaceLogbackXml = true
+    }
+}
+
+publishing {
+    publications.create<MavenPublication>("maven") {
+        artifact(project.tasks.optimizedJitJar)
+        artifact(project.tasks.optimizedRunnerJitJar)
+        artifact(project.tasks.runnerJar)
+        artifact(project.tasks.jar)
+        artifact(project.tasks.optimizedDistTar)
+        artifact(project.tasks.optimizedDistZip)
+
+        version = rootProject.version as String
+        artifactId = "vulpes-generator"
+        groupId = rootProject.group as String
+        pom {
+            name = "Vulpes Generator"
+            description = "Code/asset generator for OneLiteFeather's Vulpes project."
+            url = "https://github.com/OneLiteFeatherNET/vulpes-generator"
+            licenses {
+                license {
+                    name = "AGPL-3.0"
+                    url = "https://www.gnu.org/licenses/agpl-3.0.en.html"
+                }
+            }
+            developers {
+                developer {
+                    id = "themeinerlp"
+                    name = "Phillipp Glanz"
+                    email = "p.glanz@madfix.me"
+                }
+                developer {
+                    id = "theEvilReaper"
+                    name = "Steffen Wonning"
+                    email = "steffenwx@gmail.com"
+                }
+            }
+            scm {
+                connection = "scm:git:git://github.com:OneLiteFeatherNET/vulpes-generator.git"
+                developerConnection = "scm:git:ssh://git@github.com:OneLiteFeatherNET/vulpes-generator.git"
+                url = "https://github.com/OneLiteFeatherNET/vulpes-generator"
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            authentication {
+                credentials(PasswordCredentials::class) {
+                    // Those credentials need to be set under "Settings -> Secrets -> Actions" in your repository
+                    username = System.getenv("ONELITEFEATHER_MAVEN_USERNAME")
+                    password = System.getenv("ONELITEFEATHER_MAVEN_PASSWORD")
+                }
+            }
+
+            name = "OneLiteFeatherRepository"
+            val releasesRepoUrl = uri("https://repo.onelitefeather.dev/onelitefeather-releases")
+            val snapshotsRepoUrl = uri("https://repo.onelitefeather.dev/onelitefeather-snapshots")
+            url = if (version.toString().contains("BETA") || version.toString().contains("ALPHA") || version.toString().contains("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+        }
     }
 }
