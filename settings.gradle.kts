@@ -40,7 +40,7 @@ dependencyResolutionManagement {
             version("guava", "33.6.0-jre")
             version("commons.io", "2.22.0")
             version("commons.compress", "1.28.0")
-            version("logstash.logback.encoder", "8.1")
+            version("logstash.logback.encoder", "9.0")
             version("janino", "3.1.12")
             version("opentelemetry.instrumentation.alpha", "2.20.1-alpha")
 
