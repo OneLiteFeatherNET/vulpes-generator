@@ -37,7 +37,7 @@ dependencyResolutionManagement {
             version("jetbrains.annotation", "26.1.0")
             version("javapoet", "1.13.0")
             version("jgit", "7.7.1.202607240634-r")
-            version("guava", "33.6.0-jre")
+            version("guava", "33.7.1-jre")
             version("commons.io", "2.22.0")
             version("commons.compress", "1.28.0")
             version("logstash.logback.encoder", "9.0")
