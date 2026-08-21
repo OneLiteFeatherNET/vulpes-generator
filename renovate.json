@@ -1,12 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
-    ":semanticCommitsDisabled"
-  ],
-  "rebaseWhen": "conflicted",
-  "labels": [
-    "Renovate"
+    "github>OneLiteFeatherNET/renovate:default(OneLiteFeatherNET/vulpes-maintainer)"
   ],
   "packageRules": [
     {
