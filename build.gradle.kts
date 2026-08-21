@@ -7,7 +7,7 @@ plugins {
 }
 
 // group comes from gradle.properties; strip the release-please annotation comment.
-version = (version as String).substringBefore('#').trim()
+version = "0.1.1" // x-release-please-version
 
 java {
     toolchain {
