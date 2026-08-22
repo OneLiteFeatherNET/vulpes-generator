@@ -32,7 +32,7 @@ dependencyResolutionManagement {
         create("libs") {
             version("micronaut", "5.0.2")
             version("vulpes.base", "0.5.1")
-            version("vulpes.model", "1.7.1")
+            version("vulpes.model", "1.8.1")
             version("mycelium", "1.8.2")
             version("jetbrains.annotation", "26.1.0")
             version("javapoet", "1.13.0")
