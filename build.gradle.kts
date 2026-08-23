@@ -27,7 +27,6 @@ dependencies {
 
     // Micronaut runtime
     implementation(mn.micronaut.runtime)
-    implementation(mn.micronaut.http.client)
 
     // SQL (JPA / read-only)
     implementation(mn.micronaut.jdbc.hikari)
