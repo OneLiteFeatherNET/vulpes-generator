@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * The {@link AbstractCodeGenerator} is an abstract implementation of the {@link Generator} interface that provides common functionality for generating code files.
@@ -129,7 +130,7 @@ public abstract class AbstractCodeGenerator<T extends VulpesModel> implements Ge
      *
      * @return a list of models
      */
-    protected abstract List<T> getModels();
+    protected abstract List<T> getModels(@NotNull UUID projectId);
 
     /**
      * Returns the right TypeSpec.Builder based on the class type.

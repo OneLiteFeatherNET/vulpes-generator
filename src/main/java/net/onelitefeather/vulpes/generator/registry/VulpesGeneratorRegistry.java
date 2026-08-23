@@ -11,6 +11,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -65,8 +66,8 @@ final class VulpesGeneratorRegistry implements GeneratorRegistry {
      * {@inheritDoc}
      */
     @Override
-    public void triggerAll(@NotNull Path path) {
-        this.generators.values().forEach(generator -> generator.get().generate(path));
+    public void triggerAll(@NotNull Path path, @NotNull UUID projectId) {
+        this.generators.values().forEach(generator -> generator.get().generate(path, projectId));
     }
 
     /**
