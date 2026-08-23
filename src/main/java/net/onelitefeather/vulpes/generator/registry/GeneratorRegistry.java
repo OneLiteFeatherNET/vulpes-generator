@@ -8,6 +8,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Defines the contract for a registry managing {@link AbstractCodeGenerator} instances.
@@ -48,7 +49,7 @@ public sealed interface GeneratorRegistry permits VulpesGeneratorRegistry {
      *
      * @param path the target path where generation should occur.
      */
-    void triggerAll(@NotNull Path path);
+    void triggerAll(@NotNull Path path, @NotNull UUID projectId);
 
     /**
      * Returns an unmodifiable view of the registered generators.

@@ -4,6 +4,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import io.micronaut.context.annotation.Prototype;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Inject;
 import net.minestom.server.entity.attribute.Attribute;
 import net.onelitefeather.vulpes.api.model.AttributeEntity;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
@@ -34,13 +36,13 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
     }
 
     @Override
-    protected List<AttributeEntity> getModels() {
-        return this.attributeRepository.findAll();
+    protected List<AttributeEntity> getModels(@NotNull UUID projectId) {
+        return this.attributeRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
     }
 
     @Override
-    public void generate(@NotNull Path javaPath) {
-        List<AttributeEntity> attributeModels = this.getModels();
+    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+        List<AttributeEntity> attributeModels = this.getModels(projectId);
 
         if (attributeModels.isEmpty()) {
             logger.info("No attributes found. Skipping the generation");

@@ -5,6 +5,7 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import io.micronaut.context.annotation.Prototype;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Inject;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.advancements.Advancement;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
@@ -38,13 +40,13 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationEnt
     }
 
     @Override
-    protected List<NotificationEntity> getModels() {
-        return this.notificationRepository.findAll();
+    protected List<NotificationEntity> getModels(@NotNull UUID projectId) {
+        return this.notificationRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
     }
 
     @Override
-    public void generate(@NotNull Path javaPath) {
-        var models = getModels();
+    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+        var models = getModels(projectId);
         if (models.isEmpty()) return;
 
         addClassModifiers(this.classBuilder);

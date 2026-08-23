@@ -2,6 +2,7 @@ package net.onelitefeather.vulpes.generator.generation.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.api.model.AttributeEntity;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 @Singleton
 public class AttributeJsonGenerator extends FileGenerator {
@@ -27,7 +29,7 @@ public class AttributeJsonGenerator extends FileGenerator {
     }
 
     @Override
-    public void generate(@NotNull Path javaPath) {
+    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
         Path filePath = javaPath.resolve(fileName);
         try {
             Files.createFile(filePath);
@@ -35,7 +37,7 @@ public class AttributeJsonGenerator extends FileGenerator {
             throw new RuntimeException(e);
         }
 
-        List<AttributeEntity> entities = this.attributeRepository.findAll();
+        List<AttributeEntity> entities = this.attributeRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
 
         JsonArray elements = new JsonArray();
 

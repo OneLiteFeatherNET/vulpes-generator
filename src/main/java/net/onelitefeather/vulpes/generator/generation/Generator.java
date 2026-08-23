@@ -3,6 +3,7 @@ package net.onelitefeather.vulpes.generator.generation;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
 /**
  * The {@link Generator} interface defines the base method structure which each implementations needs to work with the current system approach.
@@ -16,7 +17,7 @@ public interface Generator {
     /**
      * Each generator must implement his own logic for this method
      */
-    void generate(@NotNull Path javaPath);
+    void generate(@NotNull Path javaPath, @NotNull UUID projectId);
 
     /**
      * Returns the name of the generator

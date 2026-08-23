@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 import static net.onelitefeather.vulpes.generator.util.Constants.OUT_PUT_FOLDER;
@@ -67,7 +68,8 @@ public class VulpesDownloadController {
     )
     @Get(produces = "application/octet-stream")
     public @NotNull HttpResponse<File> download(
-            @QueryValue(value = "branch", defaultValue = "develop") String branch
+            @QueryValue(value = "branch", defaultValue = "develop") String branch,
+            @QueryValue(value = "projectId") UUID projectId
     ) {
         Path tempPath;
         try {
@@ -92,7 +94,7 @@ public class VulpesDownloadController {
             return HttpResponse.serverError();
         }
 
-        registry.triggerAll(javaPath);
+        registry.triggerAll(javaPath, projectId);
         try {
             Files.createFile(zipFile);
         } catch (IOException e) {
