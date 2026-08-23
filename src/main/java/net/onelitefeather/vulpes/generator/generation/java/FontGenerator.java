@@ -2,6 +2,7 @@ package net.onelitefeather.vulpes.generator.generation.java;
 
 import com.squareup.javapoet.FieldSpec;
 import io.micronaut.context.annotation.Prototype;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Inject;
 import net.onelitefeather.vulpes.api.model.FontEntity;
 import net.onelitefeather.vulpes.api.repository.FontRepository;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Prototype
 public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements JavaStructure {
@@ -26,13 +28,14 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
     }
 
     @Override
-    protected List<FontEntity> getModels() {
-        return this.fontRepository.findAll();
+    protected List<FontEntity> getModels(@NotNull UUID projectId) {
+        // TODO: findByProjectId doesn't JOIN FETCH chars like the old findAll() query did - revisit if lazy loading bites here.
+        return this.fontRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
     }
 
     @Override
-    public void generate(@NotNull Path javaPath) {
-        var models = getModels();
+    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+        var models = getModels(projectId);
 
         if (models.isEmpty()) return;
 

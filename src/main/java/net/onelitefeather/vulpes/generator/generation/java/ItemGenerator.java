@@ -5,6 +5,7 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import io.micronaut.context.annotation.Prototype;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Inject;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -28,6 +29,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
 
@@ -43,13 +45,13 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
     }
 
     @Override
-    protected List<ItemEntity> getModels() {
-        return this.itemRepository.findAll();
+    protected List<ItemEntity> getModels(@NotNull UUID projectId) {
+        return this.itemRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
     }
 
     @Override
-    public void generate(@NotNull Path javaPath) {
-        List<ItemEntity> models = getModels();
+    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+        List<ItemEntity> models = getModels(projectId);
 
         if (models.isEmpty()) return;
 

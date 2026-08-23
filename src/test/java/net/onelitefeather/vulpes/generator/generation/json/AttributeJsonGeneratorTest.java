@@ -2,6 +2,8 @@ package net.onelitefeather.vulpes.generator.generation.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
@@ -16,6 +18,7 @@ import org.mockito.Mockito;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @MicronautTest(startApplication = false)
@@ -49,12 +53,12 @@ class AttributeJsonGeneratorTest {
         when(entity.getDefaultValue()).thenReturn(10.0);
         when(entity.getMaximumValue()).thenReturn(100.0);
 
-        when(repo.findAll()).thenReturn(List.of(entity));
+        when(repo.findByProjectId(any(UUID.class), any(Pageable.class))).thenReturn(Page.of(List.of(entity), Pageable.UNPAGED, 1L));
     }
 
     @Test
     void testAttributeJsonGenerator() {
-        generator.generate(tempDir);
+        generator.generate(tempDir, UUID.randomUUID());
 
         Path file = tempDir.resolve("attributes.json");
 
