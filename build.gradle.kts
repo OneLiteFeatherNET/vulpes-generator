@@ -41,7 +41,6 @@ dependencies {
     implementation(mn.jackson.core)
     implementation(mn.micronaut.serde.jackson)
     implementation(mn.jackson.databind)
-    implementation(mn.jackson.datatype.jsr310)
 
     // Logging
     implementation(mn.logback.classic)
