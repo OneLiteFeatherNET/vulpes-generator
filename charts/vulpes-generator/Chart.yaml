@@ -1,0 +1,25 @@
+apiVersion: v2
+name: vulpes-generator
+description: The Vulpes generator, a Micronaut service deployed to Kubernetes
+type: application
+
+# Both lines are kept current by Release Please, which is why the chart version
+# and the app version move together: the chart only ever describes the image
+# built from the same commit, so a separate chart version would be a second
+# number to reason about with nothing extra to say. The cluster repository's
+# OCIRepository pins the chart, and image.tag is left empty so it falls back to
+# this appVersion -- pinning the chart therefore pins the image.
+version: 0.1.1  # x-release-please-version
+appVersion: "0.1.1"  # x-release-please-version
+
+home: https://github.com/OneLiteFeatherNET/vulpes-generator
+sources:
+  - https://github.com/OneLiteFeatherNET/vulpes-generator
+maintainers:
+  - name: OneLiteFeatherNET
+    email: contact@onelitefeather.net
+    url: https://onelitefeather.net
+keywords:
+  - vulpes
+  - micronaut
+  - generator
