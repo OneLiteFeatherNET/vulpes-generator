@@ -9,8 +9,8 @@ type: application
 # number to reason about with nothing extra to say. The cluster repository's
 # OCIRepository pins the chart, and image.tag is left empty so it falls back to
 # this appVersion -- pinning the chart therefore pins the image.
-version: 0.2.0  # x-release-please-version
-appVersion: "0.2.0"  # x-release-please-version
+version: 0.3.0  # x-release-please-version
+appVersion: "0.3.0"  # x-release-please-version
 
 home: https://github.com/OneLiteFeatherNET/vulpes-generator
 sources:
