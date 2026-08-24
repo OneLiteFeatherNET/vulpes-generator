@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.1.1...v0.2.0) (2026-08-24)
+
+
+### Features
+
+* **helm:** publish a chart alongside the image ([#143](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/143)) ([e6cbb09](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e6cbb09888b31f58fe8dae714914467ed30f6d61))
+
 ## [0.1.1](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.1.0...v0.1.1) (2026-06-22)
 
 
