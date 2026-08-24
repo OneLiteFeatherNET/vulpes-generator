@@ -6,8 +6,11 @@ plugins {
     id("org.openapi.generator") version "7.24.0"
 }
 
-// group comes from gradle.properties; strip the release-please annotation comment.
-version = (version as String).substringBefore('#').trim()
+// group comes from gradle.properties. The version lives here, on the marker line below,
+// as the single source of truth release-please rewrites. An explicit -Pversion=... still
+// wins, so CI can (re)build the artifacts for a given version.
+val releaseVersion = "0.1.1" // x-release-please-version
+version = (findProperty("version") as? String)?.takeUnless { it == "unspecified" } ?: releaseVersion
 
 java {
     toolchain {
@@ -27,6 +30,13 @@ dependencies {
 
     // Micronaut runtime
     implementation(mn.micronaut.runtime)
+
+    // Management endpoints + Micrometer's Prometheus registry. The Helm chart
+    // probes /health and scrapes /prometheus, so both have to exist in every
+    // environment the chart deploys to -- see charts/vulpes-generator.
+    implementation(mn.micronaut.management)
+    implementation(mn.micronaut.micrometer.core)
+    implementation(mn.micronaut.micrometer.registry.prometheus)
 
     // SQL (JPA / read-only)
     implementation(mn.micronaut.jdbc.hikari)

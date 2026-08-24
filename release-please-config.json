@@ -8,12 +8,15 @@
   "packages": {
     ".": {
       "package-name": "vulpes-generator",
-      "release-type": "java",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
           "type": "generic",
-          "path": "gradle.properties"
+          "path": "build.gradle.kts"
+        },
+        {
+          "type": "generic",
+          "path": "charts/vulpes-generator/Chart.yaml"
         }
       ]
     }

@@ -60,6 +60,19 @@ github:
   username: ${GITHUB_USERNAME:vulpes}
   password: ${GITHUB_PASSWORD:}
 
+# Exposed for the Helm chart: liveness/readiness probe /health, ServiceMonitor
+# scrapes /prometheus. Both are unauthenticated because they are reached from
+# inside the cluster only -- the Service publishes 8080 as ClusterIP and no
+# Ingress/HTTPRoute rule maps either path.
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: ANONYMOUS
+  prometheus:
+    enabled: true
+    sensitive: false
+
 # OpenTelemetry — tracing is disabled unless OTEL_TRACES_EXPORTER=otlp is set
 # (do this in the Docker/prod container). HTTP (server/client) and JDBC spans
 # are instrumented automatically once enabled.
