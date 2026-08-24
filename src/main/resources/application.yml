@@ -27,10 +27,15 @@ commit:
   commitMail: "vulpes@onelitefeather.com"
   defaultMessage: "Initial commit"
 
+# Driver and dialect are configurable, not fixed, because the deployed database
+# is not the one this file defaults to: in the cluster the Vulpes data lives in
+# the shared Postgres (CNPG), while the docker-compose setup beside this repo is
+# still MariaDB. The defaults keep local development working untouched; the
+# deployment overrides all four.
 datasources:
   default:
     url: ${DB_URL:jdbc:mariadb://localhost:3336/vulpes}
-    driverClassName: org.mariadb.jdbc.Driver
+    driverClassName: ${DB_DRIVER:org.mariadb.jdbc.Driver}
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:vulpes}
     read-only: true
@@ -44,9 +49,20 @@ jpa:
     properties:
       hibernate:
         hbm2ddl.auto: none
-        dialect: org.hibernate.dialect.MariaDBDialect
+        dialect: ${DB_DIALECT:org.hibernate.dialect.MariaDBDialect}
         show_sql: ${SHOW_SQL:false}
         format_sql: true
+
+# The /prometheus endpoint below is declared further down; this is what gives it
+# something to serve.
+micrometer:
+  metrics:
+    enabled: true
+    export:
+      prometheus:
+        enabled: true
+        step: PT1M
+        descriptions: true
 
 filter:
   exclude:

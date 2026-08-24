@@ -38,13 +38,25 @@ dependencies {
     implementation(mn.micronaut.micrometer.core)
     implementation(mn.micronaut.micrometer.registry.prometheus)
 
-    // SQL (JPA / read-only)
+    // SQL (JPA / read-only). Postgres, because that is where the Vulpes data
+    // actually lives: the backend was migrated to the shared CNPG cluster and
+    // no MariaDB `vulpes` database exists any more. The MariaDB driver stays on
+    // the classpath so an existing local docker-compose setup keeps working --
+    // which driver is used follows from the JDBC URL, not from what is present.
     implementation(mn.micronaut.jdbc.hikari)
     implementation(mn.micronaut.hibernate.jpa)
     implementation(mn.micronaut.data.hibernate.jpa)
     implementation(mn.micronaut.data.tx.hibernate)
     implementation(mn.mariadb.java.client)
+    implementation(mn.postgresql)
     implementation(mn.micronaut.data.jpa)
+
+    // Health endpoints and the Prometheus scrape target. The Helm chart in
+    // charts/ already probes /health and points a ServiceMonitor at
+    // /prometheus; without these the probes 404 and the pod never turns ready.
+    implementation(mn.micronaut.management)
+    implementation(mn.micronaut.micrometer.core)
+    implementation(mn.micronaut.micrometer.registry.prometheus)
 
     // Jackson
     implementation(mn.jackson.core)
