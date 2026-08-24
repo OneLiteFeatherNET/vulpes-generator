@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.2.0...v0.3.0) (2026-08-24)
+
+
+### Features
+
+* read from postgres and answer the chart's probes ([#148](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/148)) ([3e63c7f](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/3e63c7f7c0090cce01d9784a8427b5c36b7d79a7))
+
+
+### Bug Fixes
+
+* **deps:** update dependency net.onelitefeather:mycelium-bom to v1.8.3 ([#147](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/147)) ([54c7091](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/54c7091e33a0d4acc021f3c9109a288ef253ac93))
+
 ## [0.2.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.1.1...v0.2.0) (2026-08-24)
 
 
