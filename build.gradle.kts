@@ -132,7 +132,7 @@ tasks {
 }
 
 application {
-    mainClass = "net.theevilreaper.vulpes.generator.VulpesGenerator"
+    mainClass = "net.onelitefeather.vulpes.generator.VulpesGenerator"
 }
 
 graalvmNative.toolchainDetection = false
