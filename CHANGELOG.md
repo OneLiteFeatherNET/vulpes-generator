@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.1...v0.3.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* keep the url scheme in property defaults ([d689dc9](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/d689dc9995b8ca40716db497d0763f463d223ed1))
+
 ## [0.3.1](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.0...v0.3.1) (2026-08-25)
 
 
