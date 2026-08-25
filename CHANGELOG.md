@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.0...v0.3.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* point mainClass at the renamed package ([#151](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/151)) ([a15afa7](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/a15afa7effdaac7b52626b4a921a6d89cda9da46))
+
 ## [0.3.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.2.0...v0.3.0) (2026-08-24)
 
 
