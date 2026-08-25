@@ -34,7 +34,7 @@ commit:
 # deployment overrides all four.
 datasources:
   default:
-    url: ${DB_URL:jdbc:mariadb://localhost:3336/vulpes}
+    url: ${DB_URL:`jdbc:mariadb://localhost:3336/vulpes`}
     driverClassName: ${DB_DRIVER:org.mariadb.jdbc.Driver}
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:vulpes}
@@ -72,7 +72,7 @@ filter:
 github:
   owner: ${GITHUB_OWNER:OneLiteFeatherNET}
   repo: ${GITHUB_REPO:vulpes}
-  clone-url: ${GITHUB_CLONE_URL:https://github.com/OneLiteFeatherNET/vulpes-base.git}
+  clone-url: ${GITHUB_CLONE_URL:`https://github.com/OneLiteFeatherNET/vulpes-base.git`}
   username: ${GITHUB_USERNAME:vulpes}
   password: ${GITHUB_PASSWORD:}
 
