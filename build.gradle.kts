@@ -9,7 +9,7 @@ plugins {
 // group comes from gradle.properties. The version lives here, on the marker line below,
 // as the single source of truth release-please rewrites. An explicit -Pversion=... still
 // wins, so CI can (re)build the artifacts for a given version.
-val releaseVersion = "0.3.2" // x-release-please-version
+val releaseVersion = "0.3.3" // x-release-please-version
 version = (findProperty("version") as? String)?.takeUnless { it == "unspecified" } ?: releaseVersion
 
 java {

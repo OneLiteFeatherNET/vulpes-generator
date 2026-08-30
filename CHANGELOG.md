@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.3](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.2...v0.3.3) (2026-08-30)
+
+
+### Bug Fixes
+
+* **deps:** update dependency net.onelitefeather:mycelium-bom to v1.8.4 ([#154](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/154)) ([e554650](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e55465046c83a7eee1f7d112a635c1f494ad0bb9))
+* **deps:** update dependency net.onelitefeather:mycelium-bom to v1.8.5 ([#156](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/156)) ([e58a524](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e58a524b13b8868efbd59d1fdcc0ff08d2e93248))
+
 ## [0.3.2](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.1...v0.3.2) (2026-08-25)
 
 
