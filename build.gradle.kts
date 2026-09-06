@@ -40,14 +40,11 @@ dependencies {
 
     // SQL (JPA / read-only). Postgres, because that is where the Vulpes data
     // actually lives: the backend was migrated to the shared CNPG cluster and
-    // no MariaDB `vulpes` database exists any more. The MariaDB driver stays on
-    // the classpath so an existing local docker-compose setup keeps working --
-    // which driver is used follows from the JDBC URL, not from what is present.
+    // no MariaDB `vulpes` database exists any more.
     implementation(mn.micronaut.jdbc.hikari)
     implementation(mn.micronaut.hibernate.jpa)
     implementation(mn.micronaut.data.hibernate.jpa)
     implementation(mn.micronaut.data.tx.hibernate)
-    implementation(mn.mariadb.java.client)
     implementation(mn.postgresql)
     implementation(mn.micronaut.data.jpa)
 
