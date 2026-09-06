@@ -27,15 +27,14 @@ commit:
   commitMail: "vulpes@onelitefeather.com"
   defaultMessage: "Initial commit"
 
-# Driver and dialect are configurable, not fixed, because the deployed database
-# is not the one this file defaults to: in the cluster the Vulpes data lives in
-# the shared Postgres (CNPG), while the docker-compose setup beside this repo is
-# still MariaDB. The defaults keep local development working untouched; the
-# deployment overrides all four.
+# Driver and dialect stay configurable so the deployment can still override
+# them, but the defaults now point at Postgres: the Vulpes data lives in the
+# shared Postgres (CNPG) cluster, and the docker-compose setup beside this repo
+# was moved to match.
 datasources:
   default:
-    url: ${DB_URL:`jdbc:mariadb://localhost:3336/vulpes`}
-    driverClassName: ${DB_DRIVER:org.mariadb.jdbc.Driver}
+    url: ${DB_URL:`jdbc:postgresql://localhost:5432/vulpes`}
+    driverClassName: ${DB_DRIVER:org.postgresql.Driver}
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:vulpes}
     read-only: true
@@ -49,7 +48,7 @@ jpa:
     properties:
       hibernate:
         hbm2ddl.auto: none
-        dialect: ${DB_DIALECT:org.hibernate.dialect.MariaDBDialect}
+        dialect: ${DB_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
         show_sql: ${SHOW_SQL:false}
         format_sql: true
 

@@ -1,16 +1,16 @@
 # docker compose up -d
 services:
-  mariadb:
-    image: mariadb
-    container_name: 'mariadb_vulpes'
+  postgres:
+    image: postgres:16
+    container_name: 'postgres_vulpes'
     ports:
-      - "3336:3306"
+      - "5432:5432"
     shm_size: 128mb
     environment:
-      MARIADB_ROOT_PASSWORD: vulpes
-      MARIADB_DATABASE: vulpes
+      POSTGRES_PASSWORD: vulpes
+      POSTGRES_DB: vulpes
     volumes:
-      - ./mariadb/data/:/var/lib/mysql
+      - ./postgres/data/:/var/lib/postgresql/data
     networks:
       - vulpes_go_net
 networks:
