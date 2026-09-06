@@ -233,6 +233,9 @@ config:
       # application-feature-x.yml
       feature:
         x: true
+    filter-override-example: |-
+      # Overrides filter.exclude from the base application.yml. Add the
+      # profile name to `profiles` above to activate it.
 
 secrets:
   enabled: false
