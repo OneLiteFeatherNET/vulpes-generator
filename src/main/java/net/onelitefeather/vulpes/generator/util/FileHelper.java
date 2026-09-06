@@ -1,7 +1,6 @@
 package net.onelitefeather.vulpes.generator.util;
 
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +39,7 @@ public final class FileHelper {
      * @param zipFile The output ZIP file where compressed data will be stored.
      * @throws NullPointerException if either {@code temp} or {@code zipFile} is null.
      */
-    public static void zipFile(@NotNull Path temp, @NotNull Path zipFile) {
+    public static void zipFile(Path temp, Path zipFile) {
         try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zipFile));
              Stream<Path> paths = Files.walk(temp)) {
 

@@ -2,7 +2,6 @@ package net.onelitefeather.vulpes.generator.util;
 
 import net.onelitefeather.vulpes.generator.domain.configuration.BranchFilterConfiguration;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -16,7 +15,7 @@ public final class BranchFilter {
      * @param filterConfiguration the filter configuration to use
      * @return a list with the filtered branches
      */
-    public static @NotNull List<String> filterBranches(@NotNull List<String> branches, @NotNull BranchFilterConfiguration filterConfiguration) {
+    public static List<String> filterBranches(List<String> branches, BranchFilterConfiguration filterConfiguration) {
         return branches.stream().filter(entry ->
                         filterConfiguration.exclude().stream()
                                 .noneMatch(entry::startsWith)

@@ -8,7 +8,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,8 +57,8 @@ public final class GitProjectWorker {
      * Clones the base repository to the specified path and checks out the configured branch.
      * @param path the local directory where the repository should be cloned.
      */
-    public Git cloneBaseRepo(@NotNull Path path) {
-        return this.cloneBaseRepo(path, null);
+    public @Nullable Git cloneBaseRepo(Path path) {
+        return this.cloneBaseRepo(path, List.of());
     }
 
     /**
@@ -66,14 +66,14 @@ public final class GitProjectWorker {
      * @param path the local directory where the repository should be cloned.
      * @param branches the list of branches to clone. If null, all branches will be cloned.
      */
-    public Git cloneBaseRepo(@NotNull Path path, List<String> branches) {
+    public @Nullable Git cloneBaseRepo(Path path, List<String> branches) {
         try {
             CloneCommand rawGit = Git.cloneRepository()
                     //.setCredentialsProvider(this.credentialsProvider)
                     .setURI(this.configuration.cloneUrl())
                     .setDirectory(path.toFile());
 
-            if (branches == null) {
+            if (branches.isEmpty()) {
                 rawGit.setCloneAllBranches(true);
             } else {
                 rawGit.setBranchesToClone(branches);
@@ -88,7 +88,7 @@ public final class GitProjectWorker {
     /**
      * @param git
      */
-    public void push(@NotNull PushCommand git) {
+    public void push(PushCommand git) {
         try {
             git.call();
         } catch (GitAPIException exception) {
