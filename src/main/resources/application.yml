@@ -1,6 +1,18 @@
 micronaut:
   server:
     port: ${PORT:8080}
+    cors:
+      enabled: true
+      configurations:
+        all:
+          allowedOriginsRegex:
+            - '^https?://localhost(:\d+)?$'
+          allowedMethods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
   application:
     name: Vulpes Generator
   logger:
@@ -37,6 +49,7 @@ datasources:
     driverClassName: ${DB_DRIVER:org.postgresql.Driver}
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:vulpes}
+    dialect: POSTGRES
     read-only: true
     maximum-pool-size: 10
 
@@ -70,7 +83,7 @@ filter:
 
 github:
   owner: ${GITHUB_OWNER:OneLiteFeatherNET}
-  repo: ${GITHUB_REPO:vulpes}
+  repo: ${GITHUB_REPO:vulpes-base}
   clone-url: ${GITHUB_CLONE_URL:`https://github.com/OneLiteFeatherNET/vulpes-base.git`}
   username: ${GITHUB_USERNAME:vulpes}
   password: ${GITHUB_PASSWORD:}
