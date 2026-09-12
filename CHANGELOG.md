@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.2...v0.4.0) (2026-09-12)
+
+
+### Features
+
+* **db:** migrate to PostgreSQL ([#157](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/157)) ([0a5232b](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/0a5232b2856dc72cc22b1bcb7d424624bf09b39b))
+
+
+### Bug Fixes
+
+* **deps:** update dependency net.onelitefeather:mycelium-bom to v1.8.4 ([#154](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/154)) ([e554650](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e55465046c83a7eee1f7d112a635c1f494ad0bb9))
+* **deps:** update dependency net.onelitefeather:mycelium-bom to v1.8.5 ([#156](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/156)) ([e58a524](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e58a524b13b8868efbd59d1fdcc0ff08d2e93248))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v2.1.0 ([#161](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/161)) ([b43eaf9](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/b43eaf992bf8f0b4b12c0f440554d13816598564))
+* **deps:** update dependency org.eclipse.jgit:org.eclipse.jgit to v7.8.0.202609011348-r ([#160](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/160)) ([7d3b11e](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/7d3b11ebed7cf494affc900956b3c97a42e504db))
+
 ## [0.3.2](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.1...v0.3.2) (2026-08-25)
 
 
