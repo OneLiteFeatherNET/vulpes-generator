@@ -20,7 +20,8 @@ import net.onelitefeather.vulpes.api.model.item.ItemEnchantmentEntity;
 import net.onelitefeather.vulpes.api.repository.ItemRepository;
 import net.onelitefeather.vulpes.generator.generation.AbstractCodeGenerator;
 import net.onelitefeather.vulpes.generator.generation.JavaStructure;
-import net.onelitefeather.vulpes.generator.util.MaterialParser;
+import net.onelitefeather.vulpes.generator.generation.component.ItemComponentKeys;
+import net.onelitefeather.vulpes.generator.generation.component.ItemComponents;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,7 +72,9 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                 })
                 .forEach(model -> {
                     if (itemFields.containsKey(model.getVariableName())) return;
-                    Material material = MaterialParser.fromKey(model.getMaterial());
+                    // TODO(item-components): replaced in generator rework
+                    ItemComponents components = ItemComponents.from(model.getComponents());
+                    Material material = components.material();
 
                     var initBlock = CodeBlock.builder();
 
@@ -81,14 +84,11 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
                             materialClass,
                             material
                     );
-                    if (model.getAmount() != 0) {
-                        initBlock.addStatement(".amount(\\$L)", model.getAmount());
+                    if (components.amount() != ItemComponentKeys.DEFAULT_AMOUNT) {
+                        initBlock.addStatement(".amount(\\$L)", components.amount());
                     }
 
-                    if (model.getDisplayName() != null) {
-                        Component parsedName = Component.text(model.getDisplayName());
-                        initBlock.addStatement(".customName(\\$L)", parsedName);
-                    }
+                    // TODO(item-components): replaced in generator rework (custom name was a removed ItemEntity field)
 
                     if (!model.getEnchantments().isEmpty()) {
                         Map<RegistryKey<@NotNull Enchantment>, Integer> enchantmentData = new HashMap<>();
@@ -130,7 +130,8 @@ public final class ItemGenerator extends AbstractCodeGenerator<ItemEntity> imple
      * @return the generated fields
      */
     private @NotNull String getDisplayName(@NotNull ItemEntity itemModel) {
-        var displayName = itemModel.getDisplayName() == null ? "" : itemModel.getDisplayName();
+        // TODO(item-components): replaced in generator rework
+        var displayName = itemModel.getUiName() == null ? "" : itemModel.getUiName();
         return displayName.isEmpty() ? "No display name provided for " + itemModel.getUiName() : displayName;
     }
 

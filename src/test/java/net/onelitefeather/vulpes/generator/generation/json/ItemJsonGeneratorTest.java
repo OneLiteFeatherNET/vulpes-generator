@@ -9,7 +9,9 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import net.minestom.server.item.Material;
 import net.onelitefeather.vulpes.api.model.ItemEntity;
+import net.onelitefeather.vulpes.api.model.item.ItemComponentEntity;
 import net.onelitefeather.vulpes.api.repository.ItemRepository;
+import net.onelitefeather.vulpes.generator.generation.component.ItemComponentKeys;
 import net.onelitefeather.vulpes.generator.gson.GsonHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,11 +48,12 @@ class ItemJsonGeneratorTest {
     void setUp() {
         ItemEntity entity = Mockito.mock(ItemEntity.class);
         when(entity.getVariableName()).thenReturn("test_item");
-        when(entity.getDisplayName()).thenReturn("Test Item");
-        when(entity.getMaterial()).thenReturn(Material.BASALT.key().asString());
+        // TODO(item-components): replaced in generator rework (displayName and customModelData were removed from ItemEntity)
+        when(entity.getComponents()).thenReturn(List.of(
+                new ItemComponentEntity(UUID.randomUUID(), ItemComponentKeys.MATERIAL, "\"" + Material.BASALT.key().asString() + "\""),
+                new ItemComponentEntity(UUID.randomUUID(), ItemComponentKeys.AMOUNT, "1")
+        ));
         when(entity.getGroupName()).thenReturn("test_group");
-        when(entity.getCustomModelData()).thenReturn(10);
-        when(entity.getAmount()).thenReturn(1);
 
         when(repo.findByProjectId(any(UUID.class), any(Pageable.class))).thenReturn(Page.of(List.of(entity), Pageable.UNPAGED, 1L));
     }
@@ -79,10 +82,9 @@ class ItemJsonGeneratorTest {
         assertNotNull(object);
 
         assertEquals("test_item", object.get("variableName").getAsString());
-        assertEquals("Test Item", object.get("displayName").getAsString());
         assertEquals("minecraft:basalt", object.get("material").getAsString());
         assertEquals("test_group", object.get("groupName").getAsString());
-        assertEquals(10, object.get("customModelData").getAsInt());
         assertEquals(1, object.get("amount").getAsInt());
+        // TODO(item-components): replaced in generator rework (displayName and customModelData were removed from ItemEntity)
     }
 }

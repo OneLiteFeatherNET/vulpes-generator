@@ -8,6 +8,7 @@ import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.api.model.ItemEntity;
 import net.onelitefeather.vulpes.api.repository.ItemRepository;
 import net.onelitefeather.vulpes.generator.generation.FileGenerator;
+import net.onelitefeather.vulpes.generator.generation.component.ItemComponents;
 import net.onelitefeather.vulpes.generator.gson.GsonHolder;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,12 +46,12 @@ public class ItemJsonGenerator extends FileGenerator {
 
         for (ItemEntity entity : entities) {
             JsonObject object = new JsonObject();
+            ItemComponents components = ItemComponents.from(entity.getComponents());
             object.addProperty("variableName", entity.getVariableName());
-            object.addProperty("displayName", entity.getDisplayName());
-            object.addProperty("material", entity.getMaterial());
+            // TODO(item-components): replaced in generator rework (displayName and customModelData were removed from ItemEntity)
+            object.addProperty("material", components.material().key().asString());
             object.addProperty("groupName", entity.getGroupName());
-            object.addProperty("customModelData", entity.getCustomModelData());
-            object.addProperty("amount", entity.getAmount());
+            object.addProperty("amount", components.amount());
             //TODO: Add enchantments, lore and flags at a later point
             elements.add(object);
         }
