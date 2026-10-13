@@ -1,0 +1,314 @@
+package net.onelitefeather.vulpes.generator.generation.java;
+
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
+import io.micronaut.transaction.annotation.ReadOnly;
+import net.onelitefeather.vulpes.api.model.advancement.AdvancementEntity;
+import net.onelitefeather.vulpes.api.model.advancement.AdvancementFrameType;
+import net.onelitefeather.vulpes.api.model.project.ProjectEntity;
+import net.onelitefeather.vulpes.api.repository.AdvancementRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.UUID;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class AdvancementGeneratorTest {
+
+    private static final UUID PROJECT_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e");
+    private static final String REGISTRY_PATH = "net/reaper/vulpes/advancement/AdvancementRegistry.java";
+    private static final String STONE_BACKGROUND = "minecraft:textures/gui/advancements/backgrounds/stone.png";
+
+    @TempDir
+    Path tempDir;
+
+    private AdvancementRepository repository;
+    private ProjectEntity project;
+
+    @BeforeEach
+    void setUp() {
+        repository = mock(AdvancementRepository.class);
+        project = new ProjectEntity();
+        project.setKey("vulpes");
+    }
+
+    @Test
+    void registersEachRootInATabWithItsNamespacedKeyAsId() {
+        AdvancementEntity root = advancement("root", null);
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("manager.createTab(\"vulpes:root\", adv_root)"),
+                "Every root should get its own tab identified by its namespaced key but was:\n" + readRegistry());
+    }
+
+    @Test
+    void attachesChildToTheTabOfItsRoot() {
+        AdvancementEntity root = advancement("root", null);
+        AdvancementEntity child = advancement("child", root);
+
+        generate(root, child);
+
+        assertTrue(readRegistry().contains("tab_root.createAdvancement(\"vulpes:child\", adv_child, adv_root)"),
+                "A child should be attached to the tab of its root with its parent as parent but was:\n" + readRegistry());
+    }
+
+    @Test
+    void createsParentBeforeChildAndSortsSiblingsByKey() {
+        AdvancementEntity root = advancement("root", null);
+        AdvancementEntity beta = advancement("beta", root);
+        AdvancementEntity alpha = advancement("alpha", root);
+        AdvancementEntity gamma = advancement("gamma", alpha);
+
+        generate(root, beta, alpha, gamma);
+
+        String code = readRegistry();
+        int alphaIndex = code.indexOf("createAdvancement(\"vulpes:alpha\", adv_alpha, adv_root)");
+        int gammaIndex = code.indexOf("createAdvancement(\"vulpes:gamma\", adv_gamma, adv_alpha)");
+        int betaIndex = code.indexOf("createAdvancement(\"vulpes:beta\", adv_beta, adv_root)");
+        assertTrue(alphaIndex >= 0 && gammaIndex >= 0 && betaIndex >= 0,
+                "All advancements should be attached but was:\n" + code);
+        assertTrue(alphaIndex < gammaIndex, "A child must be attached after its parent but was:\n" + code);
+        assertTrue(gammaIndex < betaIndex, "Siblings must be ordered by key, so alpha's subtree comes before beta but was:\n" + code);
+    }
+
+    @Test
+    void resolvesLegacyMaterialStoneToStone() {
+        AdvancementEntity root = advancement("root", null);
+        root.setMaterial("STONE");
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("Material.STONE"),
+                "The legacy material STONE should resolve to Material.STONE but was:\n" + readRegistry());
+    }
+
+    @Test
+    void missingMaterialFallsBackToPaper() {
+        AdvancementEntity root = advancement("root", null);
+        root.setMaterial(null);
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("Material.PAPER"),
+                "A missing material should fall back to Material.PAPER but was:\n" + readRegistry());
+    }
+
+    @Test
+    void titleIsDeserializedWithGsonComponentSerializer() {
+        AdvancementEntity root = advancement("root", null);
+        root.setTitle("{\"text\":\"Title\"}");
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("GsonComponentSerializer.gson().deserialize(\"{\\\"text\\\":\\\"Title\\\"}\")"),
+                "The title should be deserialized from its JSON text but was:\n" + readRegistry());
+    }
+
+    @Test
+    void titleAsJsonStringLiteralIsAccepted() {
+        AdvancementEntity root = advancement("root", null);
+        root.setTitle("\"Title\"");
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("GsonComponentSerializer.gson().deserialize(\"\\\"Title\\\"\")"),
+                "A title given as JSON string literal should be accepted but was:\n" + readRegistry());
+    }
+
+    @Test
+    void missingDescriptionUsesEmptyComponent() {
+        AdvancementEntity root = advancement("root", null);
+        root.setDescription(null);
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("Component.empty()"),
+                "A missing description should be Component.empty() but was:\n" + readRegistry());
+    }
+
+    @Test
+    void rootReceivesItsBackground() {
+        AdvancementEntity root = advancement("root", null);
+        root.setBackground(STONE_BACKGROUND);
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("\"" + STONE_BACKGROUND + "\""),
+                "The background of a root should be passed to the AdvancementRoot but was:\n" + readRegistry());
+    }
+
+    @Test
+    void mapsFrameTypeToMinestomFrameType() {
+        AdvancementEntity root = advancement("root", null);
+        root.setFrameType(AdvancementFrameType.GOAL);
+
+        generate(root);
+
+        assertTrue(readRegistry().contains("FrameType.GOAL"),
+                "The frame type GOAL should map to FrameType.GOAL but was:\n" + readRegistry());
+    }
+
+    @Test
+    void invalidTitleJsonAbortsWithKeyInMessage() {
+        AdvancementEntity broken = advancement("broken_title", null);
+        broken.setTitle("{not json");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> generate(broken),
+                "A title that is not valid JSON must abort the generation");
+
+        assertTrue(exception.getMessage().contains("broken_title"),
+                "The message should name the advancement key but was: " + exception.getMessage());
+    }
+
+    @Test
+    void unknownMaterialAbortsWithKeyInMessage() {
+        AdvancementEntity unknown = advancement("unknown_material_adv", null);
+        unknown.setMaterial("minecraft:not_a_material");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> generate(unknown),
+                "An unknown material must abort the generation");
+
+        assertTrue(exception.getMessage().contains("unknown_material_adv") && exception.getMessage().contains("not_a_material"),
+                "The message should name the advancement key and the material but was: " + exception.getMessage());
+    }
+
+    @Test
+    void missingParentAbortsWithKeyInMessage() {
+        AdvancementEntity root = advancement("missing_parent", null);
+        AdvancementEntity orphan = advancement("orphan", root);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> generate(orphan),
+                "A parent outside of the project must abort the generation");
+
+        assertTrue(exception.getMessage().contains("orphan") && exception.getMessage().contains("missing_parent"),
+                "The message should name the advancement and its missing parent but was: " + exception.getMessage());
+    }
+
+    @Test
+    void parentCycleAbortsWithKeyInMessage() {
+        AdvancementEntity first = advancement("cycle_a", null);
+        AdvancementEntity second = advancement("cycle_b", first);
+        first.setParent(second);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> generate(first, second),
+                "A parent cycle must abort the generation");
+
+        assertTrue(exception.getMessage().contains("cycle") && exception.getMessage().contains("cycle_a"),
+                "The message should name an advancement of the cycle but was: " + exception.getMessage());
+    }
+
+    @Test
+    void generatedSourceContainsNoEscapedOrUnresolvedPlaceholders() {
+        AdvancementEntity root = advancement("root", null);
+        root.setTitle("{\"text\":\"Title\"}");
+        root.setBackground(STONE_BACKGROUND);
+        AdvancementEntity child = advancement("child", root);
+        child.setDescription("{\"text\":\"Desc\"}");
+
+        generate(root, child);
+
+        String code = readRegistry();
+        assertFalse(code.contains("\\$"), "The source must not contain a backslash in front of a placeholder but was:\n" + code);
+        assertFalse(code.contains("$"), "The source must not contain any unresolved placeholder but was:\n" + code);
+    }
+
+    @Test
+    void generatedRegistryCompiles() throws IOException {
+        AdvancementEntity root = advancement("root", null);
+        root.setTitle("{\"text\":\"Title\"}");
+        root.setBackground(STONE_BACKGROUND);
+        root.setMaterial("STONE");
+        AdvancementEntity child = advancement("child", root);
+        child.setFrameType(AdvancementFrameType.CHALLENGE);
+        child.setX(1.5f);
+        child.setY(-2f);
+        child.setHidden(true);
+
+        generate(root, child);
+
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        Path classesDir = Files.createDirectories(tempDir.resolve("classes"));
+        ByteArrayOutputStream errors = new ByteArrayOutputStream();
+        int exitCode;
+        try (PrintStream err = new PrintStream(errors, true, StandardCharsets.UTF_8)) {
+            exitCode = compiler.run(null, OutputStream.nullOutputStream(), err,
+                    "-proc:none",
+                    "-classpath", System.getProperty("java.class.path"),
+                    "-d", classesDir.toString(),
+                    tempDir.resolve(REGISTRY_PATH).toString());
+        }
+
+        assertEquals(0, exitCode, "The generated AdvancementRegistry must compile but the compiler reported:\n" + errors.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void generationRunsInReadOnlyTransaction() throws NoSuchMethodException {
+        boolean readOnly = AdvancementGenerator.class.getMethod("generate", Path.class, UUID.class).isAnnotationPresent(ReadOnly.class);
+
+        assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy parent relations can be loaded");
+    }
+
+    private void generate(AdvancementEntity... advancements) {
+        when(repository.findByProjectId(eq(PROJECT_ID), any(Pageable.class)))
+                .thenReturn(Page.of(List.of(advancements), Pageable.UNPAGED, (long) advancements.length));
+
+        new AdvancementGenerator(repository).generate(tempDir, PROJECT_ID);
+    }
+
+    private String readRegistry() {
+        try {
+            return Files.readString(tempDir.resolve(REGISTRY_PATH), UTF_8);
+        } catch (IOException e) {
+            throw new AssertionError("The AdvancementRegistry should have been generated at " + REGISTRY_PATH, e);
+        }
+    }
+
+    /**
+     * Creates an advancement with a fixed id derived from its key, so every test run sees the same data.
+     */
+    private AdvancementEntity advancement(String key, AdvancementEntity parent) {
+        AdvancementEntity entity = new AdvancementEntity(
+                UUID.nameUUIDFromBytes(key.getBytes(UTF_8)),
+                "UI " + key,
+                key,
+                null,
+                "minecraft:stone",
+                AdvancementFrameType.TASK,
+                "{\"text\":\"" + key + "\"}",
+                null,
+                parent,
+                project
+        );
+        entity.setX(0f);
+        entity.setY(0f);
+        entity.setShowToast(true);
+        entity.setAnnounceToChat(false);
+        entity.setHidden(false);
+        return entity;
+    }
+}
