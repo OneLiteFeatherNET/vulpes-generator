@@ -9,6 +9,10 @@ import net.onelitefeather.vulpes.generator.generation.java.AttributeGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.FontGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.ItemGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.SoundGenerator;
+import net.onelitefeather.vulpes.generator.generation.json.AdvancementJsonGenerator;
+import net.onelitefeather.vulpes.generator.generation.json.AttributeJsonGenerator;
+import net.onelitefeather.vulpes.generator.generation.json.FontJsonGenerator;
+import net.onelitefeather.vulpes.generator.generation.json.ItemJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.SoundJsonGenerator;
 import net.onelitefeather.vulpes.generator.registry.GeneratorRegistry;
 
@@ -22,6 +26,10 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
     private final AdvancementGenerator advancementGenerator;
     private final SoundGenerator soundGenerator;
     private final SoundJsonGenerator soundJsonGenerator;
+    private final ItemJsonGenerator itemJsonGenerator;
+    private final FontJsonGenerator fontJsonGenerator;
+    private final AdvancementJsonGenerator advancementJsonGenerator;
+    private final AttributeJsonGenerator attributeJsonGenerator;
 
     @Inject
     public VulpesStartupListener(
@@ -31,7 +39,11 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
             ItemGenerator itemGenerator,
             AdvancementGenerator advancementGenerator,
             SoundGenerator soundGenerator,
-            SoundJsonGenerator soundJsonGenerator
+            SoundJsonGenerator soundJsonGenerator,
+            ItemJsonGenerator itemJsonGenerator,
+            FontJsonGenerator fontJsonGenerator,
+            AdvancementJsonGenerator advancementJsonGenerator,
+            AttributeJsonGenerator attributeJsonGenerator
     ) {
         this.generatorRegistry = generatorRegistry;
         this.attributeGenerator = attributeGenerator;
@@ -40,6 +52,10 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
         this.advancementGenerator = advancementGenerator;
         this.soundGenerator = soundGenerator;
         this.soundJsonGenerator = soundJsonGenerator;
+        this.itemJsonGenerator = itemJsonGenerator;
+        this.fontJsonGenerator = fontJsonGenerator;
+        this.advancementJsonGenerator = advancementJsonGenerator;
+        this.attributeJsonGenerator = attributeJsonGenerator;
     }
 
     @Override
@@ -50,5 +66,9 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
         this.generatorRegistry.add(advancementGenerator);
         this.generatorRegistry.add(soundGenerator);
         this.generatorRegistry.add(soundJsonGenerator);
+        this.generatorRegistry.add(itemJsonGenerator);
+        this.generatorRegistry.add(fontJsonGenerator);
+        this.generatorRegistry.add(advancementJsonGenerator);
+        this.generatorRegistry.add(attributeJsonGenerator);
     }
 }

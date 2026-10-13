@@ -102,6 +102,6 @@ public class ItemJsonGenerator extends FileGenerator {
 
     @Override
     public @NotNull String getName() {
-        return ItemRepository.class.getSimpleName();
+        return ItemJsonGenerator.class.getSimpleName();
     }
 }
