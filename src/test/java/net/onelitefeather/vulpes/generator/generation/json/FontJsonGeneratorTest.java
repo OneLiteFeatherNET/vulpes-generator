@@ -148,12 +148,29 @@ class FontJsonGeneratorTest {
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy font chars can be loaded");
     }
 
+    @Test
+    void generatingTwiceProducesIdenticalFile() throws IOException {
+        FontJsonGenerator generator = new FontJsonGenerator(repositoryWith(
+                font("hud", "font", HUD_FILE, 7, 8, rows("ab")),
+                font("alpha", "font", "eldoria:font/alpha.png", 7, 8, rows("a"))));
+        Path file = tempDir.resolve("src/main/resources/assets/eldoria/font/font.json");
+
+        generator.generate(tempDir, PROJECT_ID);
+        String first = Files.readString(file, UTF_8);
+        generator.generate(tempDir, PROJECT_ID);
+
+        assertEquals(first, Files.readString(file, UTF_8), "a second run into the same target must write the same file");
+    }
+
     private void generate(FontEntity... fonts) {
+        new FontJsonGenerator(repositoryWith(fonts)).generate(tempDir, PROJECT_ID);
+    }
+
+    private static FontRepository repositoryWith(FontEntity... fonts) {
         FontRepository repository = mock(FontRepository.class);
         when(repository.findByProjectId(eq(PROJECT_ID), any(Pageable.class)))
                 .thenReturn(Page.of(List.of(fonts), Pageable.UNPAGED, (long) fonts.length));
-
-        new FontJsonGenerator(repository).generate(tempDir, PROJECT_ID);
+        return repository;
     }
 
     private JsonArray readProviders(String mapper) {
