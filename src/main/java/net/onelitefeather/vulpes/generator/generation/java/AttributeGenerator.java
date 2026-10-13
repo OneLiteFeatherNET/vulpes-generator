@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 @Prototype
 public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> implements JavaStructure {
@@ -41,7 +42,7 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
     }
 
     @Override
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         List<AttributeEntity> attributeModels = this.getModels(projectId);
 
         if (attributeModels.isEmpty()) {
@@ -77,7 +78,7 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
                 .indent(INDENT_DEFAULT)
                 .addStaticImport(attributeClass, "*")
                 .build();
-        writeFiles(List.of(javaFile), javaPath);
+        writeFiles(List.of(javaFile), root.resolve(JAVA_MAIM_FOLDER));
     }
 
     @Override

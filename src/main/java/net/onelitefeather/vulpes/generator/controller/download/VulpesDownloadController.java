@@ -24,7 +24,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 import static net.onelitefeather.vulpes.generator.util.Constants.OUT_PUT_FOLDER;
 import static net.onelitefeather.vulpes.generator.util.Constants.TEMP_PREFIX;
 
@@ -79,7 +78,6 @@ public class VulpesDownloadController {
         }
         var output = tempPath.resolve(OUT_PUT_FOLDER);
         var zipFile = tempPath.resolve(OUT_PUT_FOLDER + ".zip");
-        var javaPath = output.resolve(JAVA_MAIM_FOLDER);
 
         try {
             Files.createDirectories(output);
@@ -94,7 +92,7 @@ public class VulpesDownloadController {
             return HttpResponse.serverError();
         }
 
-        registry.triggerAll(javaPath, projectId);
+        registry.triggerAll(output, projectId);
         try {
             Files.createFile(zipFile);
         } catch (IOException e) {

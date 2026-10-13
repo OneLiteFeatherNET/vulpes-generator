@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 class FontGeneratorTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("00000000-0000-0000-0000-000000000020");
-    private static final String REGISTRY_PATH = "net/reaper/vulpes/font/FontRegistry.java";
+    private static final String REGISTRY_PATH = "src/main/java/net/reaper/vulpes/font/FontRegistry.java";
     private static final String HUD_FILE = "eldoria:font/hud_icons.png";
 
     @TempDir

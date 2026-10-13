@@ -144,7 +144,7 @@ class SoundJsonGeneratorTest {
     void writesNothingWithoutEvents() {
         generate();
 
-        assertFalse(Files.exists(tempDir.resolve("assets")), "Without events no assets folder must be created");
+        assertFalse(Files.exists(tempDir.resolve("src/main/resources/assets")), "Without events no assets folder must be created");
     }
 
     @Test
@@ -175,7 +175,7 @@ class SoundJsonGeneratorTest {
 
     private String readRaw(String namespace) {
         try {
-            return Files.readString(tempDir.resolve("assets/" + namespace + "/sounds.json"), UTF_8);
+            return Files.readString(tempDir.resolve("src/main/resources/assets/" + namespace + "/sounds.json"), UTF_8);
         } catch (IOException e) {
             throw new AssertionError("The sounds.json of namespace '" + namespace + "' should have been generated", e);
         }

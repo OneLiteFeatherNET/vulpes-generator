@@ -157,7 +157,7 @@ class FontJsonGeneratorTest {
     }
 
     private JsonArray readProviders(String mapper) {
-        Path file = tempDir.resolve("assets").resolve(NAMESPACE).resolve("font").resolve(mapper + ".json");
+        Path file = tempDir.resolve("src/main/resources/assets").resolve(NAMESPACE).resolve("font").resolve(mapper + ".json");
         assertTrue(Files.exists(file), "the font file for mapper " + mapper + " must exist at " + file);
         try (var reader = Files.newBufferedReader(file, UTF_8)) {
             JsonObject root = GsonHolder.GSON.fromJson(reader, JsonObject.class);

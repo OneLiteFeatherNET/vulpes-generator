@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
  * Generates the {@code FontRegistry} class with two constants per font:
@@ -57,7 +58,7 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         cleanup();
         List<FontEntity> models = getModels(projectId);
 
@@ -87,7 +88,7 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
                         .skipJavaLangImports(true)
                         .build()
         );
-        writeFiles(javaPath);
+        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
     }
 
     /**
