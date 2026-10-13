@@ -55,15 +55,15 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
 
             var fontCode = CodeBlock.builder();
 
-            fontCode.add("\\$T.builder()", FontSymbol.class);
-            fontCode.add(".symbols(\\$L)", model.getChars().toArray());
+            fontCode.add("$T.builder()", FontSymbol.class);
+            fontCode.add(".symbols($L)", model.getChars().toArray());
 
             if (model.getAscent() != 0) {
-                fontCode.add(".ascent(\\$L)", model.getAscent());
+                fontCode.add(".ascent($L)", model.getAscent());
             }
 
             if (model.getHeight() != 0) {
-                fontCode.add(".height(\\$L)", model.getHeight());
+                fontCode.add(".height($L)", model.getHeight());
             }
 
             FieldSpec fieldValue = FieldSpec.builder(fontClass, model.getVariableName()).build();
