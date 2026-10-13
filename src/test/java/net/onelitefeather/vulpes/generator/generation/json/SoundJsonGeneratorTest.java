@@ -165,6 +165,23 @@ class SoundJsonGeneratorTest {
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy sound data can be loaded");
     }
 
+    @Test
+    void generatingTwiceOnTheSameInstanceProducesIdenticalFile() {
+        SoundRepository repository = mock(SoundRepository.class);
+        when(repository.findByProjectId(eq(PROJECT_ID), any(Pageable.class)))
+                .thenReturn(Page.of(List.of(
+                        event("ui_click", "eldoria:ui.click", null, defaultSource("eldoria/click")),
+                        event("alpha", "eldoria:alpha", "Subtitle", defaultSource("eldoria/alpha"))),
+                        Pageable.UNPAGED, 2L));
+        SoundJsonGenerator generator = new SoundJsonGenerator(repository);
+
+        generator.generate(tempDir, PROJECT_ID);
+        String first = readRaw("eldoria");
+        generator.generate(tempDir, PROJECT_ID);
+
+        assertEquals(first, readRaw("eldoria"), "A second generate call on the same instance must not change the written file");
+    }
+
     private void generate(SoundEventEntity... events) {
         SoundRepository repository = mock(SoundRepository.class);
         when(repository.findByProjectId(eq(PROJECT_ID), any(Pageable.class)))

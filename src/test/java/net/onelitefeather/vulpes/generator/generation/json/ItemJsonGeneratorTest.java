@@ -147,6 +147,22 @@ class ItemJsonGeneratorTest {
         assertEquals("ItemJsonGenerator", generator.getName(), "getName must be the class name, it must not reuse the name of the ItemRepository");
     }
 
+    @Test
+    void generatingTwiceIntoSameDirectoryOverwritesFileWithoutFailing() throws java.io.IOException {
+        ItemRepository repository = Mockito.mock(ItemRepository.class);
+        ItemEntity sword = item("sword", "sword", List.of(component("00000000-0000-0000-0000-0000000000a1", "stelaris:material", "\"minecraft:stone\"")));
+        when(repository.findByProjectId(any(UUID.class), any(Pageable.class)))
+                .thenReturn(Page.of(List.of(sword), Pageable.UNPAGED, 1L));
+        ItemJsonGenerator generator = new ItemJsonGenerator(repository);
+
+        generator.generate(tempDir, PROJECT_ID);
+        generator.generate(tempDir, PROJECT_ID);
+
+        Path file = tempDir.resolve("src/main/resources/items.json");
+        JsonArray written = GsonHolder.GSON.fromJson(Files.readString(file, UTF_8), JsonArray.class);
+        assertEquals(1, written.size(), "A second run must replace items.json instead of appending to it");
+    }
+
     private JsonObject generateSingle(ItemEntity item) {
         JsonArray array = generate(List.of(item));
         assertEquals(1, array.size(), "exactly one item must be written");
