@@ -140,6 +140,13 @@ class ItemJsonGeneratorTest {
         assertEquals("ZETA", array.get(1).getAsJsonObject().get("variableName").getAsString(), "items must be sorted by variableName, second entry");
     }
 
+    @Test
+    void getNameIsTheOwnClassNameNotTheRepositoryName() {
+        ItemJsonGenerator generator = new ItemJsonGenerator(Mockito.mock(ItemRepository.class));
+
+        assertEquals("ItemJsonGenerator", generator.getName(), "getName must be the class name, it must not reuse the name of the ItemRepository");
+    }
+
     private JsonObject generateSingle(ItemEntity item) {
         JsonArray array = generate(List.of(item));
         assertEquals(1, array.size(), "exactly one item must be written");
