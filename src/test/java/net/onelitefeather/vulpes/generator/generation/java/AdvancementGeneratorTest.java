@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaSourceAssertions;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.transaction.annotation.ReadOnly;
@@ -271,6 +272,13 @@ class AdvancementGeneratorTest {
         boolean readOnly = AdvancementGenerator.class.getMethod("generate", Path.class, UUID.class).isAnnotationPresent(ReadOnly.class);
 
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy parent relations can be loaded");
+    }
+
+    @Test
+    void keyWithDashAndDotCompilesAsJavaField() throws IOException {
+        generate(advancement("my-item.v2", null));
+
+        JavaSourceAssertions.assertCompiles(tempDir, REGISTRY_PATH);
     }
 
     private void generate(AdvancementEntity... advancements) {
