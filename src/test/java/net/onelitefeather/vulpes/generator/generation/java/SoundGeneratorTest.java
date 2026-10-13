@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaSourceAssertions;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.transaction.annotation.ReadOnly;
@@ -105,6 +106,13 @@ class SoundGeneratorTest {
         boolean readOnly = SoundGenerator.class.getMethod("generate", Path.class, UUID.class).isAnnotationPresent(ReadOnly.class);
 
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy sound data can be loaded");
+    }
+
+    @Test
+    void keyWithDashAndDotCompilesAsJavaField() throws IOException {
+        generate(event("my-item.v2", "eldoria:my-item.v2"));
+
+        JavaSourceAssertions.assertCompiles(tempDir, REGISTRY_PATH);
     }
 
     private void generate(SoundEventEntity... events) {
