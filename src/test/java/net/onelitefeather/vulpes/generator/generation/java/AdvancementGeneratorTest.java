@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaSourceAssertions;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.transaction.annotation.ReadOnly;
@@ -36,7 +37,7 @@ import static org.mockito.Mockito.when;
 class AdvancementGeneratorTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e");
-    private static final String REGISTRY_PATH = "net/reaper/vulpes/advancement/AdvancementRegistry.java";
+    private static final String REGISTRY_PATH = "src/main/java/net/reaper/vulpes/advancement/AdvancementRegistry.java";
     private static final String STONE_BACKGROUND = "minecraft:textures/gui/advancements/backgrounds/stone.png";
 
     @TempDir
@@ -271,6 +272,13 @@ class AdvancementGeneratorTest {
         boolean readOnly = AdvancementGenerator.class.getMethod("generate", Path.class, UUID.class).isAnnotationPresent(ReadOnly.class);
 
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy parent relations can be loaded");
+    }
+
+    @Test
+    void keyWithDashAndDotCompilesAsJavaField() throws IOException {
+        generate(advancement("my-item.v2", null));
+
+        JavaSourceAssertions.assertCompiles(tempDir, REGISTRY_PATH);
     }
 
     private void generate(AdvancementEntity... advancements) {

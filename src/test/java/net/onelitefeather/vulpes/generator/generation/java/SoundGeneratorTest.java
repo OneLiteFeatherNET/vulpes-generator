@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaSourceAssertions;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.transaction.annotation.ReadOnly;
@@ -34,7 +35,7 @@ import static org.mockito.Mockito.when;
 class SoundGeneratorTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e");
-    private static final String REGISTRY_PATH = "net/reaper/vulpes/sound/SoundRegistry.java";
+    private static final String REGISTRY_PATH = "src/main/java/net/reaper/vulpes/sound/SoundRegistry.java";
 
     @TempDir
     Path tempDir;
@@ -105,6 +106,13 @@ class SoundGeneratorTest {
         boolean readOnly = SoundGenerator.class.getMethod("generate", Path.class, UUID.class).isAnnotationPresent(ReadOnly.class);
 
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy sound data can be loaded");
+    }
+
+    @Test
+    void keyWithDashAndDotCompilesAsJavaField() throws IOException {
+        generate(event("my-item.v2", "eldoria:my-item.v2"));
+
+        JavaSourceAssertions.assertCompiles(tempDir, REGISTRY_PATH);
     }
 
     private void generate(SoundEventEntity... events) {

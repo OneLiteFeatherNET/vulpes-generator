@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaIdentifiers;
 import com.google.gson.JsonElement;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
  * Generates the {@code AdvancementRegistry} class of a project.
@@ -89,7 +91,7 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         cleanup();
         List<AdvancementEntity> models = getModels(projectId);
 
@@ -112,7 +114,7 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
                         .skipJavaLangImports(true)
                         .build()
         );
-        writeFiles(javaPath);
+        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
     }
 
     @Override
@@ -124,9 +126,10 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
      * Creates one constant per advancement, sorted by variable name.
      */
     private static List<FieldSpec> createFields(List<AdvancementData> advancements) {
+        JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
         return advancements.stream()
                 .sorted(Comparator.comparing(AdvancementData::variableName))
-                .map(advancement -> FieldSpec.builder(STRING, advancement.variableName())
+                .map(advancement -> FieldSpec.builder(STRING, fieldNames.claim(JavaIdentifiers.constantName(advancement.variableName()), advancement.key()))
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                         .initializer("$S", advancement.namespacedKey())
                         .build())
@@ -147,14 +150,15 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
                 .addParameter(ADVANCEMENT_MANAGER, MANAGER)
                 .addStatement("$T<$T, $T> $L = new $T<>()", MAP, STRING, ADVANCEMENT_TAB, TABS, LINKED_HASH_MAP);
 
+        JavaIdentifiers.Claims localNames = new JavaIdentifiers.Claims();
         for (AdvancementData advancement : advancements) {
-            String local = localName(ADVANCEMENT_PREFIX, advancement.variableName());
+            String local = localNames.claim(JavaIdentifiers.localName(ADVANCEMENT_PREFIX, advancement.variableName()), advancement.key());
             if (advancement.isRoot()) {
-                addRoot(method, advancement, local);
+                addRoot(method, advancement, local, localNames);
             } else {
                 AdvancementData parent = byNamespacedKey.get(advancement.parentNamespacedKey());
                 String tab = tabName(byNamespacedKey.get(advancement.rootNamespacedKey()));
-                addChild(method, advancement, local, localName(ADVANCEMENT_PREFIX, parent.variableName()), tab);
+                addChild(method, advancement, local, JavaIdentifiers.localName(ADVANCEMENT_PREFIX, parent.variableName()), tab);
             }
         }
 
@@ -165,8 +169,8 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
     /**
      * Creates the root, its tab and registers the tab in the result map.
      */
-    private static void addRoot(MethodSpec.Builder method, AdvancementData root, String local) {
-        String tab = tabName(root);
+    private static void addRoot(MethodSpec.Builder method, AdvancementData root, String local, JavaIdentifiers.Claims localNames) {
+        String tab = localNames.claim(tabName(root), root.key());
         method.addStatement("$T $L = new $T($L, $L, $T.$L, $T.$L, $L, $L, $L)",
                 ADVANCEMENT_ROOT, local, ADVANCEMENT_ROOT,
                 textComponent(root.title()), textComponent(root.description()),
@@ -221,11 +225,7 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
         return Float.toString(value) + "f";
     }
 
-    private static String localName(String prefix, String variableName) {
-        return prefix + variableName.toLowerCase(Locale.ROOT);
-    }
-
     private static String tabName(AdvancementData root) {
-        return localName(TAB_PREFIX, root.variableName());
+        return JavaIdentifiers.localName(TAB_PREFIX, root.variableName());
     }
 }

@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaIdentifiers;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -23,6 +24,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
  * Generates the {@code FontRegistry} class with two constants per font:
@@ -41,6 +43,7 @@ import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
 public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements JavaStructure {
 
     private static final ClassName KEY = ClassName.get(Key.class);
+    private static final String KEY_SUFFIX = "_FONT";
 
     private final FontRepository fontRepository;
 
@@ -57,7 +60,7 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         cleanup();
         List<FontEntity> models = getModels(projectId);
 
@@ -69,13 +72,12 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
         addDefaultSuppressAnnotation(this.classBuilder);
 
         Map<String, FieldSpec[]> fontFields = new TreeMap<>();
+        JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
         for (FontEntity model : models) {
-            String variableName = model.getVariableName();
-            if (variableName == null || variableName.isEmpty()) continue;
-            if (fontFields.containsKey(variableName)) {
-                throw new IllegalArgumentException("more than one font has the variable name '" + variableName + "'");
-            }
-            fontFields.put(variableName, createFields(model, variableName));
+            String identifier = JavaIdentifiers.constantName(variableNameOf(model));
+            fieldNames.claim(identifier, model.getKey());
+            fieldNames.claim(identifier + KEY_SUFFIX, model.getKey());
+            fontFields.put(identifier, createFields(model, identifier));
         }
 
         fontFields.values().forEach(fields -> this.classBuilder.addFields(List.of(fields)));
@@ -87,24 +89,32 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
                         .skipJavaLangImports(true)
                         .build()
         );
-        writeFiles(javaPath);
+        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
     }
 
     /**
      * Creates the key field and the glyph field of a font.
      */
-    private static FieldSpec[] createFields(@NotNull FontEntity model, @NotNull String variableName) {
+    private static FieldSpec[] createFields(@NotNull FontEntity model, @NotNull String identifier) {
         BitmapFontProviderCodec.BitmapFontProvider provider = BitmapFontProviderCodec.fromFont(model);
         String glyphs = String.join("\n", provider.chars());
         String namespace = BitmapFontProviderCodec.namespaceOf(model);
 
-        FieldSpec key = FieldSpec.builder(KEY, variableName + "_FONT", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+        FieldSpec key = FieldSpec.builder(KEY, identifier + KEY_SUFFIX, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer("$T.key($S, $S)", KEY, namespace, model.getMapper())
                 .build();
-        FieldSpec glyphField = FieldSpec.builder(String.class, variableName, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+        FieldSpec glyphField = FieldSpec.builder(String.class, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer("$S", glyphs)
                 .build();
         return new FieldSpec[]{key, glyphField};
+    }
+
+    private static String variableNameOf(@NotNull FontEntity model) {
+        String variableName = model.getVariableName();
+        if (variableName == null || variableName.isBlank()) {
+            throw new IllegalArgumentException("font '" + model.getKey() + "' has no variable name");
+        }
+        return variableName;
     }
 
     @Override

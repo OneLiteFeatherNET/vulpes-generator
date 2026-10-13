@@ -14,6 +14,8 @@ import net.onelitefeather.vulpes.generator.generation.font.BitmapFontProviderCod
 import net.onelitefeather.vulpes.generator.gson.GsonHolder;
 import org.jetbrains.annotations.NotNull;
 
+import static net.onelitefeather.vulpes.generator.util.Constants.RESOURCES_FOLDER;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +53,7 @@ public class FontJsonGenerator extends FileGenerator {
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         List<FontEntity> fonts = this.fontRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
         if (fonts.isEmpty()) return;
 
@@ -68,25 +70,25 @@ public class FontJsonGenerator extends FileGenerator {
             List<FontEntity> group = entry.getValue().stream()
                     .sorted(Comparator.comparing(FontEntity::getKey))
                     .toList();
-            writeFontFile(javaPath, BitmapFontProviderCodec.namespaceOf(group.getFirst()), entry.getKey(), group);
+            writeFontFile(root, BitmapFontProviderCodec.namespaceOf(group.getFirst()), entry.getKey(), group);
         }
     }
 
-    private void writeFontFile(@NotNull Path javaPath, @NotNull String namespace, @NotNull String mapper, @NotNull List<FontEntity> group) {
+    private void writeFontFile(@NotNull Path root, @NotNull String namespace, @NotNull String mapper, @NotNull List<FontEntity> group) {
         JsonArray providers = new JsonArray();
         for (FontEntity font : group) {
             BitmapFontProvider provider = BitmapFontProviderCodec.fromFont(font);
             providers.add(BitmapFontProviderCodec.toJson(provider));
         }
 
-        JsonObject root = new JsonObject();
-        root.add("providers", providers);
+        JsonObject document = new JsonObject();
+        document.add("providers", providers);
 
-        Path directory = javaPath.resolve(ASSETS_DIRECTORY).resolve(namespace).resolve(FONT_DIRECTORY);
+        Path directory = root.resolve(RESOURCES_FOLDER).resolve(ASSETS_DIRECTORY).resolve(namespace).resolve(FONT_DIRECTORY);
         Path file = directory.resolve(mapper + JSON_EXTENSION);
         try {
             Files.createDirectories(directory);
-            Files.writeString(file, GsonHolder.GSON.toJson(root), UTF_8);
+            Files.writeString(file, GsonHolder.GSON.toJson(document), UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException("unable to write font file " + file, e);
         }

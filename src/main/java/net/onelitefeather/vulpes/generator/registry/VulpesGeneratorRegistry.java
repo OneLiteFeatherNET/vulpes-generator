@@ -66,8 +66,8 @@ final class VulpesGeneratorRegistry implements GeneratorRegistry {
      * {@inheritDoc}
      */
     @Override
-    public void triggerAll(@NotNull Path path, @NotNull UUID projectId) {
-        this.generators.values().forEach(generator -> generator.get().generate(path, projectId));
+    public void triggerAll(@NotNull Path root, @NotNull UUID projectId) {
+        this.generators.values().forEach(generator -> generator.get().generate(root, projectId));
     }
 
     /**
