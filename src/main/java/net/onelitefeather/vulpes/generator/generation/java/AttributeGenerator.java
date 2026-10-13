@@ -57,7 +57,7 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
 
             FieldSpec fieldSpec = FieldSpec.builder(attributeClass, attributeName)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer("new \\$T(\\$S, \\$Lf, \\$Lf",
+                    .initializer("new $T($S, $Lf, $Lf",
                             attributeClass,
                             attributeName,
                             attributeModel.getDefaultValue(),
