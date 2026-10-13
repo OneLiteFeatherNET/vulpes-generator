@@ -115,12 +115,29 @@ class SoundGeneratorTest {
         JavaSourceAssertions.assertCompiles(tempDir, REGISTRY_PATH);
     }
 
-    private void generate(SoundEventEntity... events) {
+    @Test
+    void generatingTwiceOnTheSameInstanceProducesIdenticalRegistry() throws IOException {
+        SoundGenerator generator = generatorWith(event("ui_click", "eldoria:ui.click"), event("alpha", "eldoria:alpha.sound"));
+        Path first = Files.createDirectories(tempDir.resolve("first"));
+        Path second = Files.createDirectories(tempDir.resolve("second"));
+
+        generator.generate(first, PROJECT_ID);
+        generator.generate(second, PROJECT_ID);
+
+        assertEquals(Files.readString(first.resolve(REGISTRY_PATH), StandardCharsets.UTF_8),
+                Files.readString(second.resolve(REGISTRY_PATH), StandardCharsets.UTF_8),
+                "A second generate call on the same instance must not accumulate fields");
+    }
+
+    private SoundGenerator generatorWith(SoundEventEntity... events) {
         SoundRepository repository = mock(SoundRepository.class);
         when(repository.findByProjectId(eq(PROJECT_ID), any(Pageable.class)))
                 .thenReturn(Page.of(List.of(events), Pageable.UNPAGED, (long) events.length));
+        return new SoundGenerator(repository);
+    }
 
-        new SoundGenerator(repository).generate(tempDir, PROJECT_ID);
+    private void generate(SoundEventEntity... events) {
+        generatorWith(events).generate(tempDir, PROJECT_ID);
     }
 
     private String readRegistry() {

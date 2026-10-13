@@ -214,6 +214,31 @@ class ItemGeneratorTest {
                 "The message must name both keys but was: " + exception.getMessage());
     }
 
+    @Test
+    void generatingTwiceOnTheSameInstanceProducesIdenticalRegistry() throws IOException {
+        ItemGenerator generator = generatorWith(
+                withLore(item("sword",
+                        component("stelaris:material", "\"minecraft:diamond_sword\""),
+                        component("minecraft:custom_name", "{\"text\":\"Schwert\"}")),
+                        lore("Zeile 1", 1)),
+                item("stone", component("stelaris:material", "\"minecraft:stone\"")));
+        Path first = Files.createDirectories(tempDir.resolve("first"));
+        Path second = Files.createDirectories(tempDir.resolve("second"));
+
+        generator.generate(first, PROJECT_ID);
+        generator.generate(second, PROJECT_ID);
+
+        assertEquals(Files.readString(first.resolve(REGISTRY_PATH), StandardCharsets.UTF_8),
+                Files.readString(second.resolve(REGISTRY_PATH), StandardCharsets.UTF_8),
+                "A second generate call on the same instance must not accumulate fields or methods");
+    }
+
+    private ItemGenerator generatorWith(ItemEntity... items) {
+        when(repository.findByProjectId(eq(PROJECT_ID), any(Pageable.class)))
+                .thenReturn(Page.of(List.of(items), Pageable.UNPAGED, (long) items.length));
+        return new ItemGenerator(repository);
+    }
+
     private void generate(ItemEntity... items) {
         when(repository.findByProjectId(eq(PROJECT_ID), any(Pageable.class)))
                 .thenReturn(Page.of(List.of(items), Pageable.UNPAGED, (long) items.length));
