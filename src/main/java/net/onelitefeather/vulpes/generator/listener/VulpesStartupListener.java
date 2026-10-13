@@ -4,10 +4,10 @@ import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.context.event.StartupEvent;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import net.onelitefeather.vulpes.generator.generation.java.AdvancementGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.AttributeGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.FontGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.ItemGenerator;
-import net.onelitefeather.vulpes.generator.generation.java.NotificationGenerator;
 import net.onelitefeather.vulpes.generator.registry.GeneratorRegistry;
 
 @Singleton
@@ -17,7 +17,7 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
     private final AttributeGenerator attributeGenerator;
     private final FontGenerator fontGenerator;
     private final ItemGenerator itemGenerator;
-    private final NotificationGenerator notificationGenerator;
+    private final AdvancementGenerator advancementGenerator;
 
     @Inject
     public VulpesStartupListener(
@@ -25,13 +25,13 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
             AttributeGenerator attributeGenerator,
             FontGenerator fontGenerator,
             ItemGenerator itemGenerator,
-            NotificationGenerator notificationGenerator
+            AdvancementGenerator advancementGenerator
     ) {
         this.generatorRegistry = generatorRegistry;
         this.attributeGenerator = attributeGenerator;
         this.fontGenerator = fontGenerator;
         this.itemGenerator = itemGenerator;
-        this.notificationGenerator = notificationGenerator;
+        this.advancementGenerator = advancementGenerator;
     }
 
     @Override
@@ -39,6 +39,6 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
         this.generatorRegistry.add(attributeGenerator);
         this.generatorRegistry.add(fontGenerator);
         this.generatorRegistry.add(itemGenerator);
-        this.generatorRegistry.add(notificationGenerator);
+        this.generatorRegistry.add(advancementGenerator);
     }
 }
