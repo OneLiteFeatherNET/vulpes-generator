@@ -27,7 +27,7 @@ public abstract class AbstractCodeGenerator<T extends VulpesModel> implements Ge
 
     private static final String EMPTY_FILES_TO_WRITE = "No files to write. Skipping the file write";
 
-    protected static final String BASE_PACKAGE = "net.reaper.vulpes";
+    protected static final String BASE_PACKAGE = "net.onelitefeather.vulpes";
     protected static final String EMPTY_COMPONENT = "empty()";
 
     protected Logger logger = LoggerFactory.getLogger(AbstractCodeGenerator.class);
