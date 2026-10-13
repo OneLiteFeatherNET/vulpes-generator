@@ -77,6 +77,7 @@ public final class GitProjectWorker {
                 rawGit.setCloneAllBranches(true);
             } else {
                 rawGit.setBranchesToClone(branches);
+                rawGit.setBranch(branches.get(0));
             }
             return rawGit.call();
         } catch (Exception exception) {
