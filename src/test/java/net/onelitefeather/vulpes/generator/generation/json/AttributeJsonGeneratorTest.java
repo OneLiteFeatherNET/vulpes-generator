@@ -60,7 +60,7 @@ class AttributeJsonGeneratorTest {
     void testAttributeJsonGenerator() {
         generator.generate(tempDir, UUID.randomUUID());
 
-        Path file = tempDir.resolve("attributes.json");
+        Path file = tempDir.resolve("src/main/resources/attributes.json");
 
         assertTrue(Files.exists(file));
         JsonArray dataArray = null;

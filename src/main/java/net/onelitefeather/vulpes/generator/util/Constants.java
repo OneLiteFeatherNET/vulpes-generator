@@ -13,6 +13,7 @@ public final class Constants {
     public static final String GITLAB_CI_YML = ".gitlab-ci.yml";
     public static final String OUT_PUT_FOLDER = "out";
     public static final String JAVA_MAIM_FOLDER = "src/main/java";
+    public static final String RESOURCES_FOLDER = "src/main/resources";
     public static final String EMPTY_STRING = "";
 
     private Constants() {

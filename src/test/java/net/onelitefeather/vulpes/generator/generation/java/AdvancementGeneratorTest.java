@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 class AdvancementGeneratorTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e");
-    private static final String REGISTRY_PATH = "net/reaper/vulpes/advancement/AdvancementRegistry.java";
+    private static final String REGISTRY_PATH = "src/main/java/net/reaper/vulpes/advancement/AdvancementRegistry.java";
     private static final String STONE_BACKGROUND = "minecraft:textures/gui/advancements/backgrounds/stone.png";
 
     @TempDir

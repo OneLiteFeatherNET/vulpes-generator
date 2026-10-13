@@ -138,7 +138,7 @@ class AdvancementJsonGeneratorTest {
 
         new AdvancementJsonGenerator(repository).generate(tempDir, PROJECT_ID);
 
-        Path file = tempDir.resolve("advancements.json");
+        Path file = tempDir.resolve("src/main/resources/advancements.json");
         assertTrue(Files.exists(file), "advancements.json must be created in the target directory");
         try (var reader = Files.newBufferedReader(file, UTF_8)) {
             return GsonHolder.GSON.fromJson(reader, JsonArray.class);

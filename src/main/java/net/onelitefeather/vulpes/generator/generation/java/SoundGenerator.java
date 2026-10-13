@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
  * Generates the {@code SoundRegistry} class which holds one {@link SoundEvent} field per sound event of a project.
@@ -54,7 +55,7 @@ public class SoundGenerator extends AbstractCodeGenerator<SoundEventEntity> impl
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         cleanup();
         List<SoundEventEntity> models = getModels(projectId);
 
@@ -86,7 +87,7 @@ public class SoundGenerator extends AbstractCodeGenerator<SoundEventEntity> impl
                         .skipJavaLangImports(true)
                         .build()
         );
-        writeFiles(javaPath);
+        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
     }
 
     @Override

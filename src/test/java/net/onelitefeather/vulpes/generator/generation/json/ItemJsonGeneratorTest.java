@@ -153,7 +153,7 @@ class ItemJsonGeneratorTest {
 
         new ItemJsonGenerator(repository).generate(tempDir, PROJECT_ID);
 
-        Path file = tempDir.resolve("items.json");
+        Path file = tempDir.resolve("src/main/resources/items.json");
         assertTrue(Files.exists(file), "items.json must be created in the target directory");
         try (var reader = Files.newBufferedReader(file, UTF_8)) {
             return GsonHolder.GSON.fromJson(reader, JsonArray.class);

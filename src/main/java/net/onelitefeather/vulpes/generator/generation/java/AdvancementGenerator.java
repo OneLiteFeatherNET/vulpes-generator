@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
  * Generates the {@code AdvancementRegistry} class of a project.
@@ -89,7 +90,7 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         cleanup();
         List<AdvancementEntity> models = getModels(projectId);
 
@@ -112,7 +113,7 @@ public class AdvancementGenerator extends AbstractCodeGenerator<AdvancementEntit
                         .skipJavaLangImports(true)
                         .build()
         );
-        writeFiles(javaPath);
+        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
     }
 
     @Override

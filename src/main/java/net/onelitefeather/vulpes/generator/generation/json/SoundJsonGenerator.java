@@ -17,6 +17,8 @@ import net.onelitefeather.vulpes.generator.generation.sound.SoundEventKey;
 import net.onelitefeather.vulpes.generator.gson.GsonHolder;
 import org.jetbrains.annotations.NotNull;
 
+import static net.onelitefeather.vulpes.generator.util.Constants.RESOURCES_FOLDER;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +53,7 @@ public class SoundJsonGenerator extends FileGenerator {
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         List<SoundEventEntity> entities = this.soundRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
         if (entities.isEmpty()) return;
 
@@ -65,7 +67,7 @@ public class SoundJsonGenerator extends FileGenerator {
             events.put(key.path(), encode(key, entity));
         }
 
-        namespaces.forEach((namespace, events) -> write(javaPath, namespace, events));
+        namespaces.forEach((namespace, events) -> write(root, namespace, events));
     }
 
     /**
@@ -83,17 +85,17 @@ public class SoundJsonGenerator extends FileGenerator {
         throw new IllegalArgumentException("sound '" + key.asString() + "' is invalid: " + reason);
     }
 
-    private void write(Path javaPath, String namespace, Map<String, JsonElement> events) {
-        JsonObject root = new JsonObject();
-        events.forEach(root::add);
+    private void write(Path root, String namespace, Map<String, JsonElement> events) {
+        JsonObject document = new JsonObject();
+        events.forEach(document::add);
 
-        Path directory = javaPath.resolve(ASSETS_FOLDER).resolve(namespace);
+        Path directory = root.resolve(RESOURCES_FOLDER).resolve(ASSETS_FOLDER).resolve(namespace);
         try {
             Files.createDirectories(directory);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        save(directory.resolve(fileName), GsonHolder.GSON, root);
+        save(directory.resolve(fileName), GsonHolder.GSON, document);
     }
 
     @Override
