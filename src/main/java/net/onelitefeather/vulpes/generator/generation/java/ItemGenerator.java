@@ -9,10 +9,8 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeVariableName;
+import com.squareup.javapoet.TypeSpec;
 import io.micronaut.context.annotation.Prototype;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.transaction.annotation.ReadOnly;
@@ -42,13 +40,17 @@ import net.onelitefeather.vulpes.generator.generation.component.RawItemComponent
 import org.jetbrains.annotations.NotNull;
 
 import javax.lang.model.element.Modifier;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
 import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
@@ -62,27 +64,47 @@ import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDE
  * <p>
  * The generation runs read only inside a transaction, because the components of an item are loaded lazily.
  */
+/**
+ * Generates the code-based custom item registry of vulpes-base as three top-level files in
+ * {@code net.onelitefeather.vulpes.item}:
+ * <ul>
+ *     <li>{@code CustomItemKeys}: one {@code Key} constant per item,</li>
+ *     <li>{@code CustomItems}: one {@code CustomItem} constant per item, resolved through the registry,</li>
+ *     <li>{@code CustomItemEntries}: the list of all items the registry is built from.</li>
+ * </ul>
+ * The key of an item is the key of its project as namespace and the key of the item as path. The constants are
+ * sorted by their identifier. The files are written even without items.
+ * <p>
+ * Material, amount, lore and enchantments are emitted as builder calls. All other data components are emitted
+ * as raw JSON pairs and applied at runtime by the hand written {@code ItemComponentDecoder} of vulpes-base. Every
+ * component is decoded with the Minestom codecs at generation time, so invalid data aborts the generation instead
+ * of ending up in the generated code.
+ * <p>
+ * JavaPoet 1.13 cannot emit {@code sealed ... permits}, so the declaration of {@code CustomItems} is rewritten
+ * by {@link #asSealedInterface(String)}. The generation runs read only inside a transaction, because the components
+ * of an item are loaded lazily.
+ */
 @Prototype
 public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements JavaStructure {
 
-    private static final String WITH_COMPONENTS = "withComponents";
-    private static final String APPLY_COMPONENT = "applyComponent";
+    private static final String ITEM_PACKAGE = BASE_PACKAGE + ".item";
+    private static final String KEYS_NAME = "CustomItemKeys";
+    private static final String ITEMS_NAME = "CustomItems";
+    private static final String ENTRIES_NAME = "CustomItemEntries";
     private static final int MAX_MAP_OF_ENTRIES = 10;
 
+    private static final ClassName KEY = ClassName.get(Key.class);
+    private static final ClassName KEYS = ClassName.get(ITEM_PACKAGE, KEYS_NAME);
+    private static final ClassName CUSTOM_ITEM = ClassName.get(ITEM_PACKAGE, "CustomItem");
+    private static final ClassName CUSTOM_ITEM_IMPL = ClassName.get(ITEM_PACKAGE, "CustomItemImpl");
+    private static final ClassName ITEM_COMPONENT_DECODER = ClassName.get(ITEM_PACKAGE, "ItemComponentDecoder");
     private static final ClassName ITEM_STACK = ClassName.get(ItemStack.class);
-    private static final ClassName ITEM_STACK_BUILDER = ClassName.get(ItemStack.Builder.class);
     private static final ClassName MATERIAL = ClassName.get(Material.class);
     private static final ClassName DATA_COMPONENTS = ClassName.get(DataComponents.class);
-    private static final ClassName DATA_COMPONENT = ClassName.get(DataComponent.class);
     private static final ClassName ENCHANTMENT = ClassName.get(Enchantment.class);
     private static final ClassName ENCHANTMENT_LIST = ClassName.get(EnchantmentList.class);
     private static final ClassName REGISTRY_KEY = ClassName.get(RegistryKey.class);
     private static final ClassName COMPONENT = ClassName.get(Component.class);
-    private static final ClassName TRANSCODER = ClassName.get(Transcoder.class);
-    private static final ClassName RESULT = ClassName.get(Result.class);
-    private static final ClassName JSON_ELEMENT = ClassName.get(JsonElement.class);
-    private static final ClassName JSON_PARSER = ClassName.get(JsonParser.class);
-    private static final ClassName JSON_PARSE_EXCEPTION = ClassName.get(JsonParseException.class);
     private static final ClassName LIST = ClassName.get(List.class);
     private static final ClassName MAP = ClassName.get(Map.class);
 
@@ -90,7 +112,7 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
 
     @Inject
     public ItemGenerator(@NotNull ItemRepository itemRepository) {
-        super("ItemRegistry", BASE_PACKAGE + ".item");
+        super(ITEMS_NAME, ITEM_PACKAGE, TypeSpec.Kind.INTERFACE);
         this.itemRepository = itemRepository;
     }
 
@@ -105,39 +127,63 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
         cleanup();
         List<ItemEntity> models = getModels(projectId);
 
-        if (models.isEmpty()) return;
-
-        addClassModifiers(this.classBuilder);
-        addJetbrainsAnnotation(this.classBuilder);
-        addPrivateDefaultConstructor(this.classBuilder);
-        addDefaultSuppressAnnotation(this.classBuilder);
-
         DynamicRegistry<Enchantment> enchantments = Registries.vanilla().enchantment();
-        Map<String, FieldSpec> itemFields = new TreeMap<>();
+        Map<String, ItemEntity> items = new TreeMap<>();
+        Map<String, CodeBlock> initializers = new TreeMap<>();
         JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
-        boolean needsComponentHelper = false;
 
         for (ItemEntity model : models) {
             String identifier = fieldNames.claim(JavaIdentifiers.constantName(variableNameOf(model)), model.getKey());
             ItemComponents components = readComponents(model);
-            needsComponentHelper |= !components.components().isEmpty();
-            itemFields.put(identifier, createField(model, identifier, components, enchantments));
+            items.put(identifier, model);
+            initializers.put(identifier, createInitializer(model, components, enchantments));
         }
 
-        this.classBuilder.addFields(itemFields.values());
-        if (needsComponentHelper) {
-            this.classBuilder.addMethod(createWithComponentsMethod());
-            this.classBuilder.addMethod(createApplyComponentMethod());
+        Path directory = root.resolve(JAVA_MAIM_FOLDER).resolve(packageName.replace('.', '/'));
+        write(directory, KEYS_NAME, render(createKeys(items)));
+        write(directory, ITEMS_NAME, asSealedInterface(render(createItems(items))));
+        write(directory, ENTRIES_NAME, render(createEntries(initializers)));
+    }
+
+    private TypeSpec createKeys(@NotNull Map<String, ItemEntity> items) {
+        TypeSpec.Builder builder = TypeSpec.interfaceBuilder(KEYS_NAME).addModifiers(Modifier.PUBLIC);
+        addJetbrainsAnnotation(builder);
+        items.forEach((identifier, model) -> builder.addField(
+                FieldSpec.builder(KEY, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$T.key($S, $S)", KEY, namespaceOf(model), model.getKey())
+                        .build()));
+        return builder.build();
+    }
+
+    private TypeSpec createItems(@NotNull Map<String, ItemEntity> items) {
+        TypeSpec.Builder builder = TypeSpec.interfaceBuilder(ITEMS_NAME);
+        items.keySet().forEach(identifier -> builder.addField(
+                FieldSpec.builder(CUSTOM_ITEM, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$T.get($T.$L)", CUSTOM_ITEM_IMPL, KEYS, identifier)
+                        .build()));
+        return builder.build();
+    }
+
+    private TypeSpec createEntries(@NotNull Map<String, CodeBlock> initializers) {
+        List<CodeBlock> entries = new ArrayList<>();
+        initializers.forEach((identifier, initializer) -> entries.add(
+                CodeBlock.of("new $T($T.$L, $L)", CUSTOM_ITEM_IMPL, KEYS, identifier, initializer)));
+
+        ParameterizedTypeName listType = ParameterizedTypeName.get(ClassName.get(List.class), CUSTOM_ITEM);
+        MethodSpec.Builder method = MethodSpec.methodBuilder("entries")
+                .addModifiers(Modifier.STATIC)
+                .returns(listType);
+        if (entries.isEmpty()) {
+            method.addStatement("return $T.of()", List.class);
+        } else {
+            method.addStatement("return $T.of($L)", List.class, CodeBlock.join(entries, ",\n"));
         }
 
-        filesToGenerate.clear();
-        filesToGenerate.add(
-                JavaFile.builder(packageName, this.classBuilder.build())
-                        .indent(INDENT_DEFAULT)
-                        .skipJavaLangImports(true)
-                        .build()
-        );
-        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
+        return TypeSpec.classBuilder(ENTRIES_NAME)
+                .addModifiers(Modifier.FINAL)
+                .addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build())
+                .addMethod(method.build())
+                .build();
     }
 
     @Override
@@ -198,17 +244,9 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
         }
     }
 
-    private @NotNull FieldSpec createField(@NotNull ItemEntity model, @NotNull String identifier, @NotNull ItemComponents components,
-                                           @NotNull DynamicRegistry<Enchantment> enchantments) {
-        return FieldSpec.builder(ITEM_STACK, identifier)
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .initializer(createInitializer(model, components, enchantments))
-                .build();
-    }
-
     /**
      * Creates the initializer of an item field. The builder chain is indented one level, so the emitted code is
-     * readable. Items with generic components wrap the chain into the {@code withComponents} call.
+     * readable. Items with generic components wrap the chain into the {@code ItemComponentDecoder.apply} call.
      */
     private @NotNull CodeBlock createInitializer(@NotNull ItemEntity model, @NotNull ItemComponents components,
                                                  @NotNull DynamicRegistry<Enchantment> enchantments) {
@@ -216,7 +254,7 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
         CodeBlock.Builder init = CodeBlock.builder();
 
         if (generic) {
-            init.add("$L(\n$>", WITH_COMPONENTS);
+            init.add("$T.apply(\n$>", ITEM_COMPONENT_DECODER);
         }
         init.add("$T.builder($T.$L)$>", ITEM_STACK, MATERIAL, materialConstant(components));
 
@@ -331,61 +369,42 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
         return map.build();
     }
 
-    /**
-     * Creates {@code private static ItemStack.Builder withComponents(ItemStack.Builder, String...)}.
-     */
-    private static @NotNull MethodSpec createWithComponentsMethod() {
-        return MethodSpec.methodBuilder(WITH_COMPONENTS)
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                .returns(ITEM_STACK_BUILDER)
-                .addParameter(ITEM_STACK_BUILDER, "builder")
-                .addParameter(ParameterSpec.builder(String[].class, "keyAndJson").build())
-                .varargs(true)
-                .addStatement("if (keyAndJson.length % 2 != 0) throw new $T($S + keyAndJson.length + $S)",
-                        IllegalArgumentException.class,
-                        "Expected key and JSON value pairs but got ",
-                        " arguments")
-                .beginControlFlow("for (int i = 0; i < keyAndJson.length; i += 2)")
-                .addStatement("String key = keyAndJson[i]")
-                .addStatement("$T<?> component = $T.fromKey(key)", DATA_COMPONENT, DATA_COMPONENT)
-                .beginControlFlow("if (component == null)")
-                .addStatement("throw new $T($S + key)", IllegalStateException.class, "Unknown data component: ")
-                .endControlFlow()
-                .addStatement("$T json", JSON_ELEMENT)
-                .beginControlFlow("try")
-                .addStatement("json = $T.parseString(keyAndJson[i + 1])", JSON_PARSER)
-                .nextControlFlow("catch ($T e)", JSON_PARSE_EXCEPTION)
-                .addStatement("throw new $T($S + key + $S + e.getMessage(), e)", IllegalStateException.class,
-                        "Invalid JSON for data component ", ": ")
-                .endControlFlow()
-                .addStatement("$L(builder, component, key, json)", APPLY_COMPONENT)
-                .endControlFlow()
-                .addStatement("return builder")
-                .build();
+    private static String render(@NotNull TypeSpec type) {
+        return JavaFile.builder(ITEM_PACKAGE, type)
+                .indent(INDENT_DEFAULT)
+                .skipJavaLangImports(true)
+                .build()
+                .toString();
     }
 
     /**
-     * Creates {@code private static <T> void applyComponent(...)} which keeps the generic type of the component.
+     * Turns the declaration of the {@code CustomItems} interface into {@code sealed ... permits CustomItem}.
+     *
+     * @throws IllegalStateException if JavaPoet did not emit the expected declaration
      */
-    private static @NotNull MethodSpec createApplyComponentMethod() {
-        TypeVariableName t = TypeVariableName.get("T");
-        return MethodSpec.methodBuilder(APPLY_COMPONENT)
-                .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                .addTypeVariable(t)
-                .returns(TypeName.VOID)
-                .addParameter(ITEM_STACK_BUILDER, "builder")
-                .addParameter(ParameterizedTypeName.get(DATA_COMPONENT, t), "component")
-                .addParameter(String.class, "key")
-                .addParameter(JSON_ELEMENT, "json")
-                .addStatement("$T<$T> result = component.decode($T.JSON, json)", RESULT, t, TRANSCODER)
-                .beginControlFlow("if (result instanceof $T.Ok<$T> ok)", RESULT, t)
-                .addStatement("builder.set(component, ok.value())")
-                .addStatement("return")
-                .endControlFlow()
-                .addStatement("String reason = result instanceof $T.Error<$T> error ? error.message() : $S",
-                        RESULT, t, "no value decoded")
-                .addStatement("throw new $T($S + key + $S + reason)", IllegalStateException.class,
-                        "Unable to decode data component ", ": ")
-                .build();
+    private static String asSealedInterface(@NotNull String source) {
+        String declaration = "interface " + ITEMS_NAME + " {";
+        if (!source.contains(declaration)) {
+            throw new IllegalStateException("the interface " + ITEMS_NAME + " was not found in the generated source");
+        }
+        return source.replace(declaration, "sealed interface " + ITEMS_NAME + " permits CustomItem {");
+    }
+
+    private static void write(@NotNull Path directory, @NotNull String name, @NotNull String source) {
+        Path file = directory.resolve(name + ".java");
+        try {
+            Files.createDirectories(directory);
+            Files.writeString(file, source, UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("unable to write item definitions to " + file, e);
+        }
+    }
+
+    /**
+     * Returns the project part of the namespaced key, for example {@code eldoria_rpg} for {@code eldoria_rpg:sword}.
+     */
+    private static String namespaceOf(@NotNull ItemEntity model) {
+        String namespacedKey = model.getNamespacedKey();
+        return namespacedKey.substring(0, namespacedKey.indexOf(':'));
     }
 }
