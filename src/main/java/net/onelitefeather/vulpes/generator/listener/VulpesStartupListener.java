@@ -9,7 +9,6 @@ import net.onelitefeather.vulpes.generator.generation.java.AttributeGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.FontGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.ItemGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.SoundGenerator;
-import net.onelitefeather.vulpes.generator.generation.json.AdvancementJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.FontJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.SoundJsonGenerator;
 import net.onelitefeather.vulpes.generator.registry.GeneratorRegistry;
@@ -25,7 +24,6 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
     private final SoundGenerator soundGenerator;
     private final SoundJsonGenerator soundJsonGenerator;
     private final FontJsonGenerator fontJsonGenerator;
-    private final AdvancementJsonGenerator advancementJsonGenerator;
 
     @Inject
     public VulpesStartupListener(
@@ -36,8 +34,7 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
             AdvancementGenerator advancementGenerator,
             SoundGenerator soundGenerator,
             SoundJsonGenerator soundJsonGenerator,
-            FontJsonGenerator fontJsonGenerator,
-            AdvancementJsonGenerator advancementJsonGenerator
+            FontJsonGenerator fontJsonGenerator
     ) {
         this.generatorRegistry = generatorRegistry;
         this.attributeGenerator = attributeGenerator;
@@ -47,7 +44,6 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
         this.soundGenerator = soundGenerator;
         this.soundJsonGenerator = soundJsonGenerator;
         this.fontJsonGenerator = fontJsonGenerator;
-        this.advancementJsonGenerator = advancementJsonGenerator;
     }
 
     @Override
@@ -59,6 +55,5 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
         this.generatorRegistry.add(soundGenerator);
         this.generatorRegistry.add(soundJsonGenerator);
         this.generatorRegistry.add(fontJsonGenerator);
-        this.generatorRegistry.add(advancementJsonGenerator);
     }
 }
