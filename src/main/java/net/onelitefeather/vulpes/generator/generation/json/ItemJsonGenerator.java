@@ -44,7 +44,6 @@ public class ItemJsonGenerator extends FileGenerator {
         Path filePath = resourcesFolder.resolve(fileName);
         try {
             Files.createDirectories(resourcesFolder);
-            Files.createFile(filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

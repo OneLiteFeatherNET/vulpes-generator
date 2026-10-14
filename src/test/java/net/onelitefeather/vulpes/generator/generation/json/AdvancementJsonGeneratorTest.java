@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -123,6 +124,22 @@ class AdvancementJsonGeneratorTest {
 
         assertTrue(exception.getMessage().contains("broken_title"),
                 "the message should name the advancement key but was: " + exception.getMessage());
+    }
+
+    @Test
+    void generatingTwiceIntoSameDirectoryOverwritesFileWithoutFailing() throws IOException {
+        AdvancementRepository repository = mock(AdvancementRepository.class);
+        AdvancementEntity root = advancement("root", null);
+        when(repository.findByProjectId(any(UUID.class), any(Pageable.class)))
+                .thenReturn(Page.of(List.of(root), Pageable.UNPAGED, 1L));
+        AdvancementJsonGenerator generator = new AdvancementJsonGenerator(repository);
+
+        generator.generate(tempDir, PROJECT_ID);
+        generator.generate(tempDir, PROJECT_ID);
+
+        Path file = tempDir.resolve("src/main/resources/advancements.json");
+        JsonArray written = GsonHolder.GSON.fromJson(Files.readString(file, UTF_8), JsonArray.class);
+        assertEquals(1, written.size(), "A second run must replace advancements.json instead of appending to it");
     }
 
     private JsonObject generateSingle(AdvancementEntity advancement) {
