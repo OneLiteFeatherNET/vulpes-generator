@@ -1,8 +1,11 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.micronaut.context.annotation.Prototype;
 import io.micronaut.data.model.Pageable;
@@ -19,7 +22,10 @@ import net.onelitefeather.vulpes.generator.generation.font.BitmapFontProviderCod
 import org.jetbrains.annotations.NotNull;
 
 import javax.lang.model.element.Modifier;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -27,38 +33,54 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
 import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
- * Generates the {@code FontSymbols} interface of vulpes-base, which replaces its placeholder. Per font it emits two
- * constants, sorted by their identifier:
+ * Generates the code-based custom font symbol registry of vulpes-base as three top-level files in
+ * {@code net.onelitefeather.vulpes.font}:
  * <ul>
- *     <li>{@code <NAME>} is a {@code FontSymbol} with the texture, the type {@code bitmap}, the metrics and the rows.</li>
- *     <li>{@code <NAME>_FONT} is the {@link Key} of the font file, {@code namespace:mapper}.</li>
+ *     <li>{@code CustomFontSymbolKeys}: one {@code Key} constant per font symbol,</li>
+ *     <li>{@code CustomFontSymbols}: one {@code CustomFontSymbol} constant per font symbol, resolved through the registry,</li>
+ *     <li>{@code CustomFontSymbolEntries}: the list of all font symbols the registry is built from.</li>
  * </ul>
+ * The key of a symbol is the namespace of the font (the project part of its namespaced key) and the key of the font
+ * entity as path, for example {@code eldoria:hud_icons}. It is unique because the identifier of the constant is
+ * claimed through {@link JavaIdentifiers.Claims}, which rejects two keys that map to the same identifier. The symbol
+ * additionally carries the {@code Key} of the font file ({@code namespace:mapper}) for {@code Component.font(...)}.
+ * <p>
  * The glyphs are written as string literals. Every character outside printable ASCII is written as a
  * unicode escape (a backslash, the letter u and four hex digits), so private use glyphs stay visible in the source. A
- * supplementary codepoint becomes its
- * surrogate pair. The interface is written even without fonts, so the placeholder is always replaced.
+ * supplementary codepoint becomes its surrogate pair. The files are written even without fonts.
  * <p>
  * The fonts are validated with {@link BitmapFontProviderCodec#fromFont(FontEntity)}, so a font that is invalid for the
  * JSON output aborts the generation here too. The generation runs read only inside a transaction, because the chars
  * of a font are loaded lazily.
+ * <p>
+ * JavaPoet 1.13 cannot emit {@code sealed ... permits}, so the declaration of {@code CustomFontSymbols} is rewritten
+ * by {@link #asSealedInterface(String)}. The generated sources are compiled by the tests.
  */
 @Prototype
 public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements JavaStructure {
 
+    private static final String FONT_PACKAGE = BASE_PACKAGE + ".font";
+    private static final String KEYS_NAME = "CustomFontSymbolKeys";
+    private static final String SYMBOLS_NAME = "CustomFontSymbols";
+    private static final String ENTRIES_NAME = "CustomFontSymbolEntries";
+
     private static final ClassName KEY = ClassName.get(Key.class);
-    private static final ClassName FONT_SYMBOL = ClassName.get(BASE_PACKAGE + ".font", "FontSymbol");
+    private static final ClassName KEYS = ClassName.get(FONT_PACKAGE, KEYS_NAME);
+    private static final ClassName FONT_SYMBOL = ClassName.get(FONT_PACKAGE, "FontSymbol");
+    private static final ClassName CUSTOM_FONT_SYMBOL = ClassName.get(FONT_PACKAGE, "CustomFontSymbol");
+    private static final ClassName CUSTOM_FONT_SYMBOL_IMPL = ClassName.get(FONT_PACKAGE, "CustomFontSymbolImpl");
     private static final ClassName LIST = ClassName.get(List.class);
-    private static final String KEY_SUFFIX = "_FONT";
 
     private final FontRepository fontRepository;
 
     @Inject
     public FontGenerator(FontRepository fontRepository) {
-        super("FontSymbols", BASE_PACKAGE + ".font", TypeSpec.Kind.INTERFACE);
+        super(SYMBOLS_NAME, FONT_PACKAGE, TypeSpec.Kind.INTERFACE);
         this.fontRepository = fontRepository;
     }
 
@@ -73,55 +95,108 @@ public class FontGenerator extends AbstractCodeGenerator<FontEntity> implements 
         cleanup();
         List<FontEntity> models = getModels(projectId);
 
-        this.classBuilder.addModifiers(Modifier.PUBLIC);
-        addJetbrainsAnnotation(this.classBuilder);
-        addDefaultSuppressAnnotation(this.classBuilder);
-
-        Map<String, FieldSpec[]> fontFields = new TreeMap<>();
+        Map<String, FontEntity> fonts = new TreeMap<>();
         JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
         for (FontEntity model : models) {
-            String identifier = JavaIdentifiers.constantName(model.getKey());
-            fieldNames.claim(identifier, model.getKey());
-            fieldNames.claim(identifier + KEY_SUFFIX, model.getKey());
-            fontFields.put(identifier, createFields(model, identifier));
+            BitmapFontProviderCodec.fromFont(model);
+            String identifier = fieldNames.claim(JavaIdentifiers.constantName(model.getKey()), model.getKey());
+            fonts.put(identifier, model);
         }
 
-        fontFields.values().forEach(fields -> this.classBuilder.addFields(List.of(fields)));
+        Path directory = root.resolve(JAVA_MAIM_FOLDER).resolve(packageName.replace('.', '/'));
+        write(directory, KEYS_NAME, render(createKeys(fonts)));
+        write(directory, SYMBOLS_NAME, asSealedInterface(render(createSymbols(fonts))));
+        write(directory, ENTRIES_NAME, render(createEntries(fonts)));
+    }
 
-        filesToGenerate.clear();
-        filesToGenerate.add(
-                JavaFile.builder(packageName, this.classBuilder.build())
-                        .indent(INDENT_DEFAULT)
-                        .skipJavaLangImports(true)
-                        .build()
-        );
-        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
+    private TypeSpec createKeys(@NotNull Map<String, FontEntity> fonts) {
+        TypeSpec.Builder builder = TypeSpec.interfaceBuilder(KEYS_NAME).addModifiers(Modifier.PUBLIC);
+        addJetbrainsAnnotation(builder);
+        fonts.forEach((identifier, model) -> builder.addField(
+                FieldSpec.builder(KEY, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$T.key($S, $S)", KEY, BitmapFontProviderCodec.namespaceOf(model), model.getKey())
+                        .build()));
+        return builder.build();
+    }
+
+    private TypeSpec createSymbols(@NotNull Map<String, FontEntity> fonts) {
+        TypeSpec.Builder builder = TypeSpec.interfaceBuilder(SYMBOLS_NAME);
+        fonts.keySet().forEach(identifier -> builder.addField(
+                FieldSpec.builder(CUSTOM_FONT_SYMBOL, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$T.get($T.$L)", CUSTOM_FONT_SYMBOL_IMPL, KEYS, identifier)
+                        .build()));
+        return builder.build();
+    }
+
+    private TypeSpec createEntries(@NotNull Map<String, FontEntity> fonts) {
+        List<CodeBlock> entries = new ArrayList<>();
+        fonts.forEach((identifier, model) -> {
+            BitmapFontProvider provider = BitmapFontProviderCodec.fromFont(model);
+            String rows = provider.chars().stream()
+                    .map(FontGenerator::escapeLiteral)
+                    .collect(Collectors.joining(", "));
+            entries.add(CodeBlock.of("new $T($T.$L, $T.key($S, $S), new $T($S, $S, $L, $L, $T.of($L)))",
+                    CUSTOM_FONT_SYMBOL_IMPL,
+                    KEYS,
+                    identifier,
+                    KEY,
+                    BitmapFontProviderCodec.namespaceOf(model),
+                    model.getMapper(),
+                    FONT_SYMBOL,
+                    provider.file(),
+                    BitmapFontProviderCodec.TYPE,
+                    provider.ascent(),
+                    provider.height(),
+                    LIST,
+                    rows));
+        });
+
+        ParameterizedTypeName listType = ParameterizedTypeName.get(LIST, CUSTOM_FONT_SYMBOL);
+        MethodSpec.Builder method = MethodSpec.methodBuilder("entries")
+                .addModifiers(Modifier.STATIC)
+                .returns(listType);
+        if (entries.isEmpty()) {
+            method.addStatement("return $T.of()", List.class);
+        } else {
+            method.addStatement("return $T.of($L)", List.class, CodeBlock.join(entries, ",\n"));
+        }
+
+        return TypeSpec.classBuilder(ENTRIES_NAME)
+                .addModifiers(Modifier.FINAL)
+                .addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build())
+                .addMethod(method.build())
+                .build();
+    }
+
+    private static String render(@NotNull TypeSpec type) {
+        return JavaFile.builder(FONT_PACKAGE, type)
+                .indent(INDENT_DEFAULT)
+                .skipJavaLangImports(true)
+                .build()
+                .toString();
     }
 
     /**
-     * Creates the symbol field and the key field of a font.
+     * Turns the declaration of the {@code CustomFontSymbols} interface into {@code sealed ... permits CustomFontSymbol}.
+     *
+     * @throws IllegalStateException if JavaPoet did not emit the expected declaration
      */
-    private static FieldSpec[] createFields(@NotNull FontEntity model, @NotNull String identifier) {
-        BitmapFontProvider provider = BitmapFontProviderCodec.fromFont(model);
-        String namespace = BitmapFontProviderCodec.namespaceOf(model);
+    private static String asSealedInterface(@NotNull String source) {
+        String declaration = "interface " + SYMBOLS_NAME + " {";
+        if (!source.contains(declaration)) {
+            throw new IllegalStateException("the interface " + SYMBOLS_NAME + " was not found in the generated source");
+        }
+        return source.replace(declaration, "sealed interface " + SYMBOLS_NAME + " permits CustomFontSymbol {");
+    }
 
-        String rows = provider.chars().stream()
-                .map(FontGenerator::escapeLiteral)
-                .collect(Collectors.joining(", "));
-        FieldSpec symbol = FieldSpec.builder(FONT_SYMBOL, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .initializer("new $T($S, $S, $L, $L, $T.of($L))",
-                        FONT_SYMBOL,
-                        provider.file(),
-                        BitmapFontProviderCodec.TYPE,
-                        provider.ascent(),
-                        provider.height(),
-                        LIST,
-                        rows)
-                .build();
-        FieldSpec key = FieldSpec.builder(KEY, identifier + KEY_SUFFIX, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .initializer("$T.key($S, $S)", KEY, namespace, model.getMapper())
-                .build();
-        return new FieldSpec[]{symbol, key};
+    private static void write(@NotNull Path directory, @NotNull String name, @NotNull String source) {
+        Path file = directory.resolve(name + ".java");
+        try {
+            Files.createDirectories(directory);
+            Files.writeString(file, source, UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("unable to write font symbols to " + file, e);
+        }
     }
 
     /**
