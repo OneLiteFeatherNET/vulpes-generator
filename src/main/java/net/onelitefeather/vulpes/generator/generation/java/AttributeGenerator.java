@@ -1,8 +1,11 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import io.micronaut.context.annotation.Prototype;
 import io.micronaut.data.model.Pageable;
@@ -19,43 +22,48 @@ import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
 import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
- * Generates the {@code CustomAttributes} interface of vulpes-base, which replaces its placeholder.
+ * Generates the code-based custom attribute registry of vulpes-base as three top-level files in
+ * {@code net.onelitefeather.vulpes.attribute}:
+ * <ul>
+ *     <li>{@code CustomAttributeKeys}: one {@code Key} constant per attribute,</li>
+ *     <li>{@code CustomAttributes}: one {@code CustomAttribute} constant per attribute, resolved through the registry,</li>
+ *     <li>{@code CustomAttributeEntries}: the list of all attributes the registry is built from.</li>
+ * </ul>
+ * The constants are sorted by their identifier. The files are written even without attributes.
  * <p>
- * The interface declares the nested record {@code Definition} and one constant of it per attribute. The constants are
- * sorted by their identifier. The interface is written even without attributes, so the placeholder is always replaced.
- * <p>
- * JavaPoet 1.13 has no record support, so the nested type is emitted as an empty class and turned into the record
- * declaration by {@link #withRecordDefinition(String)}. The generated source is compiled by the tests.
+ * JavaPoet 1.13 cannot emit {@code sealed ... permits}, so the declaration of {@code CustomAttributes} is rewritten
+ * by {@link #asSealedInterface(String)}. The generated sources are compiled by the tests.
  */
 @Prototype
 public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> implements JavaStructure {
 
+    private static final String ATTRIBUTE_PACKAGE = BASE_PACKAGE + ".attribute";
+    private static final String KEYS_NAME = "CustomAttributeKeys";
+    private static final String ATTRIBUTES_NAME = "CustomAttributes";
+    private static final String ENTRIES_NAME = "CustomAttributeEntries";
+
     private static final ClassName KEY = ClassName.get(Key.class);
-    private static final String DEFINITION_NAME = "Definition";
-    private static final Pattern EMPTY_DEFINITION = Pattern.compile("class " + DEFINITION_NAME + " \\{\\s*}");
-    private static final String RECORD_DEFINITION = "record " + DEFINITION_NAME
-            + "(net.kyori.adventure.key.Key key, String name, double defaultValue, double maximumValue) {\n  }";
+    private static final ClassName KEYS = ClassName.get(ATTRIBUTE_PACKAGE, KEYS_NAME);
+    private static final ClassName CUSTOM_ATTRIBUTE = ClassName.get(ATTRIBUTE_PACKAGE, "CustomAttribute");
+    private static final ClassName CUSTOM_ATTRIBUTE_IMPL = ClassName.get(ATTRIBUTE_PACKAGE, "CustomAttributeImpl");
 
     private final AttributeRepository attributeRepository;
-    private final ClassName definitionClass;
 
     @Inject
     protected AttributeGenerator(@NotNull AttributeRepository attributeRepository) {
-        super("CustomAttributes", BASE_PACKAGE + ".attribute", TypeSpec.Kind.INTERFACE);
+        super(ATTRIBUTES_NAME, ATTRIBUTE_PACKAGE, TypeSpec.Kind.INTERFACE);
         this.attributeRepository = attributeRepository;
-        this.definitionClass = ClassName.get(BASE_PACKAGE + ".attribute", "CustomAttributes", DEFINITION_NAME);
     }
 
     @Override
@@ -68,63 +76,89 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
         cleanup();
         List<AttributeEntity> attributeModels = this.getModels(projectId);
 
-        this.classBuilder.addModifiers(Modifier.PUBLIC);
-        addJetbrainsAnnotation(this.classBuilder);
-        addDefaultSuppressAnnotation(this.classBuilder);
-        this.classBuilder.addType(createDefinitionType());
-
-        Map<String, FieldSpec> fields = new TreeMap<>();
+        Map<String, AttributeEntity> attributes = new TreeMap<>();
         JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
         for (AttributeEntity attributeModel : attributeModels) {
             validate(attributeModel);
             String identifier = fieldNames.claim(JavaIdentifiers.constantName(attributeModel.getKey()), attributeModel.getKey());
-            fields.put(identifier, createField(identifier, attributeModel));
+            attributes.put(identifier, attributeModel);
         }
-        this.classBuilder.addFields(fields.values());
 
-        String source = JavaFile.builder(packageName, this.classBuilder.build())
+        Path directory = root.resolve(JAVA_MAIM_FOLDER).resolve(packageName.replace('.', '/'));
+        write(directory, KEYS_NAME, render(createKeys(attributes)));
+        write(directory, ATTRIBUTES_NAME, asSealedInterface(render(createAttributes(attributes))));
+        write(directory, ENTRIES_NAME, render(createEntries(attributes)));
+    }
+
+    private TypeSpec createKeys(@NotNull Map<String, AttributeEntity> attributes) {
+        TypeSpec.Builder builder = TypeSpec.interfaceBuilder(KEYS_NAME).addModifiers(Modifier.PUBLIC);
+        addJetbrainsAnnotation(builder);
+        attributes.forEach((identifier, model) -> builder.addField(
+                FieldSpec.builder(KEY, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$T.key($S, $S)", KEY, namespaceOf(model), model.getKey())
+                        .build()));
+        return builder.build();
+    }
+
+    private TypeSpec createAttributes(@NotNull Map<String, AttributeEntity> attributes) {
+        TypeSpec.Builder builder = TypeSpec.interfaceBuilder(ATTRIBUTES_NAME);
+        attributes.keySet().forEach(identifier -> builder.addField(
+                FieldSpec.builder(CUSTOM_ATTRIBUTE, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$T.get($T.$L)", CUSTOM_ATTRIBUTE_IMPL, KEYS, identifier)
+                        .build()));
+        return builder.build();
+    }
+
+    private TypeSpec createEntries(@NotNull Map<String, AttributeEntity> attributes) {
+        List<CodeBlock> entries = new ArrayList<>();
+        attributes.forEach((identifier, model) -> entries.add(CodeBlock.of("new $T($T.$L, $S, $L, $L)",
+                CUSTOM_ATTRIBUTE_IMPL,
+                KEYS,
+                identifier,
+                model.getUiName(),
+                Double.toString(model.getDefaultValue()),
+                Double.toString(model.getMaximumValue()))));
+
+        ParameterizedTypeName listType = ParameterizedTypeName.get(ClassName.get(List.class), CUSTOM_ATTRIBUTE);
+        MethodSpec.Builder method = MethodSpec.methodBuilder("entries")
+                .addModifiers(Modifier.STATIC)
+                .returns(listType);
+        if (entries.isEmpty()) {
+            method.addStatement("return $T.of()", List.class);
+        } else {
+            method.addStatement("return $T.of($L)", List.class, CodeBlock.join(entries, ",\n"));
+        }
+
+        return TypeSpec.classBuilder(ENTRIES_NAME)
+                .addModifiers(Modifier.FINAL)
+                .addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build())
+                .addMethod(method.build())
+                .build();
+    }
+
+    private static String render(@NotNull TypeSpec type) {
+        return JavaFile.builder(ATTRIBUTE_PACKAGE, type)
                 .indent(INDENT_DEFAULT)
+                .skipJavaLangImports(true)
                 .build()
                 .toString();
-        writeSource(root, withRecordDefinition(source));
-    }
-
-    private TypeSpec createDefinitionType() {
-        return TypeSpec.classBuilder(DEFINITION_NAME)
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addJavadoc("The definition of a custom attribute: its key, its name in the UI and its value range.\n")
-                .build();
-    }
-
-    private FieldSpec createField(@NotNull String identifier, @NotNull AttributeEntity model) {
-        return FieldSpec.builder(this.definitionClass, identifier, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                .initializer("new $T($T.key($S, $S), $S, $L, $L)",
-                        this.definitionClass,
-                        KEY,
-                        namespaceOf(model),
-                        model.getKey(),
-                        model.getUiName(),
-                        Double.toString(model.getDefaultValue()),
-                        Double.toString(model.getMaximumValue()))
-                .build();
     }
 
     /**
-     * Replaces the empty nested class of the source with the record declaration of {@code Definition}.
+     * Turns the declaration of the {@code CustomAttributes} interface into {@code sealed ... permits CustomAttribute}.
      *
-     * @throws IllegalStateException if JavaPoet did not emit the empty nested class
+     * @throws IllegalStateException if JavaPoet did not emit the expected declaration
      */
-    private static String withRecordDefinition(@NotNull String source) {
-        Matcher matcher = EMPTY_DEFINITION.matcher(source);
-        if (!matcher.find()) {
-            throw new IllegalStateException("the nested class " + DEFINITION_NAME + " was not found in the generated source");
+    private static String asSealedInterface(@NotNull String source) {
+        String declaration = "interface " + ATTRIBUTES_NAME + " {";
+        if (!source.contains(declaration)) {
+            throw new IllegalStateException("the interface " + ATTRIBUTES_NAME + " was not found in the generated source");
         }
-        return matcher.replaceFirst(Matcher.quoteReplacement(RECORD_DEFINITION));
+        return source.replace(declaration, "sealed interface " + ATTRIBUTES_NAME + " permits CustomAttribute {");
     }
 
-    private void writeSource(@NotNull Path root, @NotNull String source) {
-        Path directory = root.resolve(JAVA_MAIM_FOLDER).resolve(packageName.replace('.', '/'));
-        Path file = directory.resolve(className + ".java");
+    private static void write(@NotNull Path directory, @NotNull String name, @NotNull String source) {
+        Path file = directory.resolve(name + ".java");
         try {
             Files.createDirectories(directory);
             Files.writeString(file, source, UTF_8);
