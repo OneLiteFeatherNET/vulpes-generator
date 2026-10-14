@@ -7,7 +7,6 @@ import net.onelitefeather.vulpes.generator.generation.java.AttributeGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.FontGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.ItemGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.SoundGenerator;
-import net.onelitefeather.vulpes.generator.generation.json.AdvancementJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.FontJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.ItemJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.SoundJsonGenerator;
@@ -48,14 +47,13 @@ class VulpesStartupListenerTest {
         SoundJsonGenerator soundJsonGenerator = mock(SoundJsonGenerator.class);
         ItemJsonGenerator itemJsonGenerator = mock(ItemJsonGenerator.class);
         FontJsonGenerator fontJsonGenerator = mock(FontJsonGenerator.class);
-        AdvancementJsonGenerator advancementJsonGenerator = mock(AdvancementJsonGenerator.class);
 
         generators = List.of(attributeGenerator, fontGenerator, itemGenerator, advancementGenerator, soundGenerator,
-                soundJsonGenerator, itemJsonGenerator, fontJsonGenerator, advancementJsonGenerator);
+                soundJsonGenerator, itemJsonGenerator, fontJsonGenerator);
 
         listener = new VulpesStartupListener(registry,
                 attributeGenerator, fontGenerator, itemGenerator, advancementGenerator, soundGenerator,
-                soundJsonGenerator, itemJsonGenerator, fontJsonGenerator, advancementJsonGenerator);
+                soundJsonGenerator, itemJsonGenerator, fontJsonGenerator);
     }
 
     @Test
@@ -64,8 +62,7 @@ class VulpesStartupListenerTest {
 
         Set<Class<? extends Generator>> expected = Set.of(
                 AttributeGenerator.class, FontGenerator.class, ItemGenerator.class, AdvancementGenerator.class,
-                SoundGenerator.class, SoundJsonGenerator.class, ItemJsonGenerator.class, FontJsonGenerator.class,
-                AdvancementJsonGenerator.class);
+                SoundGenerator.class, SoundJsonGenerator.class, ItemJsonGenerator.class, FontJsonGenerator.class);
 
         assertEquals(expected, registry.getAll().keySet(),
                 "Every Java and JSON generator must be registered at startup");

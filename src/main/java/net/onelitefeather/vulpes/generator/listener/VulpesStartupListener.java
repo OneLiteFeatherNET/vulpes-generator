@@ -9,7 +9,6 @@ import net.onelitefeather.vulpes.generator.generation.java.AttributeGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.FontGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.ItemGenerator;
 import net.onelitefeather.vulpes.generator.generation.java.SoundGenerator;
-import net.onelitefeather.vulpes.generator.generation.json.AdvancementJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.FontJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.ItemJsonGenerator;
 import net.onelitefeather.vulpes.generator.generation.json.SoundJsonGenerator;
@@ -27,7 +26,6 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
     private final SoundJsonGenerator soundJsonGenerator;
     private final ItemJsonGenerator itemJsonGenerator;
     private final FontJsonGenerator fontJsonGenerator;
-    private final AdvancementJsonGenerator advancementJsonGenerator;
 
     @Inject
     public VulpesStartupListener(
@@ -39,8 +37,7 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
             SoundGenerator soundGenerator,
             SoundJsonGenerator soundJsonGenerator,
             ItemJsonGenerator itemJsonGenerator,
-            FontJsonGenerator fontJsonGenerator,
-            AdvancementJsonGenerator advancementJsonGenerator
+            FontJsonGenerator fontJsonGenerator
     ) {
         this.generatorRegistry = generatorRegistry;
         this.attributeGenerator = attributeGenerator;
@@ -51,7 +48,6 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
         this.soundJsonGenerator = soundJsonGenerator;
         this.itemJsonGenerator = itemJsonGenerator;
         this.fontJsonGenerator = fontJsonGenerator;
-        this.advancementJsonGenerator = advancementJsonGenerator;
     }
 
     @Override
@@ -64,6 +60,5 @@ public class VulpesStartupListener implements ApplicationEventListener<StartupEv
         this.generatorRegistry.add(soundJsonGenerator);
         this.generatorRegistry.add(itemJsonGenerator);
         this.generatorRegistry.add(fontJsonGenerator);
-        this.generatorRegistry.add(advancementJsonGenerator);
     }
 }
