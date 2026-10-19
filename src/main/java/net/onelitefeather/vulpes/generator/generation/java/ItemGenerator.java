@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaIdentifiers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -49,6 +50,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
  * Generates the {@code ItemRegistry} class which holds one {@link ItemStack} field per item of a project.
@@ -99,7 +101,7 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
 
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         cleanup();
         List<ItemEntity> models = getModels(projectId);
 
@@ -112,15 +114,14 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
 
         DynamicRegistry<Enchantment> enchantments = Registries.vanilla().enchantment();
         Map<String, FieldSpec> itemFields = new TreeMap<>();
+        JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
         boolean needsComponentHelper = false;
 
         for (ItemEntity model : models) {
-            String variableName = model.getVariableName();
-            if (variableName == null || variableName.isEmpty() || itemFields.containsKey(variableName)) continue;
-
+            String identifier = fieldNames.claim(JavaIdentifiers.constantName(variableNameOf(model)), model.getKey());
             ItemComponents components = readComponents(model);
             needsComponentHelper |= !components.components().isEmpty();
-            itemFields.put(variableName, createField(model, components, enchantments));
+            itemFields.put(identifier, createField(model, identifier, components, enchantments));
         }
 
         this.classBuilder.addFields(itemFields.values());
@@ -136,7 +137,7 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
                         .skipJavaLangImports(true)
                         .build()
         );
-        writeFiles(javaPath);
+        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
     }
 
     @Override
@@ -197,9 +198,9 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
         }
     }
 
-    private @NotNull FieldSpec createField(@NotNull ItemEntity model, @NotNull ItemComponents components,
+    private @NotNull FieldSpec createField(@NotNull ItemEntity model, @NotNull String identifier, @NotNull ItemComponents components,
                                            @NotNull DynamicRegistry<Enchantment> enchantments) {
-        return FieldSpec.builder(ITEM_STACK, model.getVariableName())
+        return FieldSpec.builder(ITEM_STACK, identifier)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer(createInitializer(model, components, enchantments))
                 .build();
@@ -217,7 +218,7 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
         if (generic) {
             init.add("$L(\n$>", WITH_COMPONENTS);
         }
-        init.add("$T.builder($T.$L)$>", ITEM_STACK, MATERIAL, constantName(components));
+        init.add("$T.builder($T.$L)$>", ITEM_STACK, MATERIAL, materialConstant(components));
 
         if (components.amount() != ItemComponentKeys.DEFAULT_AMOUNT) {
             init.add("\n.amount($L)", components.amount());
@@ -249,7 +250,15 @@ public class ItemGenerator extends AbstractCodeGenerator<ItemEntity> implements 
         return init.build();
     }
 
-    private static @NotNull String constantName(@NotNull ItemComponents components) {
+    private static @NotNull String variableNameOf(@NotNull ItemEntity model) {
+        String variableName = model.getVariableName();
+        if (variableName == null || variableName.isBlank()) {
+            throw new IllegalArgumentException("item '" + model.getKey() + "' has no variable name");
+        }
+        return variableName;
+    }
+
+    private static @NotNull String materialConstant(@NotNull ItemComponents components) {
         return components.material().key().value().toUpperCase(Locale.ROOT);
     }
 

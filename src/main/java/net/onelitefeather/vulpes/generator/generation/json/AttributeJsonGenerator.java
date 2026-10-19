@@ -11,6 +11,8 @@ import net.onelitefeather.vulpes.generator.generation.FileGenerator;
 import net.onelitefeather.vulpes.generator.gson.GsonHolder;
 import org.jetbrains.annotations.NotNull;
 
+import static net.onelitefeather.vulpes.generator.util.Constants.RESOURCES_FOLDER;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,9 +31,11 @@ public class AttributeJsonGenerator extends FileGenerator {
     }
 
     @Override
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
-        Path filePath = javaPath.resolve(fileName);
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
+        Path resourcesFolder = root.resolve(RESOURCES_FOLDER);
+        Path filePath = resourcesFolder.resolve(fileName);
         try {
+            Files.createDirectories(resourcesFolder);
             Files.createFile(filePath);
         } catch (IOException e) {
             throw new RuntimeException(e);

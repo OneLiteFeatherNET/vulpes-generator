@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaSourceAssertions;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.transaction.annotation.ReadOnly;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.when;
 class FontGeneratorTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("00000000-0000-0000-0000-000000000020");
-    private static final String REGISTRY_PATH = "net/reaper/vulpes/font/FontRegistry.java";
+    private static final String REGISTRY_PATH = "src/main/java/net/reaper/vulpes/font/FontRegistry.java";
     private static final String HUD_FILE = "eldoria:font/hud_icons.png";
 
     @TempDir
@@ -115,6 +116,13 @@ class FontGeneratorTest {
         boolean readOnly = FontGenerator.class.getMethod("generate", Path.class, UUID.class).isAnnotationPresent(ReadOnly.class);
 
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy font chars can be loaded");
+    }
+
+    @Test
+    void keyWithDashAndDotCompilesAsJavaField() throws IOException {
+        generate(font("my-item.v2", "font", HUD_FILE, 7, 8, rows("ab")));
+
+        JavaSourceAssertions.assertCompiles(tempDir, REGISTRY_PATH);
     }
 
     private void generate(FontEntity... fonts) {

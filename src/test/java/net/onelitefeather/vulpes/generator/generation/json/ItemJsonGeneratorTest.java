@@ -140,6 +140,13 @@ class ItemJsonGeneratorTest {
         assertEquals("ZETA", array.get(1).getAsJsonObject().get("variableName").getAsString(), "items must be sorted by variableName, second entry");
     }
 
+    @Test
+    void getNameIsTheOwnClassNameNotTheRepositoryName() {
+        ItemJsonGenerator generator = new ItemJsonGenerator(Mockito.mock(ItemRepository.class));
+
+        assertEquals("ItemJsonGenerator", generator.getName(), "getName must be the class name, it must not reuse the name of the ItemRepository");
+    }
+
     private JsonObject generateSingle(ItemEntity item) {
         JsonArray array = generate(List.of(item));
         assertEquals(1, array.size(), "exactly one item must be written");
@@ -153,7 +160,7 @@ class ItemJsonGeneratorTest {
 
         new ItemJsonGenerator(repository).generate(tempDir, PROJECT_ID);
 
-        Path file = tempDir.resolve("items.json");
+        Path file = tempDir.resolve("src/main/resources/items.json");
         assertTrue(Files.exists(file), "items.json must be created in the target directory");
         try (var reader = Files.newBufferedReader(file, UTF_8)) {
             return GsonHolder.GSON.fromJson(reader, JsonArray.class);

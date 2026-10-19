@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaIdentifiers;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -23,6 +24,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 /**
  * Generates the {@code SoundRegistry} class which holds one {@link SoundEvent} field per sound event of a project.
@@ -52,9 +54,17 @@ public class SoundGenerator extends AbstractCodeGenerator<SoundEventEntity> impl
         return this.soundRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
     }
 
+    private static String variableNameOf(@NotNull SoundEventEntity model) {
+        String variableName = model.getVariableName();
+        if (variableName == null || variableName.isBlank()) {
+            throw new IllegalArgumentException("sound '" + model.getKey() + "' has no variable name");
+        }
+        return variableName;
+    }
+
     @Override
     @ReadOnly
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         cleanup();
         List<SoundEventEntity> models = getModels(projectId);
 
@@ -66,12 +76,12 @@ public class SoundGenerator extends AbstractCodeGenerator<SoundEventEntity> impl
         addDefaultSuppressAnnotation(this.classBuilder);
 
         Map<String, FieldSpec> soundFields = new TreeMap<>();
+        JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
         for (SoundEventEntity model : models) {
-            String variableName = model.getVariableName();
-            if (variableName == null || variableName.isEmpty() || soundFields.containsKey(variableName)) continue;
+            String identifier = fieldNames.claim(JavaIdentifiers.constantName(variableNameOf(model)), model.getKey());
 
             SoundEventKey key = SoundEventKey.of(model);
-            soundFields.put(variableName, FieldSpec.builder(SOUND_EVENT, variableName)
+            soundFields.put(identifier, FieldSpec.builder(SOUND_EVENT, identifier)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                     .initializer("$T.of($S, null)", SOUND_EVENT, key.asString())
                     .build());
@@ -86,7 +96,7 @@ public class SoundGenerator extends AbstractCodeGenerator<SoundEventEntity> impl
                         .skipJavaLangImports(true)
                         .build()
         );
-        writeFiles(javaPath);
+        writeFiles(root.resolve(JAVA_MAIM_FOLDER));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaIdentifiers;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -15,12 +16,13 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.lang.model.element.Modifier;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.util.Constants.INDENT_DEFAULT;
+import static net.onelitefeather.vulpes.generator.util.Constants.JAVA_MAIM_FOLDER;
 
 @Prototype
 public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> implements JavaStructure {
@@ -41,7 +43,7 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
     }
 
     @Override
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
         List<AttributeEntity> attributeModels = this.getModels(projectId);
 
         if (attributeModels.isEmpty()) {
@@ -49,22 +51,23 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
             return;
         }
 
-        Map<String, FieldSpec> fields = new HashMap<>();
+        Map<String, FieldSpec> fields = new TreeMap<>();
+        JavaIdentifiers.Claims fieldNames = new JavaIdentifiers.Claims();
 
         for (AttributeEntity attributeModel : attributeModels) {
-            String attributeName = attributeModel.getVariableName();
-            if (attributeName.isEmpty()) continue;
+            String variableName = variableNameOf(attributeModel);
+            String identifier = fieldNames.claim(JavaIdentifiers.constantName(variableName), attributeModel.getKey());
 
-            FieldSpec fieldSpec = FieldSpec.builder(attributeClass, attributeName)
+            FieldSpec fieldSpec = FieldSpec.builder(attributeClass, identifier)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer("new \\$T(\\$S, \\$Lf, \\$Lf",
+                    .initializer("new $T($S, $Lf, $Lf)",
                             attributeClass,
-                            attributeName,
+                            variableName,
                             attributeModel.getDefaultValue(),
                             attributeModel.getMaximumValue()
                     )
                     .build();
-            fields.put(attributeName, fieldSpec);
+            fields.put(identifier, fieldSpec);
         }
 
         this.classBuilder.addFields(fields.values());
@@ -77,7 +80,15 @@ public class AttributeGenerator extends AbstractCodeGenerator<AttributeEntity> i
                 .indent(INDENT_DEFAULT)
                 .addStaticImport(attributeClass, "*")
                 .build();
-        writeFiles(List.of(javaFile), javaPath);
+        writeFiles(List.of(javaFile), root.resolve(JAVA_MAIM_FOLDER));
+    }
+
+    private static String variableNameOf(@NotNull AttributeEntity model) {
+        String variableName = model.getVariableName();
+        if (variableName == null || variableName.isBlank()) {
+            throw new IllegalArgumentException("attribute '" + model.getKey() + "' has no variable name");
+        }
+        return variableName;
     }
 
     @Override

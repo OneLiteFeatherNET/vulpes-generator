@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.generation.java;
 
+import net.onelitefeather.vulpes.generator.generation.JavaSourceAssertions;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.transaction.annotation.ReadOnly;
@@ -36,7 +37,7 @@ import static org.mockito.Mockito.when;
 class ItemGeneratorTest {
 
     private static final UUID PROJECT_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-70867728950e");
-    private static final String REGISTRY_PATH = "net/reaper/vulpes/item/ItemRegistry.java";
+    private static final String REGISTRY_PATH = "src/main/java/net/reaper/vulpes/item/ItemRegistry.java";
 
     @TempDir
     Path tempDir;
@@ -193,6 +194,24 @@ class ItemGeneratorTest {
         boolean readOnly = ItemGenerator.class.getMethod("generate", Path.class, UUID.class).isAnnotationPresent(ReadOnly.class);
 
         assertTrue(readOnly, "generate must be annotated with @ReadOnly so lazy item components can be loaded");
+    }
+
+    @Test
+    void keyWithDashAndDotCompilesAsJavaField() throws IOException {
+        generate(item("my-item.v2", component("stelaris:material", "\"minecraft:stone\"")));
+
+        JavaSourceAssertions.assertCompiles(tempDir, REGISTRY_PATH);
+    }
+
+    @Test
+    void rejectsTwoKeysWithSameJavaIdentifierNamingBothKeys() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> generate(
+                item("my-item", component("stelaris:material", "\"minecraft:stone\"")),
+                item("my.item", component("stelaris:material", "\"minecraft:stone\""))),
+                "Two keys that map to the same identifier must abort the generation");
+
+        assertTrue(exception.getMessage().contains("my-item") && exception.getMessage().contains("my.item"),
+                "The message must name both keys but was: " + exception.getMessage());
     }
 
     private void generate(ItemEntity... items) {
