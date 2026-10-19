@@ -78,7 +78,7 @@ public class NotificationGenerator extends AbstractCodeGenerator<NotificationEnt
                             .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                             .initializer(
                                     CodeBlock.of(
-                                            "new \\$T(\\$T.\\$L, Component.\\$L, Material.\\$L, \\$T.\\$L, \\$L, \\$L)",
+                                            "new $T($T.$L, Component.$L, Material.$L, $T.$L, $L, $L)",
                                             className,
                                             ClassName.get(Component.class),
                                             title,
