@@ -15,9 +15,13 @@ import java.util.UUID;
 public interface Generator {
 
     /**
-     * Each generator must implement his own logic for this method
+     * Writes the generated files below the given project root. Java generators resolve
+     * {@code src/main/java}, resource generators resolve {@code src/main/resources}.
+     *
+     * @param root      the project root directory of the generated code base
+     * @param projectId the project to generate the files for
      */
-    void generate(@NotNull Path javaPath, @NotNull UUID projectId);
+    void generate(@NotNull Path root, @NotNull UUID projectId);
 
     /**
      * Returns the name of the generator

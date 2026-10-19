@@ -3,66 +3,95 @@ package net.onelitefeather.vulpes.generator.generation.json;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.micronaut.data.model.Pageable;
+import io.micronaut.transaction.annotation.ReadOnly;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.api.model.FontEntity;
 import net.onelitefeather.vulpes.api.repository.FontRepository;
 import net.onelitefeather.vulpes.generator.generation.FileGenerator;
+import net.onelitefeather.vulpes.generator.generation.font.BitmapFontProviderCodec;
+import net.onelitefeather.vulpes.generator.generation.font.BitmapFontProviderCodec.BitmapFontProvider;
 import net.onelitefeather.vulpes.generator.gson.GsonHolder;
 import org.jetbrains.annotations.NotNull;
+
+import static net.onelitefeather.vulpes.generator.util.Constants.RESOURCES_FOLDER;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.UUID;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+/**
+ * Generates the resource pack font files {@code assets/<namespace>/font/<mapper>.json}.
+ * <p>
+ * Every font becomes a bitmap provider of the file named by its mapper. Fonts with the same mapper share one file, their
+ * providers are sorted by key. The namespace is the project part of the namespaced key of the fonts.
+ * The files are written below the given output directory.
+ * <p>
+ * The generation runs read only inside a transaction, because the chars of a font are loaded lazily.
+ */
 @Singleton
 public class FontJsonGenerator extends FileGenerator {
+
+    private static final String ASSETS_DIRECTORY = "assets";
+    private static final String FONT_DIRECTORY = "font";
+    private static final String JSON_EXTENSION = ".json";
 
     private final FontRepository fontRepository;
 
     @Inject
     public FontJsonGenerator(@NotNull FontRepository fontRepository) {
-        super("fonts.json");
+        super("font");
         this.fontRepository = fontRepository;
     }
 
     @Override
-    public void generate(@NotNull Path javaPath, @NotNull UUID projectId) {
-        Path filePath = javaPath.resolve(fileName);
-        try {
-            Files.createFile(filePath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    @ReadOnly
+    public void generate(@NotNull Path root, @NotNull UUID projectId) {
+        List<FontEntity> fonts = this.fontRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
+        if (fonts.isEmpty()) return;
 
-        // TODO: findByProjectId doesn't JOIN FETCH chars like the old findAll() query did - revisit if lazy loading bites here.
-        List<FontEntity> entityList = this.fontRepository.findByProjectId(projectId, Pageable.UNPAGED).getContent();
-
-        if (entityList.isEmpty()) return;
-
-        JsonArray elements = new JsonArray();
-
-        for (FontEntity entity : entityList) {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("variableName", entity.getVariableName());
-            jsonObject.addProperty("provider", entity.getProvider());
-            jsonObject.addProperty("mapper", entity.getMapper());
-            jsonObject.addProperty("texturePath", entity.getTexturePath());
-            jsonObject.addProperty("height", entity.getHeight());
-            jsonObject.addProperty("ascent", entity.getAscent());
-
-            if (entity.getChars() != null) {
-                JsonArray chars = new JsonArray();
-                entity.getChars().forEach(string -> chars.add(string.getLine()));
-                jsonObject.add("chars", chars);
+        TreeMap<String, List<FontEntity>> fontsByMapper = new TreeMap<>();
+        for (FontEntity font : fonts) {
+            String mapper = font.getMapper();
+            if (mapper == null || mapper.isBlank()) {
+                throw new IllegalArgumentException("font '" + font.getKey() + "' has no mapper");
             }
-
-            elements.add(jsonObject);
+            fontsByMapper.computeIfAbsent(mapper, _ -> new ArrayList<>()).add(font);
         }
 
-        save(filePath, GsonHolder.GSON, elements);
+        for (var entry : fontsByMapper.entrySet()) {
+            List<FontEntity> group = entry.getValue().stream()
+                    .sorted(Comparator.comparing(FontEntity::getKey))
+                    .toList();
+            writeFontFile(root, BitmapFontProviderCodec.namespaceOf(group.getFirst()), entry.getKey(), group);
+        }
+    }
+
+    private void writeFontFile(@NotNull Path root, @NotNull String namespace, @NotNull String mapper, @NotNull List<FontEntity> group) {
+        JsonArray providers = new JsonArray();
+        for (FontEntity font : group) {
+            BitmapFontProvider provider = BitmapFontProviderCodec.fromFont(font);
+            providers.add(BitmapFontProviderCodec.toJson(provider));
+        }
+
+        JsonObject document = new JsonObject();
+        document.add("providers", providers);
+
+        Path directory = root.resolve(RESOURCES_FOLDER).resolve(ASSETS_DIRECTORY).resolve(namespace).resolve(FONT_DIRECTORY);
+        Path file = directory.resolve(mapper + JSON_EXTENSION);
+        try {
+            Files.createDirectories(directory);
+            Files.writeString(file, GsonHolder.GSON.toJson(document), UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("unable to write font file " + file, e);
+        }
     }
 
     @Override

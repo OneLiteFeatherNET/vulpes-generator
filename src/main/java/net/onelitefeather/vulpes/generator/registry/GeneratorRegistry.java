@@ -47,9 +47,9 @@ public sealed interface GeneratorRegistry permits VulpesGeneratorRegistry {
     /**
      * Executes all registered generators with the given path.
      *
-     * @param path the target path where generation should occur.
+     * @param root the project root directory where generation should occur.
      */
-    void triggerAll(@NotNull Path path, @NotNull UUID projectId);
+    void triggerAll(@NotNull Path root, @NotNull UUID projectId);
 
     /**
      * Returns an unmodifiable view of the registered generators.
