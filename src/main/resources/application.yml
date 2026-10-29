@@ -103,6 +103,8 @@ vulpes:
     # Largest snapshot the backend client accepts, in bytes (67108864 = 64 MiB).
     max-snapshot-size: ${VULPES_BACKEND_MAX_SNAPSHOT_SIZE:67108864}
   release:
+    # Shared bearer token that POST /releases requires. Blank refuses every release request.
+    token: ${VULPES_RELEASE_TOKEN:}
     # Base directory for build workspaces; empty means the JVM temp directory.
     work-dir: ${VULPES_RELEASE_WORK_DIR:}
   content:

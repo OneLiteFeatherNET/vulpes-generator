@@ -103,6 +103,15 @@ spec:
             - name: VULPES_RELEASE_WORK_DIR
               value: {{ . | quote }}
             {{- end }}
+            {{- with .Values.release.tokenSecret }}
+            {{- if .name }}
+            - name: VULPES_RELEASE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .key }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.release.backendTokenSecret }}
             {{- if .name }}
             - name: VULPES_BACKEND_TOKEN

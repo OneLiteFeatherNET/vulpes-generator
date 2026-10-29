@@ -165,7 +165,9 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
     private Outcome post(String json) {
         try {
             HttpResponse<String> response = client.toBlocking()
-                    .exchange(HttpRequest.POST("/releases", json).contentType(MediaType.APPLICATION_JSON_TYPE), String.class);
+                    .exchange(HttpRequest.POST("/releases", json)
+                            .contentType(MediaType.APPLICATION_JSON_TYPE)
+                            .bearerAuth(ReleaseTestProperties.TOKEN), String.class);
             return new Outcome(response.getStatus().getCode(), response.body());
         } catch (HttpClientResponseException e) {
             return new Outcome(e.getStatus().getCode(), e.getResponse().getBody(String.class).orElse(""));

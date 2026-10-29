@@ -8,9 +8,13 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.inject.Inject;
 import net.onelitefeather.vulpes.generator.release.ReleaseRequest;
 import net.onelitefeather.vulpes.generator.release.ReleaseResult;
@@ -24,6 +28,12 @@ import net.onelitefeather.vulpes.generator.release.ReleaseService;
  * @version 1.0.0
  * @since 1.0.0
  */
+@SecurityScheme(
+        name = "releaseToken",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        description = "The shared release token from vulpes.release.token. Without a configured token every release request is refused."
+)
 @Controller("/releases")
 public class ReleaseController {
 
@@ -51,7 +61,8 @@ public class ReleaseController {
             description = "Fetches the frozen snapshot of the project from the backend, verifies it against the revision, "
                     + "builds a reproducible content data JAR and publishes it to Reposilite. Versions X.Y.Z go to the "
                     + "releases repository, X.Y.Z-dev.N to the snapshots repository. An existing version is never overwritten.",
-            tags = {"release"}
+            tags = {"release"},
+            security = @SecurityRequirement(name = "releaseToken")
     )
     @ApiResponse(
             responseCode = "201",
@@ -59,6 +70,20 @@ public class ReleaseController {
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(implementation = ReleaseResponse.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "401",
+            description = "The bearer token is missing, uses another scheme or is wrong, or no release token is configured. "
+                    + "Nothing was fetched or published.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(implementation = ReleaseErrorResponse.class)
+            ),
+            headers = @Header(
+                    name = "WWW-Authenticate",
+                    description = "Always Bearer",
+                    schema = @Schema(type = "string", example = "Bearer")
             )
     )
     @ApiResponse(

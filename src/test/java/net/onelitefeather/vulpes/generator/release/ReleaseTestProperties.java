@@ -14,6 +14,9 @@ import java.util.Map;
  */
 final class ReleaseTestProperties {
 
+    /** The shared bearer token of the release endpoint in the tests. */
+    static final String TOKEN = "release-test-token";
+
     private ReleaseTestProperties() {
     }
 
@@ -29,6 +32,7 @@ final class ReleaseTestProperties {
                 "micronaut.server.port", String.valueOf(port),
                 "vulpes.backend.url", base + "/fake-backend",
                 "vulpes.backend.token", "test-token",
+                "vulpes.release.token", TOKEN,
                 "vulpes.content.maven.username", "test-user",
                 "vulpes.content.maven.password", "test-secret",
                 "vulpes.content.maven.releases-url", base + "/fake-maven/repo/onelitefeather-releases",
