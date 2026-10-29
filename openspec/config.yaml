@@ -1,0 +1,20 @@
+schema: spec-driven
+
+context: |
+  vulpes-generator is a stateless Micronaut 5 service (Java 25, Gradle Kotlin DSL) of the Vulpes
+  content pipeline. It turns a frozen content release of a Vulpes project into resource packs and a
+  data JAR (net.onelitefeather.vulpes.content:<project>:<version>) published to Reposilite.
+  The snapshot/release JSON contract is owned by OneLiteFeatherNET/vulpes-gradle-plugin; this repo
+  links to it and never keeps a copy.
+  Commits and pull request titles follow Conventional Commits (type(scope): summary, lower case);
+  pull requests are squash-merged. Tests follow F.I.R.S.T.: no network, no sleeps, no system clock
+  (inject java.time.Clock), @TempDir for files, in-process fakes for HTTP collaborators.
+
+rules:
+  proposal:
+    - Name the Conventional Commits type and scope the change ships under at the top of proposal.md
+    - A change that mixes commit types is split into two changes
+    - Include a Non-goals section
+  tasks:
+    - Write the failing test before the production code for every behaviour
+    - The last task opens the code pull request under the title named in the proposal
