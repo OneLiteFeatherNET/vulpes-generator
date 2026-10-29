@@ -43,6 +43,7 @@ dependencyResolutionManagement {
             version("logstash.logback.encoder", "9.0")
             version("janino", "3.1.12")
             version("opentelemetry.instrumentation.alpha", "2.20.1-alpha")
+            version("maven.resolver", "2.0.24")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
@@ -63,6 +64,10 @@ dependencyResolutionManagement {
             library("janino", "org.codehaus.janino", "janino").versionRef("janino")
             library("opentelemetry.exporter.otlp", "io.opentelemetry", "opentelemetry-exporter-otlp").withoutVersion()
             library("opentelemetry.logback.mdc", "io.opentelemetry.instrumentation", "opentelemetry-logback-mdc-1.0").versionRef("opentelemetry.instrumentation.alpha")
+
+            // Publishing content data JARs to Reposilite (see release package).
+            library("maven.resolver.supplier", "org.apache.maven.resolver", "maven-resolver-supplier-mvn3").versionRef("maven.resolver")
+            library("maven.resolver.transport.jdk", "org.apache.maven.resolver", "maven-resolver-transport-jdk").versionRef("maven.resolver")
 
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")

@@ -26,6 +26,15 @@ public record ContentCoordinates(String groupId, String artifactId, String versi
         return new ContentCoordinates(GROUP_ID, project, version);
     }
 
+    /**
+     * Tells whether the version is a development version such as {@code 1.2.0-dev.3}.
+     *
+     * @return {@code true} when the version carries the {@code -dev.N} suffix
+     */
+    public boolean isDevVersion() {
+        return version.contains("-dev.");
+    }
+
     @Override
     public String toString() {
         return groupId + ":" + artifactId + ":" + version;
