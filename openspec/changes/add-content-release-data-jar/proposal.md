@@ -12,6 +12,7 @@ The snapshot format and the release format are owned by the Gradle plugin reposi
 
 ## What Changes
 
+- `POST /releases` requires a shared bearer token (`vulpes.release.token`, provided to the backend as a secret). Without a configured token the endpoint refuses every request.
 - Add `POST /releases`. The body carries `projectId` (UUID), `project` (Maven artifact id), `version` (`X.Y.Z` or `X.Y.Z-dev.N`), `revision` (`sha256:<64 hex>`), `createdBy` and `createdAt` (ISO-8601, UTC). Invalid input is rejected with `400`.
 - The release input is only the frozen snapshot. A `ReleaseSnapshotSource` port fetches it; the first adapter reads `GET {vulpes.backend.url}/project/{projectId}/snapshot`. The generator never reads the database.
 - The generator checks the snapshot before it builds anything: the SHA-256 of the received bytes must equal `revision`, the snapshot `format` must be `1` and its `projectId` must match the request. Otherwise the release is rejected with `422`.
@@ -47,7 +48,7 @@ The snapshot format and the release format are owned by the Gradle plugin reposi
 
 - **Code**: new `ReleaseController`, `ReleaseService`, the ports `ReleaseSnapshotSource` and `ReleaseCompletionListener`, an HTTP adapter for the backend snapshot, a logging listener and a Maven Resolver publisher with repository routing.
 - **Dependencies**: Maven Resolver is added. The backend must serve snapshot format 1 with a byte-identical revision. Until then only the fixtures exercise the path.
-- **Configuration**: new keys `vulpes.backend.url`, `vulpes.backend.token` (optional bearer token), `vulpes.content.maven.username`, `vulpes.content.maven.password`, `vulpes.content.maven.releases-url` and `vulpes.content.maven.snapshots-url`. The Maven credentials default to the environment variables above.
-- **Deployment**: Helm values gain the backend URL, the optional token and the Maven credentials as secret references.
+- **Configuration**: new keys `vulpes.backend.url`, `vulpes.backend.token` (optional bearer token), `vulpes.release.token` (bearer token that guards `POST /releases`), `vulpes.content.maven.username`, `vulpes.content.maven.password`, `vulpes.content.maven.releases-url` and `vulpes.content.maven.snapshots-url`. The Maven credentials default to the environment variables above.
+- **Deployment**: Helm values gain the backend URL, the optional token and the Maven credentials as secret references. The chart takes the release token from a secret.
 - **API**: one new endpoint, `POST /releases`. OpenAPI gains one operation.
 - **Unchanged**: the existing endpoints and the database access stay as they are until `remove-git-and-codegen` lands.
