@@ -1,9 +1,11 @@
 package net.onelitefeather.vulpes.generator.release;
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import io.micronaut.test.support.TestPropertyProvider;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.Map;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJECT_ID;
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.snapshot;
@@ -24,8 +27,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @author TheMeinerLP
  */
-@MicronautTest(environments = "release-test")
-class MavenContentPublisherIntegrationTest {
+@MicronautTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class MavenContentPublisherIntegrationTest implements TestPropertyProvider {
+
+    @Override
+    public Map<String, String> getProperties() {
+        return ReleaseTestProperties.onFreePort();
+    }
 
     private static final String RELEASES_PREFIX = "onelitefeather-releases/";
     private static final String SNAPSHOTS_PREFIX = "onelitefeather-snapshots/";

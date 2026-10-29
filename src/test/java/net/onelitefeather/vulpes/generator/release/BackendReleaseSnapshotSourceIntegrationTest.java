@@ -1,10 +1,13 @@
 package net.onelitefeather.vulpes.generator.release;
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import io.micronaut.test.support.TestPropertyProvider;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJECT_ID;
@@ -17,8 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @author TheMeinerLP
  */
-@MicronautTest(environments = "release-test")
-class BackendReleaseSnapshotSourceIntegrationTest {
+@MicronautTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class BackendReleaseSnapshotSourceIntegrationTest implements TestPropertyProvider {
+
+    @Override
+    public Map<String, String> getProperties() {
+        return ReleaseTestProperties.onFreePort();
+    }
 
     private static final UUID UNKNOWN_PROJECT = UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae7");
 

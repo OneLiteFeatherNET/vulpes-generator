@@ -88,6 +88,24 @@ github:
   username: ${GITHUB_USERNAME:vulpes}
   password: ${GITHUB_PASSWORD:}
 
+# Content releases (POST /releases). The backend provides the frozen snapshot; the token is
+# optional. The Maven credentials default to the environment, the repository URLs to Reposilite.
+vulpes:
+  generator:
+    version: ${VULPES_GENERATOR_VERSION:dev}
+  backend:
+    url: ${VULPES_BACKEND_URL:http://localhost:8081}
+    token: ${VULPES_BACKEND_TOKEN:}
+  release:
+    # Base directory for build workspaces; empty means the JVM temp directory.
+    work-dir: ${VULPES_RELEASE_WORK_DIR:}
+  content:
+    maven:
+      username: ${ONELITEFEATHER_MAVEN_USERNAME:}
+      password: ${ONELITEFEATHER_MAVEN_PASSWORD:}
+      releases-url: https://repo.onelitefeather.dev/onelitefeather-releases
+      snapshots-url: https://repo.onelitefeather.dev/onelitefeather-snapshots
+
 # Exposed for the Helm chart: liveness/readiness probe /health, ServiceMonitor
 # scrapes /prometheus. Both are unauthenticated because they are reached from
 # inside the cluster only -- the Service publishes 8080 as ClusterIP and no
