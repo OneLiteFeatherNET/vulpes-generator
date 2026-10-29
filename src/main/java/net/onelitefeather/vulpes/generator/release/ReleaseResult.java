@@ -5,7 +5,7 @@ package net.onelitefeather.vulpes.generator.release;
  *
  * @param coordinates the Maven coordinates of the published JAR
  * @param revision    the revision the JAR was built from
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

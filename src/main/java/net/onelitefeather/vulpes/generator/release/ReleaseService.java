@@ -10,7 +10,7 @@ import java.nio.file.Path;
  * The steps run in a fixed order: validate, refuse existing versions before anything is fetched,
  * fetch the snapshot, verify it, build the JAR in a temporary workspace, publish, notify.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

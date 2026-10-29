@@ -13,6 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for the release package.
+ *
+ * @author TheMeinerLP
+ */
 class BuildWorkspaceTest {
 
     @TempDir

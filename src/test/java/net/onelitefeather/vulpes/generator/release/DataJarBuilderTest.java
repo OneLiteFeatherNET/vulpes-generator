@@ -12,14 +12,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for the release package.
+ *
+ * @author TheMeinerLP
+ */
 class DataJarBuilderTest {
 
     private static final byte[] RELEASE_JSON = "{\"format\":1}".getBytes(StandardCharsets.UTF_8);
@@ -103,19 +109,17 @@ class DataJarBuilderTest {
     }
 
     @Test
-    void defaultTimeZoneDoesNotChangeTheJarBytes() throws IOException {
-        Path utc = build("utc.jar");
-        TimeZone original = TimeZone.getDefault();
-        Path otherZone;
-        try {
-            TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Kiritimati"));
-            otherZone = build("kiritimati.jar");
-        } finally {
-            TimeZone.setDefault(original);
-        }
+    void entriesReadBackCarryTheFixedLocalTimeAndNoExtraField() throws IOException {
+        Path jar = build("first.jar");
 
-        assertArrayEquals(Files.readAllBytes(utc), Files.readAllBytes(otherZone),
-                "the JAR must not depend on the default time zone");
+        try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(jar))) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                assertEquals(LocalDateTime.of(1980, 2, 1, 0, 0), entry.getTimeLocal(),
+                        "entry " + entry.getName() + " must carry the fixed local time");
+                assertNull(entry.getExtra(), "entry " + entry.getName() + " must carry no extended timestamp field");
+            }
+        }
     }
 
     private Path build(String fileName) {

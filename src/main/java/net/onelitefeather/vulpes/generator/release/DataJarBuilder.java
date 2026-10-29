@@ -17,7 +17,7 @@ import java.util.zip.ZipOutputStream;
  * all with the same local timestamp (independent of the default time zone) and without extra fields
  * or comments, so the same input always yields the same bytes.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

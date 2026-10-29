@@ -6,7 +6,7 @@ package net.onelitefeather.vulpes.generator.release;
  * @param groupId    the Maven group id, always {@link #GROUP_ID} for content releases
  * @param artifactId the Maven artifact id, the project name
  * @param version    the release version
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

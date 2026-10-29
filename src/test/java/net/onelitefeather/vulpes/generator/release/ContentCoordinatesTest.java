@@ -4,6 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * Tests for the release package.
+ *
+ * @author TheMeinerLP
+ */
 class ContentCoordinatesTest {
 
     @Test

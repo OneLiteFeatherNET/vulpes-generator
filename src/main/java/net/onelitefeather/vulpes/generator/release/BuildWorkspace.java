@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * A fresh, empty temporary directory for one build. Closing the workspace deletes the directory
  * and everything in it, so it can be used in a try-with-resources block that also covers failures.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

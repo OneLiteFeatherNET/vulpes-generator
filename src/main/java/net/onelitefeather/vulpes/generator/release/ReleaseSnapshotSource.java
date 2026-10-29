@@ -6,7 +6,7 @@ import java.util.UUID;
  * Port that provides the frozen snapshot of a project. The generator never reads the database;
  * the snapshot is the only input of a release.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * @param revision  the {@code sha256:} digest of the snapshot bytes
  * @param createdBy the person who requested the release
  * @param createdAt the moment the release was requested, ISO-8601 in UTC
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

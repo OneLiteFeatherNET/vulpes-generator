@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
  * The JSON is written by hand so that the key order, the absence of whitespace and the escaping
  * are fixed by this class and not by a serializer.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

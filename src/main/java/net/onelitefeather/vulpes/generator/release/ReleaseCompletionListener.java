@@ -4,7 +4,7 @@ package net.onelitefeather.vulpes.generator.release;
  * Port that is notified after a release was published successfully.
  * It is never called for a rejected or failed release.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

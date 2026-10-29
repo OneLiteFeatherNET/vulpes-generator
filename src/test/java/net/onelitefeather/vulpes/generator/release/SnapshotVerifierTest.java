@@ -13,6 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Tests for the release package.
+ *
+ * @author TheMeinerLP
+ */
 class SnapshotVerifierTest {
 
     private final SnapshotVerifier verifier = new SnapshotVerifier();

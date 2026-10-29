@@ -5,7 +5,7 @@ import java.nio.file.Path;
 /**
  * Port that publishes a content data JAR to a Maven repository.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

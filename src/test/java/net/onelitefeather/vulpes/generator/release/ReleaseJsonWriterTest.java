@@ -11,6 +11,11 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJEC
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for the release package.
+ *
+ * @author TheMeinerLP
+ */
 class ReleaseJsonWriterTest {
 
     private final ReleaseJsonWriter writer = new ReleaseJsonWriter();

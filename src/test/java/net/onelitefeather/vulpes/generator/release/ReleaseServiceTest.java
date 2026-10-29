@@ -24,6 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for the release package.
+ *
+ * @author TheMeinerLP
+ */
 class ReleaseServiceTest {
 
     private static final ContentCoordinates COORDINATES =

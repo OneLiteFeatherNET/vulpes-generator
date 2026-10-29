@@ -4,7 +4,7 @@ package net.onelitefeather.vulpes.generator.release;
  * Signals that a release was refused. Nothing has been published when this exception is thrown.
  * The {@link Reason} decides the HTTP status the controller answers with.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

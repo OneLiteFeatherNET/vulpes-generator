@@ -11,6 +11,11 @@ import java.util.UUID;
  * Builds minimal format-1 snapshot bytes and matching requests for the release tests.
  * The snapshot is built in the test itself; no fixture is copied from another repository.
  */
+/**
+ * Tests for the release package.
+ *
+ * @author TheMeinerLP
+ */
 final class ReleaseTestData {
 
     static final UUID PROJECT_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-8c0a7b6c3d11");

@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The first {@link ReleaseCompletionListener}: it only logs the completed release.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */

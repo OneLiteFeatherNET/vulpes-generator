@@ -15,7 +15,7 @@ import java.util.HexFormat;
  * revision, the snapshot must be format 1 and it must belong to the requested project.
  * The bytes are only read, never re-serialised.
  *
- * @author theEvilReaper
+ * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */
