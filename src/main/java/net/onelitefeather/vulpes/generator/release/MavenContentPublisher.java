@@ -56,11 +56,7 @@ public class MavenContentPublisher implements ContentPublisher {
     public MavenContentPublisher(MavenContentConfiguration configuration) {
         this.configuration = configuration;
         this.repositorySystem = new RepositorySystemSupplier().get();
-        // HTTP/1.1 because Reposilite is plain HTTP/1.1 and the HTTP/2 upgrade attempt is not needed for HEAD.
-        this.httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     }
 
     /**

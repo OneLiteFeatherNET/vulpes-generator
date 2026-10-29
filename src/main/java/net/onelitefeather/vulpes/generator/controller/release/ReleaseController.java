@@ -7,6 +7,10 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.onelitefeather.vulpes.generator.release.ReleaseRequest;
 import net.onelitefeather.vulpes.generator.release.ReleaseResult;
@@ -41,6 +45,55 @@ public class ReleaseController {
      * @param request the release request
      * @return {@code 201} with the coordinates and the revision of the published release
      */
+    @Operation(
+            summary = "Publish a content release",
+            operationId = "publishRelease",
+            description = "Fetches the frozen snapshot of the project from the backend, verifies it against the revision, "
+                    + "builds a reproducible content data JAR and publishes it to Reposilite. Versions X.Y.Z go to the "
+                    + "releases repository, X.Y.Z-dev.N to the snapshots repository. An existing version is never overwritten.",
+            tags = {"release"}
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "The release was published.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(implementation = ReleaseResponse.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "The request is invalid. Nothing was fetched or published.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(implementation = ReleaseErrorResponse.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "409",
+            description = "The version already exists in the target repository. Nothing was uploaded.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(implementation = ReleaseErrorResponse.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "422",
+            description = "The snapshot was rejected: revision mismatch, unsupported format, foreign project or unknown "
+                    + "project. Nothing was uploaded.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(implementation = ReleaseErrorResponse.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "502",
+            description = "The backend or the Maven repository cannot be reached or refused the request. Nothing was published.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(implementation = ReleaseErrorResponse.class)
+            )
+    )
     @Post(consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
     @ExecuteOn(TaskExecutors.BLOCKING)
     public HttpResponse<ReleaseResponse> release(@Body ReleaseRequest request) {

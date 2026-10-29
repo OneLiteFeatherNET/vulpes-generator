@@ -25,6 +25,10 @@ micronaut:
         url: https://api.github.com
         connect-timeout: 2s
         read-timeout: 30s
+      # Snapshots can exceed Micronaut's default body limit of 10 MB, so the backend client has its own limit.
+      vulpes-backend:
+        url: ${vulpes.backend.url}
+        max-content-length: ${vulpes.backend.max-snapshot-size}
   router:
     static-resources:
       swagger:
@@ -96,6 +100,8 @@ vulpes:
   backend:
     url: ${VULPES_BACKEND_URL:http://localhost:8081}
     token: ${VULPES_BACKEND_TOKEN:}
+    # Largest snapshot the backend client accepts, in bytes (67108864 = 64 MiB).
+    max-snapshot-size: ${VULPES_BACKEND_MAX_SNAPSHOT_SIZE:67108864}
   release:
     # Base directory for build workspaces; empty means the JVM temp directory.
     work-dir: ${VULPES_RELEASE_WORK_DIR:}

@@ -32,11 +32,12 @@ public class BackendReleaseSnapshotSource implements ReleaseSnapshotSource {
     /**
      * Creates the source.
      *
-     * @param client     the HTTP client; requests use absolute URIs, so the client needs no base URL
+     * @param client     the HTTP client of the {@code vulpes-backend} service, which has its own body size limit
+     *                   ({@code micronaut.http.services.vulpes-backend.max-content-length}); requests use absolute URIs
      * @param backendUrl the base URL of the backend, for example {@code http://vulpes-backend:8080}
      * @param token      the bearer token for the backend, sent only when it is not blank
      */
-    public BackendReleaseSnapshotSource(@Client("/") HttpClient client,
+    public BackendReleaseSnapshotSource(@Client(id = "vulpes-backend") HttpClient client,
                                         @Value("${vulpes.backend.url}") String backendUrl,
                                         @Value("${vulpes.backend.token:}") String token) {
         this.client = client;

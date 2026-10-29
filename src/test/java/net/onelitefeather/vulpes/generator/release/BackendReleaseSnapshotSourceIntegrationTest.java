@@ -51,6 +51,18 @@ class BackendReleaseSnapshotSourceIntegrationTest implements TestPropertyProvide
     }
 
     @Test
+    void snapshotLargerThanTheDefaultClientLimitIsFetchedUnchanged() {
+        // Micronaut's default client limit is 10 MB; a real project snapshot may be larger.
+        byte[] large = new byte[11 * 1024 * 1024];
+        for (int i = 0; i < large.length; i++) {
+            large[i] = (byte) (i * 31 + (i >>> 8));
+        }
+        backend.register(PROJECT_ID, large);
+
+        assertArrayEquals(large, source.fetch(PROJECT_ID), "an 11 MB snapshot must be fetched byte for byte");
+    }
+
+    @Test
     void configuredTokenIsSentAsBearerToEmbeddedBackend() {
         backend.register(PROJECT_ID, ReleaseTestData.snapshot(PROJECT_ID));
 
