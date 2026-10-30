@@ -53,7 +53,13 @@ Test notes for all sections:
 - [ ] 6.4 Implement the logging listener and the call after publish until the test passes
 - [ ] 6.5 Add the configuration keys `vulpes.backend.url`, `vulpes.backend.token`, `vulpes.content.maven.username`, `vulpes.content.maven.password`, `vulpes.content.maven.releases-url` and `vulpes.content.maven.snapshots-url` to `application.yml`, and the Helm values for them
 
-## 7. Verification and pull request
+## 7. Authentication
 
-- [ ] 7.1 Run `./gradlew test --max-workers=2` and `./gradlew build --max-workers=2`, and fix all failures
-- [ ] 7.2 Open the pull request titled `feat(release): publish content data jar to reposilite`
+- [ ] 7.1 Write the failing integration tests for `POST /releases`: a missing, wrong, Basic-scheme or unconfigured `vulpes.release.token` answers `401` without contacting the fake backend or the fake Maven repository, and `/health` stays open without a token
+- [ ] 7.2 Implement the server filter for `/releases` with constant-time token comparison and fail-closed behaviour (an empty token answers `401`) until the tests pass
+- [ ] 7.3 Add the OpenAPI bearer security scheme for `POST /releases` and the Helm secret reference for `vulpes.release.token`
+
+## 8. Verification and pull request
+
+- [ ] 8.1 Run `./gradlew test --max-workers=2` and `./gradlew build --max-workers=2`, and fix all failures
+- [ ] 8.2 Open the pull request titled `feat(release): publish content data jar to reposilite`

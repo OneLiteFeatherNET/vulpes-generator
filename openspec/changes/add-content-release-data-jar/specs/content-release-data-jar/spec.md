@@ -6,6 +6,25 @@ Lets a caller turn one frozen project snapshot into a versioned, reproducible co
 
 ## ADDED Requirements
 
+### Requirement: Release authentication
+The system SHALL require the header `Authorization: Bearer <token>` on `POST /releases`, where the token is configured as `vulpes.release.token`. The system SHALL answer `401` with the header `WWW-Authenticate: Bearer` when the header is missing, uses another scheme or carries a different token, and SHALL then contact neither the backend nor the repository. When no token is configured, the system SHALL answer every release request with `401`. The system MUST NOT log the token.
+
+#### Scenario: Missing token
+- **WHEN** a client posts a release without an Authorization header
+- **THEN** the response status is `401` and neither the backend nor the repository is contacted
+
+#### Scenario: Wrong token
+- **WHEN** a client posts a release with a bearer token that differs from `vulpes.release.token`
+- **THEN** the response status is `401` and neither the backend nor the repository is contacted
+
+#### Scenario: No token configured
+- **WHEN** `vulpes.release.token` is empty
+- **THEN** every release request is answered with `401`
+
+#### Scenario: Valid token
+- **WHEN** the request carries the configured token
+- **THEN** the release is processed as specified below
+
 ### Requirement: Release request validation
 The system SHALL expose `POST /releases`, which accepts a JSON body with `projectId` (a UUID), `project` (a Maven artifact id matching `^[a-z][a-z0-9-]*$`), `version` (`X.Y.Z` or `X.Y.Z-dev.N`, where the numbers have no leading zeros), `revision` (`sha256:` followed by 64 hexadecimal digits), `createdBy` (a string) and `createdAt` (an ISO-8601 instant in UTC). The system SHALL reject a body that violates any of these rules with `400` before it contacts the backend or the repository.
 
