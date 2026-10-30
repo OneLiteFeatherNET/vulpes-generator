@@ -92,6 +92,49 @@ spec:
             - name: {{ .name }}
               value: {{ .value | quote }}
             {{- end }}
+            # Content releases: the version comes from the chart, everything else from the overlay.
+            - name: VULPES_GENERATOR_VERSION
+              value: {{ .Chart.AppVersion | quote }}
+            {{- with .Values.release.backendUrl }}
+            - name: VULPES_BACKEND_URL
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.release.workDir }}
+            - name: VULPES_RELEASE_WORK_DIR
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.release.tokenSecret }}
+            {{- if .name }}
+            - name: VULPES_RELEASE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .key }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.release.backendTokenSecret }}
+            {{- if .name }}
+            - name: VULPES_BACKEND_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .key }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.release.mavenSecret }}
+            {{- if .name }}
+            - name: ONELITEFEATHER_MAVEN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .usernameKey }}
+            - name: ONELITEFEATHER_MAVEN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .passwordKey }}
+            {{- end }}
+            {{- end }}
             {{- if .Values.tracing.enabled }}
             # JDK_JAVA_OPTIONS is independent of JAVA_TOOL_OPTIONS (which
             # apps commonly override wholesale via .Values.env above), so

@@ -88,6 +88,9 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.commons.io)
     implementation(libs.commons.compress)
+    // Maven Resolver publishes content data JARs to Reposilite (release package).
+    implementation(libs.maven.resolver.supplier)
+    implementation(libs.maven.resolver.transport.jdk)
 
     runtimeOnly(mn.snakeyaml)
 

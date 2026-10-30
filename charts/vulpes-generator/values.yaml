@@ -254,6 +254,28 @@ env:
 
 envFrom: []
 
+# Content releases (POST /releases). Environment-specific values belong in the overlay. Empty values fall
+# back to the application defaults. Secrets are referenced by name and key, never given as plain values.
+release:
+  # Base URL of the Vulpes backend that serves GET /project/{projectId}/snapshot.
+  backendUrl: ""
+  # Base directory for build workspaces; empty means the /tmp emptyDir below.
+  workDir: ""
+  # Secret holding the bearer token for the backend under the given key; empty name = no token.
+  backendTokenSecret:
+    name: ""
+    key: token
+  # Secret holding the shared bearer token that POST /releases requires, under the given key.
+  # Empty name = no token, and then every release request is refused (fail closed).
+  tokenSecret:
+    name: ""
+    key: token
+  # Secret holding the Maven repository credentials under the given keys; empty name = anonymous.
+  mavenSecret:
+    name: ""
+    usernameKey: username
+    passwordKey: password
+
 # Traces-only OTel Java agent instrumentation. Metrics/logs already flow via
 # the chart's own Prometheus scrape (metrics.serviceMonitor) and container
 # stdout shipping, so only OTEL_TRACES_EXPORTER is enabled here to avoid
