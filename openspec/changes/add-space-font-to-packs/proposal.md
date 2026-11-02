@@ -19,7 +19,7 @@ The resource pack side is copied by hand today: `cygnus-pack` and `ManisPack` ea
 
 ## Non-goals
 
-- No change to `release.json`, `snapshot.json` or the data JAR layout. The snapshot carries no space font, and the Gradle plugin generates no constants for it. Games use `SpaceFont` from `vulpes-base`.
+- No change to `release.json`, `snapshot.json` or the data JAR layout. The snapshot carries no space font. The Gradle plugin generates the glyph constants on its own (change `add-space-font-constants` in OneLiteFeatherNET/vulpes-gradle-plugin), and games build offsets with `SpaceFont` from `vulpes-base`.
 - The unused extras of today's hand-made packs are not shipped: the `splitter.png` bitmap provider (``) and the `space.<n>` / `newlayer` translations in `assets/space/lang/en_us.json`. No game code references them. A base pack that still needs them has to move them to another namespace, because the generated pack wins on a collision.
 - The advances stay fixed. Projects cannot configure them.
 
