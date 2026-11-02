@@ -9,15 +9,16 @@ Test notes: unit tests only, `@TempDir` for pack output, no network, no sleeps, 
 ## 1. Bundled font
 
 - [ ] 1.1 Add `vulpes-base` as a test dependency
-- [ ] 1.2 Write the failing test that the bundled `space/font/default.json` has exactly the advances of `space:default` in `vulpes-base`'s `font/font-widths.json`, naming the first differing codepoint
-- [ ] 1.3 Add the bundled resource with the single `space` provider and its 28 advances
+- [ ] 1.2 Write the failing test that the built-in space font definition has exactly the advances of `space:default` in `vulpes-base`'s `font/font-widths.json`, naming the first differing codepoint
+- [ ] 1.3 Add the built-in space font definition with the single `space` provider and its 28 advances
 
 ## 2. Pack build
 
 - [ ] 2.1 Write the failing test that a pack built for a project without fonts contains `assets/space/font/default.json`
 - [ ] 2.2 Write the failing test that a pack built for a project with fonts contains both the project's font files and the space font
 - [ ] 2.3 Write the failing test that two builds of the same release write byte-identical space font files
-- [ ] 2.4 Write the space font in the pack build with sorted keys
+- [ ] 2.4 Write the failing test that the space font file and a project font file come from the same font writer with the same structure and encoding
+- [ ] 2.5 Write the space font in the pack build through the font writer of project fonts
 
 ## 3. Reserved namespace
 
