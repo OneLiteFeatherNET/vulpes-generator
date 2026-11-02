@@ -3,6 +3,7 @@ package net.onelitefeather.vulpes.generator.release;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.ServerSocket;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,9 +27,19 @@ final class ReleaseTestProperties {
      * @return the test properties
      */
     static Map<String, String> onFreePort() {
+        return onFreePort(Map.of());
+    }
+
+    /**
+     * Returns the properties of {@link #onFreePort()} with additional properties that override them.
+     *
+     * @param overrides the additional properties
+     * @return the test properties
+     */
+    static Map<String, String> onFreePort(Map<String, String> overrides) {
         int port = freePort();
         String base = "http://localhost:" + port;
-        return Map.of(
+        Map<String, String> properties = new HashMap<>(Map.of(
                 "micronaut.server.port", String.valueOf(port),
                 "vulpes.backend.url", base + "/fake-backend",
                 "vulpes.backend.token", "test-token",
@@ -36,7 +47,9 @@ final class ReleaseTestProperties {
                 "vulpes.content.maven.username", "test-user",
                 "vulpes.content.maven.password", "test-secret",
                 "vulpes.content.maven.releases-url", base + "/fake-maven/repo/onelitefeather-releases",
-                "vulpes.content.maven.snapshots-url", base + "/fake-maven/repo/onelitefeather-snapshots");
+                "vulpes.content.maven.snapshots-url", base + "/fake-maven/repo/onelitefeather-snapshots"));
+        properties.putAll(overrides);
+        return properties;
     }
 
     private static int freePort() {

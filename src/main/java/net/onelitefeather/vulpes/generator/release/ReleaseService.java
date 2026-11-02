@@ -57,7 +57,7 @@ public class ReleaseService {
     }
 
     /**
-     * Publishes the content release described by the request.
+     * Publishes the content release described by the request. The snapshot is fetched from the source.
      *
      * @param request the release request
      * @return the coordinates and the revision of the published release
@@ -66,13 +66,36 @@ public class ReleaseService {
     public ReleaseResult release(ReleaseRequest request) {
         request.validate();
         ContentCoordinates coordinates = ContentCoordinates.forRelease(request.project(), request.version());
-        if (publisher.exists(coordinates)) {
-            throw new ReleaseRejectedException(ReleaseRejectedException.Reason.VERSION_EXISTS,
-                    "version " + request.version() + " of " + request.project() + " already exists");
-        }
+        refuseExisting(coordinates);
         byte[] snapshot = source.fetch(request.projectId());
         verifier.verify(request, snapshot);
+        return publish(request, coordinates, snapshot);
+    }
 
+    /**
+     * Publishes the release of a snapshot that the caller has already assembled. The snapshot is not fetched again.
+     *
+     * @param request  the release request, whose revision must be the digest of the snapshot
+     * @param snapshot the snapshot bytes
+     * @return the coordinates and the revision of the published release
+     * @throws ReleaseRejectedException when the release is refused; nothing has been published then
+     */
+    public ReleaseResult releaseSnapshot(ReleaseRequest request, byte[] snapshot) {
+        request.validate();
+        ContentCoordinates coordinates = ContentCoordinates.forRelease(request.project(), request.version());
+        refuseExisting(coordinates);
+        verifier.verify(request, snapshot);
+        return publish(request, coordinates, snapshot);
+    }
+
+    private void refuseExisting(ContentCoordinates coordinates) {
+        if (publisher.exists(coordinates)) {
+            throw new ReleaseRejectedException(ReleaseRejectedException.Reason.VERSION_EXISTS,
+                    "version " + coordinates.version() + " of " + coordinates.artifactId() + " already exists");
+        }
+    }
+
+    private ReleaseResult publish(ReleaseRequest request, ContentCoordinates coordinates, byte[] snapshot) {
         try (BuildWorkspace workspace = BuildWorkspace.create(workDir)) {
             byte[] releaseJson = jsonWriter.write(request, generatorVersion);
             Path jarFile = workspace.dir().resolve(coordinates.artifactId() + "-" + coordinates.version() + ".jar");
