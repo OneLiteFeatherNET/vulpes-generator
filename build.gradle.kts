@@ -101,6 +101,9 @@ dependencies {
     testImplementation(mn.junit.jupiter.api)
     testImplementation(mn.junit.jupiter.params)
     testRuntimeOnly(mn.junit.jupiter.engine)
+    // Validates the assembled release snapshot against the format 1 schema (src/test/resources/release).
+    // The version comes from the Micronaut platform (3.x, which reads Jackson 3 trees).
+    testImplementation("com.networknt:json-schema-validator")
 }
 
 tasks {

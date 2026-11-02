@@ -1,0 +1,675 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onelitefeather.net/schemas/vulpes/snapshot-1.json",
+  "title": "Vulpes content snapshot (META-INF/vulpes/snapshot.json), format 1",
+  "description": "Canonical snapshot of every entity of one project. UTF-8, sorted object keys, no insignificant whitespace; every list sorted as stated. Defaults are resolved by the backend: consumers never invent values. References to client resources use Minecraft resource locations; assets[] maps them to pack paths. Uniqueness (not expressible in JSON Schema): key is unique within each entity list, assets[].path is unique, expressionFunctions[].name and expressions[].name are unique together. Every resource location an entity uses (fonts[].file, sounds[].sounds[].name with type=file, advancements[].background) MUST have a matching assets[] entry; the backend validates this before freezing a release and the generator aborts on a missing asset. id is unique across the whole snapshot. A previous key or name never equals a current key or name of the same list.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "projectId",
+    "namespace",
+    "items",
+    "attributes",
+    "fonts",
+    "sounds",
+    "advancements",
+    "expressionFunctions",
+    "expressions",
+    "assets",
+    "pack"
+  ],
+  "properties": {
+    "format": {
+      "description": "Format version of snapshot.json. Consumers reject unknown values.",
+      "const": 1
+    },
+    "projectId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "namespace": {
+      "description": "Default namespace of the project's keys.",
+      "$ref": "#/$defs/namespace"
+    },
+    "items": {
+      "description": "Sorted by key.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "attributes": {
+      "description": "Sorted by key.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/attribute"
+      }
+    },
+    "fonts": {
+      "description": "Font symbols, sorted by key.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/fontSymbol"
+      }
+    },
+    "sounds": {
+      "description": "Sound events, sorted by key.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/soundEvent"
+      }
+    },
+    "advancements": {
+      "description": "Sorted by key. parent references form a forest without cycles.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/advancement"
+      }
+    },
+    "expressionFunctions": {
+      "description": "Project-defined expression functions, sorted by name.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/expressionFunction"
+      }
+    },
+    "expressions": {
+      "description": "Named formulas with variables and a return type, sorted by name.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/expression"
+      }
+    },
+    "assets": {
+      "description": "Client resources the packs are built from, sorted by path. Ignored by code generation.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "pack": {
+      "description": "Pack build parameters; part of the snapshot because they change the built packs. Ignored by code generation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resolutions",
+        "description"
+      ],
+      "properties": {
+        "resolutions": {
+          "description": "Target resolutions, ascending, unique.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "description": {
+          "$ref": "#/$defs/textComponent"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "namespace": {
+      "type": "string",
+      "pattern": "^[a-z0-9_.-]+$"
+    },
+    "key": {
+      "description": "Namespaced key, e.g. cygnus:iron_sword.",
+      "type": "string",
+      "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
+    },
+    "resourceLocation": {
+      "description": "Minecraft resource location as written into game JSON, e.g. cygnus:font/hud_icons.png.",
+      "type": "string",
+      "pattern": "^[a-z0-9_.-]+:[a-z0-9_./-]+$"
+    },
+    "textComponent": {
+      "description": "Adventure/Minecraft text component as a JSON value (not a JSON string).",
+      "type": [
+        "object",
+        "string",
+        "array"
+      ]
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "previousKeys",
+        "key",
+        "material",
+        "amount",
+        "components"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "previousKeys": {
+          "$ref": "#/$defs/previousKeys"
+        },
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "material": {
+          "$ref": "#/$defs/key"
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99
+        },
+        "components": {
+          "description": "Minecraft data components keyed by component id, values in the vanilla component JSON format. Includes minecraft:lore and minecraft:enchantments; never contains stelaris:* keys.",
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/key"
+          }
+        }
+      }
+    },
+    "attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "previousKeys",
+        "key",
+        "displayName",
+        "defaultValue",
+        "minimumValue",
+        "maximumValue",
+        "synced",
+        "translationKey"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "previousKeys": {
+          "$ref": "#/$defs/previousKeys"
+        },
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "translationKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultValue": {
+          "type": "number"
+        },
+        "minimumValue": {
+          "type": "number"
+        },
+        "maximumValue": {
+          "type": "number"
+        },
+        "synced": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fontSymbol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "previousKeys",
+        "key",
+        "font",
+        "type",
+        "file",
+        "ascent",
+        "height",
+        "chars"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "previousKeys": {
+          "$ref": "#/$defs/previousKeys"
+        },
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "font": {
+          "description": "Font the symbol belongs to; symbols sharing a font end up in one font JSON.",
+          "$ref": "#/$defs/key"
+        },
+        "type": {
+          "const": "bitmap"
+        },
+        "file": {
+          "$ref": "#/$defs/resourceLocation"
+        },
+        "ascent": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "chars": {
+          "description": "Glyph rows in display order.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "soundEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "previousKeys",
+        "key",
+        "replace",
+        "sounds",
+        "subtitle"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "previousKeys": {
+          "$ref": "#/$defs/previousKeys"
+        },
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "subtitle": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "replace": {
+          "type": "boolean"
+        },
+        "sounds": {
+          "description": "Sorted by name.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/soundEntry"
+          }
+        }
+      }
+    },
+    "soundEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type",
+        "volume",
+        "pitch",
+        "weight",
+        "stream",
+        "attenuationDistance",
+        "preload"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/resourceLocation",
+          "description": "type=file: sound file resource location (needs an assets[] entry); type=event: another sound event key (no asset)."
+        },
+        "type": {
+          "enum": [
+            "file",
+            "event"
+          ]
+        },
+        "volume": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "pitch": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stream": {
+          "type": "boolean"
+        },
+        "attenuationDistance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "preload": {
+          "type": "boolean"
+        }
+      }
+    },
+    "advancement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "previousKeys",
+        "key",
+        "parent",
+        "icon",
+        "frame",
+        "title",
+        "description",
+        "background",
+        "x",
+        "y",
+        "showToast",
+        "hidden",
+        "announceToChat"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "previousKeys": {
+          "$ref": "#/$defs/previousKeys"
+        },
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "parent": {
+          "description": "Key of the parent advancement in the same snapshot; null for a root (tab).",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/key"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "icon": {
+          "description": "Material key of the icon.",
+          "$ref": "#/$defs/key"
+        },
+        "frame": {
+          "enum": [
+            "task",
+            "goal",
+            "challenge"
+          ]
+        },
+        "title": {
+          "$ref": "#/$defs/textComponent"
+        },
+        "description": {
+          "$ref": "#/$defs/textComponent"
+        },
+        "background": {
+          "description": "Tab background texture; only set on roots.",
+          "oneOf": [
+            {
+              "$ref": "#/$defs/resourceLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "showToast": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "announceToChat": {
+          "type": "boolean"
+        }
+      }
+    },
+    "expressionFunction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "previousNames",
+        "name",
+        "kind",
+        "description",
+        "parameters",
+        "returnType",
+        "expression"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "previousNames": {
+          "description": "Names this function had earlier within the current major version, sorted.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          }
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "kind": {
+          "description": "interface: signature only, implemented by the game (code generation); formula: evaluated from expression.",
+          "enum": [
+            "interface",
+            "formula"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "parameters": {
+          "description": "In declaration order.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "type"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "type": {
+                "$ref": "#/$defs/expressionType"
+              }
+            }
+          }
+        },
+        "returnType": {
+          "$ref": "#/$defs/expressionType"
+        },
+        "expression": {
+          "description": "Formula source for kind=formula, null for kind=interface.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "expression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "previousNames",
+        "name",
+        "description",
+        "variables",
+        "returnType",
+        "expression"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "previousNames": {
+          "description": "Names this expression had earlier within the current major version, sorted.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          }
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "variables": {
+          "description": "In declaration order.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "type"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "type": {
+                "$ref": "#/$defs/expressionType"
+              }
+            }
+          }
+        },
+        "returnType": {
+          "$ref": "#/$defs/expressionType"
+        },
+        "expression": {
+          "description": "Formula source, evaluated with the variables as identifiers.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "expressionType": {
+      "enum": [
+        "number",
+        "boolean",
+        "string"
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha1",
+        "size",
+        "kind",
+        "resolution"
+      ],
+      "properties": {
+        "path": {
+          "description": "Path inside the pack, unique, no leading slash.",
+          "type": "string",
+          "pattern": "^assets/[a-z0-9_.-]+/[a-z0-9_./-]+$"
+        },
+        "sha1": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "enum": [
+            "texture",
+            "sound",
+            "model",
+            "other"
+          ]
+        },
+        "resolution": {
+          "description": "Source resolution of a texture in pixels per block; number for kind=texture, null otherwise. Font bitmaps are textures.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "texture"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resolution": {
+            "type": "integer"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "resolution": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    "entityId": {
+      "description": "Stable id of the entity; never changes, also not on rename.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "previousKeys": {
+      "description": "Keys this entity had earlier within the current major version, sorted, without the current key. A rename that keeps the old key here is a minor change; the consumer generates deprecated aliases from these keys. The list is emptied with the next major version, which removes the aliases.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/key"
+      }
+    }
+  }
+}

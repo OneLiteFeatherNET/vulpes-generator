@@ -58,7 +58,7 @@ public class ReleaseController {
     @Operation(
             summary = "Publish a content release",
             operationId = "publishRelease",
-            description = "Fetches the frozen snapshot of the project from the backend, verifies it against the revision, "
+            description = "Assembles the snapshot of the project from the backend endpoints, verifies it against the revision, "
                     + "builds a reproducible content data JAR and publishes it to Reposilite. Versions X.Y.Z go to the "
                     + "releases repository, X.Y.Z-dev.N to the snapshots repository. An existing version is never overwritten.",
             tags = {"release"},

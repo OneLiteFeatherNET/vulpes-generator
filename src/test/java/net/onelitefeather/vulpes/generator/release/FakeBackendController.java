@@ -8,11 +8,11 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Header;
 import io.micronaut.http.annotation.PathVariable;
-
-import java.util.UUID;
+import io.micronaut.http.annotation.QueryValue;
 
 /**
- * The backend snapshot endpoint, served by the embedded test server under {@code /fake-backend}.
+ * The backend REST API, served by the embedded test server under {@code /fake-backend}. The answers come from
+ * {@link FakeBackend}.
  *
  * @author TheMeinerLP
  */
@@ -25,17 +25,15 @@ public class FakeBackendController {
         this.backend = backend;
     }
 
-    @Get("/project/{projectId}/snapshot")
-    public HttpResponse<byte[]> snapshot(@PathVariable UUID projectId,
-                                         @Nullable @Header("Authorization") String authorization) {
-        backend.recordAuthorization(authorization);
-        if (backend.isDown()) {
-            return HttpResponse.status(HttpStatus.SERVICE_UNAVAILABLE);
+    @Get("/{+path}")
+    public HttpResponse<String> get(@PathVariable String path,
+                                    @Nullable @Header("Authorization") String authorization,
+                                    @Nullable @QueryValue Integer size,
+                                    @Nullable @QueryValue Integer page) {
+        FakeBackend.FakeReply reply = backend.serve(path, authorization, size, page);
+        if (reply.status() == 200) {
+            return HttpResponse.ok(reply.body()).contentType(MediaType.APPLICATION_JSON_TYPE);
         }
-        byte[] snapshot = backend.snapshot(projectId);
-        if (snapshot == null) {
-            return HttpResponse.notFound();
-        }
-        return HttpResponse.ok(snapshot).contentType(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        return HttpResponse.status(HttpStatus.valueOf(reply.status()));
     }
 }

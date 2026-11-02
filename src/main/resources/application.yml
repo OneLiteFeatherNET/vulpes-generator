@@ -92,8 +92,9 @@ github:
   username: ${GITHUB_USERNAME:vulpes}
   password: ${GITHUB_PASSWORD:}
 
-# Content releases (POST /releases). The backend provides the frozen snapshot; the token is
-# optional. The Maven credentials default to the environment, the repository URLs to Reposilite.
+# Content releases (POST /releases and POST /generator/release). The generator assembles the snapshot from
+# the backend's REST endpoints; the token is optional. The Maven credentials default to the environment,
+# the repository URLs to Reposilite.
 vulpes:
   generator:
     version: ${VULPES_GENERATOR_VERSION:dev}
@@ -107,6 +108,13 @@ vulpes:
     token: ${VULPES_RELEASE_TOKEN:}
     # Base directory for build workspaces; empty means the JVM temp directory.
     work-dir: ${VULPES_RELEASE_WORK_DIR:}
+    # First key segments that are namespaces of their own: minecraft.music.game becomes minecraft:music.game.
+    foreign-namespaces:
+      - minecraft
+      - olf
+    # Serves POST /generator/release for the editor, which needs no token. Off unless the generator is only
+    # reachable from the internal network.
+    editor-route-enabled: ${VULPES_RELEASE_EDITOR_ROUTE_ENABLED:false}
   content:
     maven:
       username: ${ONELITEFEATHER_MAVEN_USERNAME:}

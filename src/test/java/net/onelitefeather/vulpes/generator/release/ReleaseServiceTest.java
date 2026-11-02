@@ -189,6 +189,25 @@ class ReleaseServiceTest {
         assertEquals(0, entryCount(workDir), "the temporary build directory must be deleted after a failed build");
     }
 
+    @Test
+    void releaseOfAssembledSnapshotPublishesTheGivenBytesWithoutFetchingAgain() {
+        service().releaseSnapshot(ReleaseTestData.request(), snapshot);
+
+        assertEquals(0, source.fetchCount, "a snapshot that the caller assembled must not be fetched again");
+        assertEquals(1, publisher.publishCount, "the assembled snapshot must be published exactly once");
+    }
+
+    @Test
+    void releaseOfAssembledSnapshotRejectsARevisionOfAnotherSnapshot() {
+        ReleaseRequest request = ReleaseTestData.request("1.2.0", "sha256:" + "0".repeat(64));
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
+                () -> service().releaseSnapshot(request, snapshot));
+
+        assertEquals(ReleaseRejectedException.Reason.REVISION_MISMATCH, e.getReason(), "reason must be REVISION_MISMATCH");
+        assertEquals(0, publisher.publishCount, "a snapshot with another revision must publish nothing");
+    }
+
     private void assertRejected(ReleaseRejectedException.Reason expected) {
         ReleaseRequest request = ReleaseTestData.request();
 

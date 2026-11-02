@@ -18,7 +18,6 @@ import java.util.Map;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJECT_ID;
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.digest;
-import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.snapshot;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,9 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
 
-    private static final String BODY = "{\"projectId\":\"" + PROJECT_ID + "\",\"project\":\"eldoria\",\"version\":\"1.2.0\","
-            + "\"revision\":\"" + digest(snapshot(PROJECT_ID)) + "\",\"createdBy\":\"TheMeinerLP\","
-            + "\"createdAt\":\"2026-10-28T12:00:00Z\"}";
 
     @Override
     public Map<String, String> getProperties() {
@@ -49,6 +45,9 @@ class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
     FakeBackend backend;
 
     @Inject
+    BackendApiReleaseSnapshotSource source;
+
+    @Inject
     FakeMavenRepository repository;
 
     @Inject
@@ -59,7 +58,6 @@ class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
         backend.reset();
         repository.reset();
         listener.reset();
-        backend.register(PROJECT_ID, snapshot(PROJECT_ID));
     }
 
     @Test
@@ -100,7 +98,7 @@ class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
 
     @Test
     void correctBearerTokenIsAccepted() {
-        Outcome outcome = post("Bearer " + ReleaseTestProperties.TOKEN);
+        Outcome outcome = post("Bearer " + ReleaseTestProperties.TOKEN, digest(source.fetch(PROJECT_ID)));
 
         assertEquals(201, outcome.status(), "the configured token must be accepted");
     }
@@ -112,8 +110,14 @@ class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
         assertEquals(200, outcome.status(), "/health must stay available without the release token");
     }
 
+    /** Refused requests carry a placeholder revision, so that the backend is not contacted to build the body. */
     private Outcome post(String authorization) {
-        MutableHttpRequest<String> request = HttpRequest.POST("/releases", BODY).contentType(MediaType.APPLICATION_JSON_TYPE);
+        return post(authorization, "sha256:" + "0".repeat(64));
+    }
+
+    private Outcome post(String authorization, String revision) {
+        MutableHttpRequest<String> request = HttpRequest.POST("/releases", body(revision))
+                .contentType(MediaType.APPLICATION_JSON_TYPE);
         if (authorization != null) {
             request.header("Authorization", authorization);
         }
@@ -136,5 +140,11 @@ class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
     }
 
     private record Outcome(int status, String wwwAuthenticate, String body) {
+    }
+
+    private static String body(String revision) {
+        return "{\"projectId\":\"" + PROJECT_ID + "\",\"project\":\"eldoria\",\"version\":\"1.2.0\","
+                + "\"revision\":\"" + revision + "\",\"createdBy\":\"TheMeinerLP\","
+                + "\"createdAt\":\"2026-10-28T12:00:00Z\"}";
     }
 }

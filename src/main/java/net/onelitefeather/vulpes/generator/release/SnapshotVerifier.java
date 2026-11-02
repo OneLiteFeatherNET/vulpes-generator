@@ -49,7 +49,13 @@ public class SnapshotVerifier {
         }
     }
 
-    private static String digest(byte[] snapshot) {
+    /**
+     * Returns the revision of snapshot bytes, the {@code sha256:} digest of the bytes.
+     *
+     * @param snapshot the snapshot bytes
+     * @return the revision
+     */
+    static String digest(byte[] snapshot) {
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             return "sha256:" + HexFormat.of().formatHex(sha256.digest(snapshot));
