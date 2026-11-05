@@ -36,7 +36,7 @@ dependencyResolutionManagement {
             version("mycelium", "1.8.9")
             version("jetbrains.annotation", "26.1.0")
             version("javapoet", "1.13.0")
-            version("jgit", "7.8.0.202609011348-r")
+            version("jgit", "7.8.1.202611041320-r")
             version("guava", "33.7.2-jre")
             version("commons.io", "2.22.0")
             version("commons.compress", "1.28.0")
