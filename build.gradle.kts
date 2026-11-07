@@ -223,3 +223,26 @@ publishing {
         }
     }
 }
+
+// Integration tests start real Gradle builds (a vulpes-base fixture). They live in their own source set and are not
+// part of `test`; run them with `./gradlew integrationTest`.
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+configurations {
+    named("integrationTestImplementation") { extendsFrom(configurations.testImplementation.get()) }
+    named("integrationTestRuntimeOnly") { extendsFrom(configurations.testRuntimeOnly.get()) }
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs the integration tests, including the real Gradle build of a vulpes-base fixture."
+    group = "verification"
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    useJUnitPlatform()
+    shouldRunAfter(tasks.named("test"))
+}
