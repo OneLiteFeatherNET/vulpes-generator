@@ -16,6 +16,7 @@ import org.junit.jupiter.api.TestInstance;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import static net.onelitefeather.vulpes.generator.release.ProjectFixture.id;
 import static net.onelitefeather.vulpes.generator.release.ProjectFixture.obj;
@@ -40,7 +41,9 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
     }
 
     private static final String RELEASES = "onelitefeather-releases/net/onelitefeather/vulpes/content/eldoria/1.2.0/";
-    private static final String SNAPSHOTS = "onelitefeather-snapshots/net/onelitefeather/vulpes/content/eldoria/1.2.0-dev.3/";
+    private static final String SNAPSHOTS = "onelitefeather-snapshots/net/onelitefeather/vulpes/content/eldoria/1.2.0-SNAPSHOT/";
+    /** Maven names a snapshot file with the version or, as Maven Resolver does on deploy, with a timestamp. */
+    private static final Pattern SNAPSHOT_JAR = Pattern.compile("eldoria-1\\.2\\.0-(SNAPSHOT|\\d{8}\\.\\d{6}-\\d+)\\.jar$");
     private static final String ZERO_REVISION = "sha256:" + "0".repeat(64);
     private static final UUID UNKNOWN_PROJECT = UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae7");
 
@@ -90,12 +93,12 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
     }
 
     @Test
-    void devVersionIsUploadedToTheSnapshotsRepository() {
-        Outcome outcome = post(releaseJson("1.2.0-dev.3", revision()));
+    void snapshotVersionIsUploadedToTheSnapshotsRepository() {
+        Outcome outcome = post(releaseJson("1.2.0-SNAPSHOT", revision()));
 
-        assertEquals(201, outcome.status(), "a dev release must answer 201");
-        assertTrue(repository.contains(SNAPSHOTS + "eldoria-1.2.0-dev.3.jar"),
-                "a dev version must be uploaded to the snapshots repository");
+        assertEquals(201, outcome.status(), "a snapshot release must answer 201");
+        assertTrue(repository.keys().stream().anyMatch(key -> key.startsWith(SNAPSHOTS) && SNAPSHOT_JAR.matcher(key).find()),
+                "a snapshot version must be uploaded to the snapshots repository, uploaded: " + repository.keys());
     }
 
     @Test
@@ -212,7 +215,8 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
     private static String releaseJson(UUID projectId, String version, String revision) {
         return "{\"projectId\":\"" + projectId + "\",\"project\":\"eldoria\",\"version\":\"" + version
                 + "\",\"revision\":\"" + revision + "\",\"createdBy\":\"TheMeinerLP\","
-                + "\"createdAt\":\"2026-10-28T12:00:00Z\"}";
+                + "\"createdAt\":\"2026-10-28T12:00:00Z\",\"baseRepository\":\"OneLiteFeatherNET/vulpes-base\","
+                + "\"baseBranch\":\"develop\",\"baseCommit\":\"" + ReleaseTestData.BASE_COMMIT + "\"}";
     }
 
     private record Outcome(int status, String body) {

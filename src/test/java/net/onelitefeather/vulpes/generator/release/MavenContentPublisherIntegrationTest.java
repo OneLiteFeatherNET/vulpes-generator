@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJECT_ID;
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.snapshot;
@@ -38,6 +39,8 @@ class MavenContentPublisherIntegrationTest implements TestPropertyProvider {
 
     private static final String RELEASES_PREFIX = "onelitefeather-releases/";
     private static final String SNAPSHOTS_PREFIX = "onelitefeather-snapshots/";
+    /** Maven names a snapshot file with the version or, as Maven Resolver does on deploy, with a timestamp. */
+    private static final Pattern SNAPSHOT_JAR = Pattern.compile("eldoria-1\\.2\\.0-(SNAPSHOT|\\d{8}\\.\\d{6}-\\d+)\\.jar$");
     private static final String PATH = "net/onelitefeather/vulpes/content/eldoria/1.2.0/eldoria-1.2.0";
     private static final String[] CHECKSUMS = {"md5", "sha1", "sha256", "sha512"};
 
@@ -88,14 +91,15 @@ class MavenContentPublisherIntegrationTest implements TestPropertyProvider {
     }
 
     @Test
-    void devVersionIsUploadedToTheSnapshotsRepository() throws IOException {
-        publisher.publish(ContentCoordinates.forRelease("eldoria", "1.2.0-dev.3"), buildJar("1.2.0-dev.3"));
+    void snapshotVersionIsUploadedToTheSnapshotsRepository() throws IOException {
+        publisher.publish(ContentCoordinates.forRelease("eldoria", "1.2.0-SNAPSHOT"), buildJar("1.2.0-SNAPSHOT"));
 
-        assertTrue(repository.contains(SNAPSHOTS_PREFIX
-                        + "net/onelitefeather/vulpes/content/eldoria/1.2.0-dev.3/eldoria-1.2.0-dev.3.jar"),
-                "a dev version must be uploaded to the snapshots repository");
+        assertTrue(repository.keys().stream().anyMatch(key -> key.startsWith(SNAPSHOTS_PREFIX
+                        + "net/onelitefeather/vulpes/content/eldoria/1.2.0-SNAPSHOT/")
+                        && SNAPSHOT_JAR.matcher(key).find()),
+                "a snapshot version must be uploaded to the snapshots repository, uploaded: " + repository.keys());
         assertFalse(repository.keys().stream().anyMatch(key -> key.startsWith(RELEASES_PREFIX)),
-                "a dev version must not touch the releases repository");
+                "a snapshot version must not touch the releases repository");
     }
 
     @Test

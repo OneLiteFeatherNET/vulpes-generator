@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Publishes content data JARs to the Reposilite repositories with Maven Resolver.
  * <p>
- * {@code X.Y.Z} versions go to the releases repository, {@code X.Y.Z-dev.N} versions to the snapshots
+ * {@code X.Y.Z} versions go to the releases repository, {@code X.Y.Z-SNAPSHOT} versions to the snapshots
  * repository. Every upload is one deploy request with the JAR, its POM and its {@code .module} file;
  * Maven Resolver writes the checksums and the {@code maven-metadata.xml}. Existing versions are checked
  * before the upload, so they are never overwritten.
@@ -64,10 +64,10 @@ public class MavenContentPublisher implements ContentPublisher {
      *
      * @param coordinates   the coordinates of the release
      * @param configuration the repository configuration
-     * @return the releases URL for {@code X.Y.Z}, the snapshots URL for {@code X.Y.Z-dev.N}
+     * @return the releases URL for {@code X.Y.Z}, the snapshots URL for {@code X.Y.Z-SNAPSHOT}
      */
     static String repositoryUrl(ContentCoordinates coordinates, MavenContentConfiguration configuration) {
-        return coordinates.isDevVersion() ? configuration.snapshotsUrl() : configuration.releasesUrl();
+        return coordinates.isSnapshotVersion() ? configuration.snapshotsUrl() : configuration.releasesUrl();
     }
 
     @Override

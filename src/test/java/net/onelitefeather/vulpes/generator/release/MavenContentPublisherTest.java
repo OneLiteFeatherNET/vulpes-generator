@@ -31,10 +31,10 @@ class MavenContentPublisherTest {
 
     @Test
     void devVersionIsRoutedToTheSnapshotsRepository() {
-        String url = MavenContentPublisher.repositoryUrl(ContentCoordinates.forRelease("eldoria", "1.2.0-dev.3"), CONFIGURATION);
+        String url = MavenContentPublisher.repositoryUrl(ContentCoordinates.forRelease("eldoria", "1.2.0-SNAPSHOT"), CONFIGURATION);
 
         assertEquals("https://repo.onelitefeather.dev/onelitefeather-snapshots", url,
-                "X.Y.Z-dev.N must be published to the snapshots repository");
+                "X.Y.Z-SNAPSHOT must be published to the snapshots repository");
     }
 
     @Test

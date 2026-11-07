@@ -1,6 +1,7 @@
 package net.onelitefeather.vulpes.generator.release;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.micronaut.context.annotation.Replaces;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -10,6 +11,8 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import net.onelitefeather.vulpes.generator.git.BaseCheckout;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -29,6 +32,8 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJEC
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.digest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Drives {@code POST /generator/release} with the editor route enabled. The request carries no bearer token: the
@@ -60,6 +65,14 @@ class EditorReleaseControllerIntegrationTest implements TestPropertyProvider {
 
     @Inject
     BackendApiReleaseSnapshotSource source;
+
+    @Singleton
+    @Replaces(BaseCheckout.class)
+    BaseCheckout fakeBaseCheckout() {
+        BaseCheckout checkout = mock(BaseCheckout.class);
+        when(checkout.resolveCommit(BaseBranchResolver.DEFAULT_BRANCH)).thenReturn(ReleaseTestData.BASE_COMMIT);
+        return checkout;
+    }
 
     @BeforeEach
     void resetEnvironment() {

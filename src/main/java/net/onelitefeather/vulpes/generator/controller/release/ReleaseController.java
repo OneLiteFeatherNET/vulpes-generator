@@ -60,7 +60,7 @@ public class ReleaseController {
             operationId = "publishRelease",
             description = "Assembles the snapshot of the project from the backend endpoints, verifies it against the revision, "
                     + "builds a reproducible content data JAR and publishes it to Reposilite. Versions X.Y.Z go to the "
-                    + "releases repository, X.Y.Z-dev.N to the snapshots repository. An existing version is never overwritten.",
+                    + "releases repository, X.Y.Z-SNAPSHOT to the snapshots repository. An existing version is never overwritten.",
             tags = {"release"},
             security = @SecurityRequirement(name = "releaseToken")
     )
