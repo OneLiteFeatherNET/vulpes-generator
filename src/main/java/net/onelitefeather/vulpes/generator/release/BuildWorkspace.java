@@ -33,6 +33,7 @@ public final class BuildWorkspace implements AutoCloseable {
      */
     public static BuildWorkspace create(Path baseDir) {
         try {
+            Files.createDirectories(baseDir);
             return new BuildWorkspace(Files.createTempDirectory(baseDir, "vulpes-release-"));
         } catch (IOException e) {
             throw new UncheckedIOException("cannot create build workspace in " + baseDir, e);
@@ -64,7 +65,7 @@ public final class BuildWorkspace implements AutoCloseable {
      * @param root the directory to delete
      * @throws UncheckedIOException when a file cannot be deleted
      */
-    static void deleteTree(Path root) {
+    public static void deleteTree(Path root) {
         if (!Files.exists(root)) {
             return;
         }

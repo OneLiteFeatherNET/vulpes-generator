@@ -21,3 +21,9 @@ filter:
   exclude:
     - renovate
     - dependabot
+
+# Request directories and the startup sweep stay inside the build directory of the test run,
+# never in the JVM temp directory that other processes use.
+vulpes:
+  release:
+    work-dir: build/test-work

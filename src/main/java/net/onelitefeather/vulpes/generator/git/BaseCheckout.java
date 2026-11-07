@@ -4,7 +4,6 @@ import io.micronaut.context.annotation.Value;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
-import net.onelitefeather.vulpes.generator.domain.configuration.GithubConfiguration;
 import net.onelitefeather.vulpes.generator.release.BuildWorkspace;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import org.eclipse.jgit.api.Git;
@@ -36,14 +35,12 @@ public class BaseCheckout {
     /**
      * Creates the checkout for the configured repository.
      *
-     * @param github  the GitHub configuration, whose clone URL is the URL of {@code vulpes-base}
-     * @param base    the {@code vulpes.base.*} configuration with the clone time limit
+     * @param base    the {@code vulpes.base.*} configuration; the clone URL derives from its repository
      * @param workDir the base directory for request directories; blank means the JVM temp directory
      */
     @Inject
-    public BaseCheckout(GithubConfiguration github, BaseConfiguration base,
-                        @Value("${vulpes.release.work-dir:}") String workDir) {
-        this(github.cloneUrl(), base.cloneTimeout(),
+    public BaseCheckout(BaseConfiguration base, @Value("${vulpes.release.work-dir:}") String workDir) {
+        this(cloneUrlOf(base.repository()), base.cloneTimeout(),
                 workDir.isBlank() ? Path.of(System.getProperty("java.io.tmpdir")) : Path.of(workDir));
     }
 
@@ -52,12 +49,25 @@ public class BaseCheckout {
      *
      * @param cloneUrl     the URL the branches are cloned from
      * @param cloneTimeout the time limit of the clone
-     * @param workDir      the base directory for clone directories, which must exist
+     * @param workDir      the base directory for clone directories
      */
-    BaseCheckout(String cloneUrl, Duration cloneTimeout, Path workDir) {
+    public BaseCheckout(String cloneUrl, Duration cloneTimeout, Path workDir) {
         this.cloneUrl = cloneUrl;
         this.cloneTimeout = cloneTimeout;
         this.workDir = workDir;
+    }
+
+    private static String cloneUrlOf(String repository) {
+        return "https://github.com/" + repository + ".git";
+    }
+
+    /**
+     * Returns the URL the branches are cloned from.
+     *
+     * @return the clone URL
+     */
+    String cloneUrl() {
+        return cloneUrl;
     }
 
     /**

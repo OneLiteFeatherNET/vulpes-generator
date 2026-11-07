@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.git;
 
+import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,16 @@ class BaseCheckoutTest {
 
         assertEquals(ReleaseRejectedException.Reason.BASE_UNAVAILABLE, e.getReason(),
                 "an unreachable vulpes-base must be reported as BASE_UNAVAILABLE");
+    }
+
+    @Test
+    void cloneUrlIsDerivedFromTheBaseRepository() {
+        BaseConfiguration base = new BaseConfiguration("OneLiteFeatherNET/vulpes-base", "", 3,
+                Duration.ofMinutes(2), Duration.ofMinutes(10));
+        BaseCheckout checkout = new BaseCheckout(base, tempDir.toString());
+
+        assertEquals("https://github.com/OneLiteFeatherNET/vulpes-base.git", checkout.cloneUrl(),
+                "the clone URL must derive from vulpes.base.repository");
     }
 
     private Path origin() {
