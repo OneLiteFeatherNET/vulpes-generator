@@ -227,6 +227,12 @@ publishing {
     }
 }
 
+// The runtime image needs a full JDK, not a JRE: the in-process compile gate uses javax.tools, and the base build
+// runs the Gradle wrapper of vulpes-base. The Micronaut default is eclipse-temurin:25-jre.
+tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("optimizedDockerfile") {
+    baseImage("eclipse-temurin:25-jdk")
+}
+
 // Integration tests start real Gradle builds (a vulpes-base fixture). They live in their own source set and are not
 // part of `test`; run them with `./gradlew integrationTest`.
 sourceSets {
