@@ -90,11 +90,13 @@ github:
   repo: ${GITHUB_REPO:vulpes-base}
   clone-url: ${GITHUB_CLONE_URL:`https://github.com/OneLiteFeatherNET/vulpes-base.git`}
   username: ${GITHUB_USERNAME:vulpes}
+  # Token for the branch list of vulpes-base, sent as Authorization. Without it GitHub's unauthenticated rate limit applies.
   password: ${GITHUB_PASSWORD:}
 
-# Content releases (POST /releases and POST /generator/release). The generator assembles the snapshot from
-# the backend's REST endpoints; the token is optional. The Maven credentials default to the environment,
-# the repository URLs to Reposilite.
+# Content releases (POST /releases, POST /generator/release, the local builds and the published versions). The
+# generator assembles the snapshot from the backend's REST endpoints; the token is optional. The Maven credentials
+# default to the environment, the repository URLs to Reposilite. Every key below is listed in design section 8 of
+# openspec/changes/add-editor-release-flow/design.md, with its environment variable and default.
 vulpes:
   generator:
     version: ${VULPES_GENERATOR_VERSION:dev}
@@ -106,32 +108,40 @@ vulpes:
   release:
     # Shared bearer token that POST /releases requires. Blank refuses every release request.
     token: ${VULPES_RELEASE_TOKEN:}
-    # Base directory for build workspaces; empty means the JVM temp directory.
+    # Base directory for build workspaces; empty means the JVM temp directory. Keep it on an emptyDir of at least 2 GiB.
     work-dir: ${VULPES_RELEASE_WORK_DIR:}
     # First key segments that are namespaces of their own: minecraft.music.game becomes minecraft:music.game.
     foreign-namespaces:
       - minecraft
       - olf
     # Serves POST /generator/release for the editor, which needs no token. Off unless the generator is only
-    # reachable from the internal network.
+    # reachable from the internal network. Without it the route answers 404.
     editor-route-enabled: ${VULPES_RELEASE_EDITOR_ROUTE_ENABLED:false}
   # The vulpes-base checkout that releases and local builds are compiled against. The clone URL is github.clone-url.
   base:
+    # Recorded as base.repository in release.json.
     repository: OneLiteFeatherNET/vulpes-base
+    # Built base classes and runtime classpath per full commit SHA. Empty means base-cache in the work directory.
+    # An emptyDir (cold after a restart) or a PVC in the cluster.
     cache-dir: ${VULPES_BASE_CACHE_DIR:}
-    # Most recently used commits kept in the base build cache.
+    # Most recently used commits kept in the base build cache; the least recently used one is evicted first.
     cache-entries: 3
-    # Limits of the shallow clone and of one Gradle build of a base checkout.
+    # Limits of the shallow clone (clone-timeout) and of one Gradle build of a base checkout (build-timeout).
+    # A build over its limit answers 502 BASE_UNAVAILABLE and leaves no cache entry.
     clone-timeout: 2m
     build-timeout: 10m
-    # Read-only Reposilite token passed to the base build (ORG_GRADLE_PROJECT_OneLiteFeatherRepository*). Never the publish credential.
+    # Read-only Reposilite token passed to the base build as ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryUsername and
+    # _Password, and only when configured. Never the publish credential of vulpes.content.maven.
     maven:
       username: ${VULPES_BASE_MAVEN_USERNAME:}
       password: ${VULPES_BASE_MAVEN_PASSWORD:}
   content:
+    # The publish credential (ONELITEFEATHER_MAVEN_*) of the releases and snapshots repositories. The same credentials
+    # read maven-metadata.xml for the published versions; they are never returned in a response.
     maven:
       username: ${ONELITEFEATHER_MAVEN_USERNAME:}
       password: ${ONELITEFEATHER_MAVEN_PASSWORD:}
+      # Releases X.Y.Z go to the first repository, snapshots X.Y.Z-SNAPSHOT to the second.
       releases-url: https://repo.onelitefeather.dev/onelitefeather-releases
       snapshots-url: https://repo.onelitefeather.dev/onelitefeather-snapshots
 
