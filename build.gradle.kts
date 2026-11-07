@@ -81,6 +81,9 @@ dependencies {
     implementation(platform(libs.mycelium.bom))
     implementation(mn.micronaut.http.client)
     implementation(libs.bundles.vulpes)
+    // Code generator of the Vulpes Gradle plugin: the codegen facade and the format reader of content releases.
+    implementation(libs.vulpes.codegen)
+    implementation(libs.vulpes.format)
     implementation(libs.jetbrains.annotation)
     implementation(libs.javapoet)
     implementation(libs.minestom)

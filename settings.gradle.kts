@@ -33,6 +33,8 @@ dependencyResolutionManagement {
             version("micronaut", "5.0.2")
             version("vulpes.base", "0.5.1")
             version("vulpes.model", "3.9.1")
+            version("vulpes.codegen", "0.3.0")
+            version("vulpes.format", "0.3.0")
             version("mycelium", "1.8.9")
             version("jetbrains.annotation", "26.1.0")
             version("javapoet", "1.13.0")
@@ -48,6 +50,9 @@ dependencyResolutionManagement {
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
             library("vulpes.model", "net.onelitefeather", "vulpes-model").versionRef("vulpes.model")
+            // The code generator of the Vulpes Gradle plugin, consumed as a library (publish-codegen-library).
+            library("vulpes.codegen", "net.onelitefeather.vulpes", "vulpes-codegen").versionRef("vulpes.codegen")
+            library("vulpes.format", "net.onelitefeather.vulpes", "vulpes-format").versionRef("vulpes.format")
             //library("vulpes.base", "net.theevilreaper.vulpes.base", "vulpes").versionRef("vulpes.base")
             library("jetbrains.annotation", "org.jetbrains", "annotations").versionRef("jetbrains.annotation")
             library("javapoet", "com.squareup", "javapoet").versionRef("javapoet")
