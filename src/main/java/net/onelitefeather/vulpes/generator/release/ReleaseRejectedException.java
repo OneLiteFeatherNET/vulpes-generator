@@ -1,5 +1,7 @@
 package net.onelitefeather.vulpes.generator.release;
 
+import java.util.List;
+
 /**
  * Signals that a release was refused. Nothing has been published when this exception is thrown.
  * The {@link Reason} decides the HTTP status the controller answers with.
@@ -47,6 +49,8 @@ public class ReleaseRejectedException extends RuntimeException {
     }
 
     private final Reason reason;
+    private final List<ReleaseDiagnostic> diagnostics;
+    private final boolean truncated;
 
     /**
      * Creates a new rejection.
@@ -55,8 +59,23 @@ public class ReleaseRejectedException extends RuntimeException {
      * @param message a human readable description of the rejection
      */
     public ReleaseRejectedException(Reason reason, String message) {
+        this(reason, message, List.of(), false);
+    }
+
+    /**
+     * Creates a new rejection that carries the compiler errors of the refused sources.
+     *
+     * @param reason      the reason why the release was rejected
+     * @param message     a human readable description of the rejection
+     * @param diagnostics the compiler errors, empty when there are none
+     * @param truncated   {@code true} when the diagnostics were cut
+     */
+    public ReleaseRejectedException(Reason reason, String message, List<ReleaseDiagnostic> diagnostics,
+                                    boolean truncated) {
         super(message);
         this.reason = reason;
+        this.diagnostics = List.copyOf(diagnostics);
+        this.truncated = truncated;
     }
 
     /**
@@ -66,5 +85,23 @@ public class ReleaseRejectedException extends RuntimeException {
      */
     public Reason getReason() {
         return reason;
+    }
+
+    /**
+     * Returns the compiler errors of the refused sources.
+     *
+     * @return the diagnostics, empty when the rejection carries none
+     */
+    public List<ReleaseDiagnostic> getDiagnostics() {
+        return diagnostics;
+    }
+
+    /**
+     * Tells whether the diagnostics were cut before the end of the compiler output.
+     *
+     * @return {@code true} when the diagnostics are incomplete
+     */
+    public boolean isTruncated() {
+        return truncated;
     }
 }

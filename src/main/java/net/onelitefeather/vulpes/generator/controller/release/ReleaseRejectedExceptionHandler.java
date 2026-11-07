@@ -6,7 +6,10 @@ import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.server.exceptions.ExceptionHandler;
 import jakarta.inject.Singleton;
+import net.onelitefeather.vulpes.generator.release.ReleaseDiagnostic;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
+
+import java.util.List;
 
 /**
  * Maps a refused release to its HTTP status:
@@ -30,8 +33,11 @@ public class ReleaseRejectedExceptionHandler
     @Override
     public HttpResponse<ReleaseErrorResponse> handle(HttpRequest request, ReleaseRejectedException exception) {
         ReleaseRejectedException.Reason reason = exception.getReason();
+        List<ReleaseDiagnostic> diagnostics = exception.getDiagnostics();
         return HttpResponse.status(statusOf(reason))
-                .body(new ReleaseErrorResponse(reason.name(), exception.getMessage()));
+                .body(new ReleaseErrorResponse(reason.name(), exception.getMessage(),
+                        diagnostics.isEmpty() ? null : diagnostics,
+                        exception.isTruncated() ? Boolean.TRUE : null));
     }
 
     static HttpStatus statusOf(ReleaseRejectedException.Reason reason) {
