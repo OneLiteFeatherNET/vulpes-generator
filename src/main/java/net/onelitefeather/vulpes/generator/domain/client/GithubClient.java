@@ -52,6 +52,7 @@ public interface GithubClient {
      * @param repo    the repository name
      * @param perPage the number of items per page
      * @param page    the page number
+     * @param authorization the Authorization header value, such as {@code Bearer <token>}; {@code null} sends none
      * @return a list of branches
      */
     @Get("/repos/{owner}/{repo}/branches{?per_page,page}")
@@ -59,6 +60,7 @@ public interface GithubClient {
             String owner,
             String repo,
             @Nullable @PathVariable("per_page") Integer perPage,
-            @Nullable Integer page
+            @Nullable Integer page,
+            @Nullable @Header("Authorization") String authorization
     );
 }
