@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.0.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v1.0.0...v2.0.0) (2026-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **release:** GET /download and GET /generator/generate are removed; the editor uses GET /projects/{projectId}/local-build and POST /generator/release. POST /releases takes baseBranch and resolves the base commit itself.
+
+### Features
+
+* **release:** build and publish content releases from the editor against a vulpes-base branch ([#224](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/224)) ([eb6941f](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/eb6941f53fadfeb5495b08d9fe2fe5fcdff3317f))
+* **release:** build the release snapshot from the backend api ([#213](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/213)) ([e18ad52](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e18ad5294b2038303d72a45d7c7aa79170768af4))
+* **release:** publish content data jar to reposilite ([#204](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/204)) ([019055b](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/019055b669dde346585c8892cda9f40e076ad2d7))
+
+
+### Bug Fixes
+
+* **config:** keep the scheme of the default backend url ([#225](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/225)) ([9739dde](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/9739dde4a7e8fcbf22cf85e892c8270a9d44d082))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.3.0 ([#200](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/200)) ([2f12e7b](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/2f12e7b9307608225cc07fdf28934623f2523760))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.4.0 ([#203](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/203)) ([34d0ace](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/34d0acecde383e996c6330b7e939e64566f49cc1))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.5.0 ([#205](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/205)) ([812abbd](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/812abbdd7923ab2497968892c5c4f7dc4c3d2473))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.6.0 ([#206](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/206)) ([aa15966](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/aa15966154905f50abf407bb4b2e25c6d7010110))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.7.0 ([#208](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/208)) ([2d33529](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/2d33529af9b1477240d09939635cbeb90ce4b409))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.8.0 ([#214](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/214)) ([7a3da79](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/7a3da7911afaf8a4d363ee8d5cdb38e2d2d1d343))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.9.0 ([#215](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/215)) ([700a2d7](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/700a2d7198f54b99653886488be6b24a77f57440))
+* **deps:** update dependency net.onelitefeather:vulpes-model to v3.9.1 ([#217](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/217)) ([e1242d7](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e1242d73e15c261dfed3eb16f0273d90f724eb6a))
+* **deps:** update dependency org.eclipse.jgit:org.eclipse.jgit to v7.8.1.202611041320-r ([#216](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/216)) ([64f0a5a](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/64f0a5aaddef92af4f804d1a5bdc4a002a9602f7))
+
 ## [1.0.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v0.3.2...v1.0.0) (2026-10-19)
 
 
