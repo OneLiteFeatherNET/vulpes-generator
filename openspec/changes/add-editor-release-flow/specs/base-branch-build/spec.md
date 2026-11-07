@@ -90,6 +90,17 @@ The system SHALL run the Gradle build of a `vulpes-base` checkout with an enviro
 - **WHEN** the base build of a commit runs
 - **THEN** the environment of the Gradle process contains none of the generator secrets or `VULPES_` variables
 
+### Requirement: Read-only repository credential for the base build
+The system SHALL pass a dedicated read-only credential, configured as `vulpes.base.maven.username` and `vulpes.base.maven.password`, to the Gradle process as `ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryUsername` and `ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryPassword`. It SHALL NOT pass the publish credential `vulpes.content.maven.*` in its place. When the read-only credential is not configured, the system SHALL pass neither variable.
+
+#### Scenario: Read-only credential passed
+- **WHEN** the read-only credential is configured and the base build of a commit runs
+- **THEN** the Gradle process receives it under the two `ORG_GRADLE_PROJECT_` names and receives no publish credential
+
+#### Scenario: No read-only credential configured
+- **WHEN** no read-only credential is configured and the base build of a commit runs
+- **THEN** the environment of the Gradle process contains no `ORG_GRADLE_PROJECT_OneLiteFeatherRepository` variable
+
 ### Requirement: Base build time limit
 The system SHALL stop the Gradle build of a `vulpes-base` checkout when it runs longer than the configured build time limit, and SHALL answer `502` with a message that names the time limit. The system SHALL run at most one base build at a time in one generator instance. The first build of a new commit is slower and needs more memory than a request that hits the cache; the deployment SHALL size the generator for it (`design.md`, section 9).
 
