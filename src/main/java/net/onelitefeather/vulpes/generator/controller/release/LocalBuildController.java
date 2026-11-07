@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import net.onelitefeather.vulpes.generator.release.LocalBuild;
 import net.onelitefeather.vulpes.generator.release.LocalBuildService;
+import net.onelitefeather.vulpes.generator.release.PublishedLocalBuildService;
 
 import java.util.UUID;
 
@@ -34,15 +35,19 @@ public class LocalBuildController {
     static final MediaType ZIP = MediaType.of("application/zip");
 
     private final LocalBuildService localBuildService;
+    private final PublishedLocalBuildService publishedLocalBuildService;
 
     /**
      * Creates the controller.
      *
-     * @param localBuildService builds the zip
+     * @param localBuildService          builds the zip of the snapshot
+     * @param publishedLocalBuildService builds the zip of a published version
      */
     @Inject
-    public LocalBuildController(LocalBuildService localBuildService) {
+    public LocalBuildController(LocalBuildService localBuildService,
+                                PublishedLocalBuildService publishedLocalBuildService) {
         this.localBuildService = localBuildService;
+        this.publishedLocalBuildService = publishedLocalBuildService;
     }
 
     /**
@@ -82,5 +87,42 @@ public class LocalBuildController {
         return HttpResponse.ok(build.zip())
                 .contentType(ZIP)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + build.projectKey() + "-local.zip\"");
+    }
+
+    /**
+     * Returns the local build of a published version of the project.
+     *
+     * @param projectId the id of the project in the backend
+     * @param version   the published version, {@code X.Y.Z} or {@code X.Y.Z-SNAPSHOT}
+     * @return {@code 200} with the zip as an attachment named {@code <project>-<version>.zip}
+     */
+    @Operation(
+            summary = "Download the local build of a published version",
+            operationId = "getPublishedLocalBuild",
+            description = "Reads the data JAR of the version from its repository and returns the zip of a local build. "
+                    + "release.json and snapshot.json are copied byte for byte from the JAR.",
+            tags = {"release"}
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "The local build zip.",
+            content = @Content(mediaType = "application/zip", schema = @Schema(type = "string", format = "binary"))
+    )
+    @ApiResponse(responseCode = "400", description = "The version is not X.Y.Z or X.Y.Z-SNAPSHOT.")
+    @ApiResponse(responseCode = "404", description = "The version is not published in its repository.")
+    @ApiResponse(responseCode = "422", description = "The project is unknown or its key is not a valid artifact id.")
+    @ApiResponse(
+            responseCode = "502",
+            description = "A repository cannot be read, or the published JAR does not match its own revision.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ReleaseErrorResponse.class))
+    )
+    @Get("/releases/{version}/local-build")
+    @ExecuteOn(TaskExecutors.BLOCKING)
+    public HttpResponse<byte[]> publishedLocalBuild(@PathVariable UUID projectId, @PathVariable String version) {
+        LocalBuild build = publishedLocalBuildService.build(projectId, version);
+        return HttpResponse.ok(build.zip())
+                .contentType(ZIP)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + build.projectKey() + "-" + version + ".zip\"");
     }
 }

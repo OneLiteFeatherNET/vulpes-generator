@@ -21,6 +21,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class ReleaseRejectedExceptionHandlerTest {
 
     @Test
+    void versionNotPublishedAnswers404() {
+        assertEquals(HttpStatus.NOT_FOUND, ReleaseRejectedExceptionHandler.statusOf(Reason.VERSION_NOT_PUBLISHED),
+                "a version that is not published must answer 404");
+    }
+
+    @Test
+    void corruptPublishedJarAnswers502() {
+        assertEquals(HttpStatus.BAD_GATEWAY, ReleaseRejectedExceptionHandler.statusOf(Reason.PUBLISHED_JAR_CORRUPT),
+                "a corrupt published JAR must answer 502");
+    }
+
+    @Test
     void unknownBaseBranchAnswers422() {
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY,
                 ReleaseRejectedExceptionHandler.statusOf(Reason.UNKNOWN_BASE_BRANCH),
@@ -43,12 +55,6 @@ class ReleaseRejectedExceptionHandlerTest {
     void generationRefusedAnswers422() {
         assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, ReleaseRejectedExceptionHandler.statusOf(Reason.GENERATION_REFUSED),
                 "a refused snapshot must answer 422");
-    }
-
-    @Test
-    void corruptPublishedJarAnswers502() {
-        assertEquals(HttpStatus.BAD_GATEWAY, ReleaseRejectedExceptionHandler.statusOf(Reason.PUBLISHED_JAR_CORRUPT),
-                "a corrupt published JAR must answer 502");
     }
 
     @Test
