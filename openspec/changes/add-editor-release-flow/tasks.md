@@ -51,7 +51,7 @@ These tasks are not code of this change. They must be done in the order given, b
 
 ## 6. Local build download
 
-- [ ] 6.1 Write the failing test that the local build zip holds exactly `vulpes/<project>/release.json` and `vulpes/<project>/snapshot.json`, with no `.git` or `.java` entry, and that `release.json` has `version` `0.0.0-local`, `base.commit` of the compiled full SHA, `provenance.createdBy` `local`, and a `revision` equal to the SHA-256 of `snapshot.json`; then implement the in-memory assembler (verify: `LocalBuildZipTest` is green)
+- [ ] 6.1 Write the failing test that the local build zip holds exactly `vulpes/<project>/release.json` and `vulpes/<project>/snapshot.json`, with no `.git` or `.java` entry, and that `release.json` has `version` `0.0.0-SNAPSHOT`, `base.commit` of the compiled full SHA, `provenance.createdBy` `local`, and a `revision` equal to the SHA-256 of `snapshot.json`; then implement the in-memory assembler (verify: `LocalBuildZipTest` is green)
 - [ ] 6.2 Write the failing `@MicronautTest` test for `GET /projects/{projectId}/local-build`: `200` with `application/zip` and `Content-Disposition` `attachment; filename="<project>-local.zip"`, `422` for an unknown project and `422` with diagnostics for a compile failure; then implement the controller and its OpenAPI annotations (verify: `LocalBuildControllerIntegrationTest` is green)
 - [ ] 6.3 Write the failing test that `GET /download` and `GET /generator/generate` answer `404`; then delete `VulpesDownloadController`, `CodeGenerationHandler` and their tests (verify: the tests are green and `grep -r "VulpesDownloadController\|CodeGenerationHandler" src` finds nothing)
 

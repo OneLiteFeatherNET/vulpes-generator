@@ -33,11 +33,11 @@ The zip of a local build SHALL contain exactly two entries: `vulpes/<project>/re
 - **THEN** the zip contains no `.git` entry and no `.java` entry
 
 ### Requirement: Local build metadata
-The `release.json` of a local build SHALL be in release format 2 with `version` `0.0.0-local` and `base` set to the repository, the requested branch and the resolved commit. Its `revision` SHALL be the SHA-256 of `snapshot.json`. Its `provenance.generator` SHALL be the generator's version, `provenance.createdBy` SHALL be `local` and `provenance.createdAt` SHALL come from the generator's clock.
+The `release.json` of a local build SHALL be in release format 2 with `version` `0.0.0-SNAPSHOT` and `base` set to the repository, the requested branch and the resolved commit. Its `revision` SHALL be the SHA-256 of `snapshot.json`. Its `provenance.generator` SHALL be the generator's version, `provenance.createdBy` SHALL be `local` and `provenance.createdAt` SHALL come from the generator's clock.
 
 #### Scenario: Local version
 - **WHEN** a local build is downloaded
-- **THEN** `release.json` contains `version` `0.0.0-local` and `base.commit` equal to the commit that was compiled
+- **THEN** `release.json` contains `version` `0.0.0-SNAPSHOT` and `base.commit` equal to the commit that was compiled
 
 #### Scenario: Revision matches the snapshot
 - **WHEN** the zip is opened and `snapshot.json` is hashed with SHA-256
