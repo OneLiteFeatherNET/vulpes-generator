@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CodegenIntegrationTest {
 
     private static final List<String> FOREIGN = List.of("minecraft", "olf");
-    private static final String BASE_COMMIT = "3018dec4de6b2a4dedded228b5e716a17f64a507";
 
     @TempDir
     Path tempDir;
@@ -38,8 +37,8 @@ class CodegenIntegrationTest {
         byte[] snapshot = new ProjectSnapshotMapper(FOREIGN).map(SampleProject.load().build()).bytes();
         ReleaseRequest request = new ReleaseRequest(SampleProject.ID, "eldoria", "1.0.0",
                 SnapshotVerifier.digest(snapshot), "test", Instant.parse("2026-10-28T12:00:00Z"),
-                "OneLiteFeatherNET/vulpes-base", "develop", BASE_COMMIT);
-        byte[] releaseJson = new ReleaseJsonWriter().write(request, "test");
+                ReleaseTestData.BASE_BRANCH);
+        byte[] releaseJson = new ReleaseJsonWriter().write(request, ReleaseTestData.BASE, "test");
         List<GeneratedFile> files = new LibraryCodegenPort()
                 .generate(releaseJson, snapshot, "net.example.content", "eldoria");
         Path generated = tempDir.resolve("generated");
@@ -62,10 +61,10 @@ class CodegenIntegrationTest {
         byte[] snapshot = new ProjectSnapshotMapper(FOREIGN).map(SampleProject.load().build()).bytes();
         ReleaseRequest request = new ReleaseRequest(SampleProject.ID, "eldoria", "1.0.0",
                 SnapshotVerifier.digest(snapshot), "test", Instant.parse("2026-10-28T12:00:00Z"),
-                "OneLiteFeatherNET/vulpes-base", "develop", BASE_COMMIT);
+                ReleaseTestData.BASE_BRANCH);
 
         List<GeneratedFile> files = new LibraryCodegenPort()
-                .generate(new ReleaseJsonWriter().write(request, "test"), snapshot, "net.example.content", "eldoria");
+                .generate(new ReleaseJsonWriter().write(request, ReleaseTestData.BASE, "test"), snapshot, "net.example.content", "eldoria");
 
         assertFalse(files.isEmpty(), "the sample project must produce sources for the minestom template");
     }

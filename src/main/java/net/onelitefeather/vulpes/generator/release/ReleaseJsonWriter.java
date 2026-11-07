@@ -22,18 +22,19 @@ public class ReleaseJsonWriter {
      * {@code createdAt} and {@code createdBy} come from the request; {@code generator} is the given generator version.
      * The {@code base} object names the {@code vulpes-base} repository, branch and full commit of the request.
      *
-     * @param request        the validated release request
+     * @param request         the validated release request
+     * @param base            the verified {@code vulpes-base} checkout
      * @param generatorVersion the version of this generator
      * @return the UTF-8 encoded {@code release.json} content
      */
-    public byte[] write(ReleaseRequest request, String generatorVersion) {
+    public byte[] write(ReleaseRequest request, ReleaseBase base, String generatorVersion) {
         StringBuilder json = new StringBuilder(256);
         json.append("{\"base\":{\"branch\":");
-        appendString(json, request.baseBranch());
+        appendString(json, base.branch());
         json.append(",\"commit\":");
-        appendString(json, request.baseCommit());
+        appendString(json, base.commit());
         json.append(",\"repository\":");
-        appendString(json, request.baseRepository());
+        appendString(json, base.repository());
         json.append("},\"format\":2,\"packs\":[],\"project\":");
         appendString(json, request.project());
         json.append(",\"projectId\":");

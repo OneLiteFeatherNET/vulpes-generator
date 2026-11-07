@@ -30,6 +30,7 @@ public class ReleaseRejectedException extends RuntimeException {
         CONTENT_CHANGED,
         /** The backend does not know the requested project. */
         UNKNOWN_PROJECT,
+        VERSION_NOT_PUBLISHED,
         /** The requested version already exists in the target repository. */
         VERSION_EXISTS,
         /** The backend answered, but not with a usable snapshot. */

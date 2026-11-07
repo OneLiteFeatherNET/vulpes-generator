@@ -23,6 +23,7 @@ final class ReleaseTestData {
     static final String BASE_REPOSITORY = "OneLiteFeatherNET/vulpes-base";
     static final String BASE_BRANCH = "develop";
     static final String BASE_COMMIT = "0123456789abcdef0123456789abcdef01234567";
+    static final ReleaseBase BASE = new ReleaseBase(BASE_REPOSITORY, BASE_BRANCH, BASE_COMMIT);
 
     private ReleaseTestData() {
     }
@@ -41,8 +42,7 @@ final class ReleaseTestData {
     }
 
     static ReleaseRequest request(String version, String revision) {
-        return new ReleaseRequest(PROJECT_ID, "eldoria", version, revision, "theEvilReaper", CREATED_AT,
-                BASE_REPOSITORY, BASE_BRANCH, BASE_COMMIT);
+        return new ReleaseRequest(PROJECT_ID, "eldoria", version, revision, "theEvilReaper", CREATED_AT, BASE_BRANCH);
     }
 
     static ReleaseRequest request() {

@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.release;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -63,11 +64,19 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
     @Inject
     RecordingReleaseCompletionListener listener;
 
+    @Inject
+    FakeBaseBranches branches;
+
+    @Inject
+    FakeBaseVerification verification;
+
     @BeforeEach
     void resetEnvironment() {
         backend.reset();
         repository.reset();
         listener.reset();
+        branches.reset();
+        verification.reset();
     }
 
     @Test
@@ -75,8 +84,33 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
         Outcome outcome = post(releaseJson("1.2.0", revision()));
 
         assertEquals(201, outcome.status(), "a published release must answer 201");
-        assertEquals("{\"coordinates\":\"net.onelitefeather.vulpes.content:eldoria:1.2.0\",\"revision\":\"" + revision() + "\"}",
-                outcome.body(), "the body must carry the coordinates and the revision");
+        JsonNode body = json(outcome.body());
+        assertEquals("net.onelitefeather.vulpes.content:eldoria:1.2.0", body.get("coordinates").asText(),
+                "the body must carry the coordinates");
+        assertEquals(revision(), body.get("revision").asText(), "the body must carry the revision");
+        assertEquals("OneLiteFeatherNET/vulpes-base", body.get("base").get("repository").asText(), "base.repository");
+        assertEquals("develop", body.get("base").get("branch").asText(), "base.branch");
+        assertEquals(ReleaseTestData.BASE_COMMIT, body.get("base").get("commit").asText(), "base.commit must be the full commit");
+        assertTrue(body.get("repositoryUrl").asText().endsWith("/onelitefeather-releases"),
+                "the body must name the repository of the version: " + outcome.body());
+    }
+
+    @Test
+    void releaseWithoutBaseBranchIsVerifiedAgainstDevelop() {
+        Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"project\":\"eldoria\",\"version\":\"1.2.0\","
+                + "\"revision\":\"" + revision() + "\",\"createdBy\":\"TheMeinerLP\",\"createdAt\":\"2026-10-28T12:00:00Z\"}");
+
+        assertEquals(201, outcome.status(), "a release without a branch must answer 201");
+        assertEquals("develop", branch(outcome), "an omitted baseBranch must resolve to develop");
+    }
+
+    @Test
+    void releaseOfUnknownBaseBranchAnswers422AndUploadsNothing() {
+        Outcome outcome = post(releaseJson("1.2.0", revision()).replace("\"develop\"", "\"no-such-branch\""));
+
+        assertEquals(422, outcome.status(), "an unknown base branch must answer 422");
+        assertTrue(outcome.body().contains("UNKNOWN_BASE_BRANCH"), "the body must name the reason: " + outcome.body());
+        assertTrue(repository.keys().isEmpty(), "nothing may be uploaded for an unknown base branch");
     }
 
     @Test
@@ -215,8 +249,20 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
     private static String releaseJson(UUID projectId, String version, String revision) {
         return "{\"projectId\":\"" + projectId + "\",\"project\":\"eldoria\",\"version\":\"" + version
                 + "\",\"revision\":\"" + revision + "\",\"createdBy\":\"TheMeinerLP\","
-                + "\"createdAt\":\"2026-10-28T12:00:00Z\",\"baseRepository\":\"OneLiteFeatherNET/vulpes-base\","
-                + "\"baseBranch\":\"develop\",\"baseCommit\":\"" + ReleaseTestData.BASE_COMMIT + "\"}";
+                + "\"createdAt\":\"2026-10-28T12:00:00Z\","
+                + "\"baseBranch\":\"develop\"}";
+    }
+
+    private static JsonNode json(String body) {
+        try {
+            return ProjectFixture.JSON.readTree(body);
+        } catch (Exception e) {
+            throw new AssertionError("the body is not JSON: " + body, e);
+        }
+    }
+
+    private static String branch(Outcome outcome) {
+        return json(outcome.body()).get("base").get("branch").asText();
     }
 
     private record Outcome(int status, String body) {

@@ -123,7 +123,7 @@ class MavenContentPublisherIntegrationTest implements TestPropertyProvider {
     private Path buildJar(String version) throws IOException {
         Path jar = Files.createTempDirectory(workDir, "jar-").resolve("eldoria-" + version + ".jar");
         new DataJarBuilder().build(jar, new ReleaseJsonWriter()
-                .write(ReleaseTestData.request(version, ReleaseTestData.digest(snapshot(PROJECT_ID))), "1.0.0"),
+                .write(ReleaseTestData.request(version, ReleaseTestData.digest(snapshot(PROJECT_ID))), ReleaseTestData.BASE, "1.0.0"),
                 snapshot(PROJECT_ID));
         return jar;
     }

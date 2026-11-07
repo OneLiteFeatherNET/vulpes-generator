@@ -97,6 +97,11 @@ public class MavenContentPublisher implements ContentPublisher {
     }
 
     @Override
+    public String repositoryUrl(ContentCoordinates coordinates) {
+        return repositoryUrl(coordinates, configuration);
+    }
+
+    @Override
     public void publish(ContentCoordinates coordinates, Path jarFile) {
         String jarFileName = coordinates.artifactId() + "-" + coordinates.version() + ".jar";
         Path dir = jarFile.getParent();

@@ -62,13 +62,14 @@ public class BaseVerification {
     public VerifiedBase verify(Input input) {
         return checkout.withCheckout(input.branch(), resolved -> {
             BaseClasses classes = cache.resolve(resolved.commit(), resolved.directory());
+            byte[] releaseJson = input.releaseJsonFor().apply(resolved.commit());
             try (BuildWorkspace request = BuildWorkspace.create(workDir)) {
                 Path generated = request.dir().resolve("generated");
-                codegen.generateInto(generated, input.releaseJsonFor().apply(resolved.commit()),
-                        input.snapshotJson(), input.packageName(), input.projectName());
+                codegen.generateInto(generated, releaseJson, input.snapshotJson(), input.packageName(),
+                        input.projectName());
                 compiler.compile(generated, request.dir().resolve("classes"), classes.classpath());
             }
-            return new VerifiedBase(input.branch(), resolved.commit());
+            return new VerifiedBase(input.branch(), resolved.commit(), releaseJson);
         });
     }
 
@@ -88,9 +89,10 @@ public class BaseVerification {
     /**
      * The result of a successful verification.
      *
-     * @param branch the branch that was verified
-     * @param commit the full 40-character lower-case SHA-1 the branch resolved to
+     * @param branch      the branch that was verified
+     * @param commit      the full 40-character lower-case SHA-1 the branch resolved to
+     * @param releaseJson the {@code release.json} bytes that were compiled against the commit
      */
-    public record VerifiedBase(String branch, String commit) {
+    public record VerifiedBase(String branch, String commit, byte[] releaseJson) {
     }
 }

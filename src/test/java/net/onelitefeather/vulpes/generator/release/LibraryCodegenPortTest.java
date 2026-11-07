@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LibraryCodegenPortTest {
 
     private static final List<String> FOREIGN = List.of("minecraft", "olf");
-    private static final String BASE_COMMIT = "3018dec4de6b2a4dedded228b5e716a17f64a507";
 
     private final LibraryCodegenPort port = new LibraryCodegenPort();
 
@@ -78,7 +77,7 @@ class LibraryCodegenPortTest {
     private static byte[] releaseJson(byte[] snapshot) {
         ReleaseRequest request = new ReleaseRequest(SampleProject.ID, "eldoria", "1.0.0",
                 SnapshotVerifier.digest(snapshot), "test", Instant.parse("2026-10-28T12:00:00Z"),
-                "OneLiteFeatherNET/vulpes-base", "develop", BASE_COMMIT);
-        return new ReleaseJsonWriter().write(request, "test");
+                ReleaseTestData.BASE_BRANCH);
+        return new ReleaseJsonWriter().write(request, ReleaseTestData.BASE, "test");
     }
 }

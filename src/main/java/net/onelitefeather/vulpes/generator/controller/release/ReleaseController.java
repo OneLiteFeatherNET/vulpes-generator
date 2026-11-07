@@ -123,6 +123,7 @@ public class ReleaseController {
     @ExecuteOn(TaskExecutors.BLOCKING)
     public HttpResponse<ReleaseResponse> release(@Body ReleaseRequest request) {
         ReleaseResult result = releaseService.release(request);
-        return HttpResponse.created(new ReleaseResponse(result.coordinates().toString(), result.revision()));
+        return HttpResponse.created(new ReleaseResponse(result.coordinates().toString(), result.revision(),
+                result.base(), result.repositoryUrl()));
     }
 }
