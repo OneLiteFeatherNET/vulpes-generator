@@ -1,0 +1,27 @@
+// Owned by the generator, passed with --init-script. It only adds one task to the root project of a vulpes-base
+// checkout, so that the base build itself needs no change. The task copies the built jar and every jar of the
+// compile and runtime classpath (compileOnly dependencies such as minestom included) into the directory given by
+// the vulpesExportDir project property.
+gradle.rootProject { root ->
+    root.tasks.register("vulpesExportBase") {
+        dependsOn("jar")
+        doLast {
+            def export = new File(root.findProperty("vulpesExportDir") as String)
+            def libDir = new File(export, "lib")
+            libDir.mkdirs()
+            root.copy {
+                from root.tasks.named("jar").get().archiveFile
+                into export
+                rename { "vulpes-base.jar" }
+            }
+            def jars = (root.configurations.getByName("compileClasspath").files
+                    + root.configurations.getByName("runtimeClasspath").files)
+                    .findAll { it.name.endsWith(".jar") }
+                    .unique { it.name }
+            root.copy {
+                from jars
+                into libDir
+            }
+        }
+    }
+}
