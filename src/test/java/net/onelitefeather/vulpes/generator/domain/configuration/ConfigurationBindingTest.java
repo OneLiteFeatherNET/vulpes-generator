@@ -64,4 +64,10 @@ class ConfigurationBindingTest {
         assertFalse(environment.getProperty("vulpes.release.editor-route-enabled", Boolean.class).orElse(true),
                 "vulpes.release.editor-route-enabled must default to false");
     }
+
+    @Test
+    void backendUrlDefaultsToTheLocalBackendWithItsScheme() {
+        assertEquals("http://localhost:8081", environment.getProperty("vulpes.backend.url", String.class).orElseThrow(),
+                "vulpes.backend.url must default to the full local backend URL, scheme included");
+    }
 }
