@@ -275,6 +275,29 @@ release:
     name: ""
     usernameKey: username
     passwordKey: password
+  # Serves POST /generator/release for the editor (VULPES_RELEASE_EDITOR_ROUTE_ENABLED). The route needs no
+  # token, so it is switched on only where the generator is reachable from the internal network.
+  editorRouteEnabled: false
+  # Memory limit of the pod for a cold base build (Gradle JVM plus javac, design section 9). Empty keeps
+  # resources.limits.memory. Raise it in the overlay before the editor route is enabled.
+  memoryLimit: ""
+  # Volume of the base build cache (VULPES_BASE_CACHE_DIR, mounted at /var/cache/vulpes-base). With a claim name
+  # the cache is a PersistentVolumeClaim and survives restarts; without one it is an emptyDir (a restart rebuilds
+  # cold). sizeLimit applies to the emptyDir only.
+  baseCacheVolume:
+    claimName: ""
+    sizeLimit: ""
+  # Volume of GRADLE_USER_HOME (mounted at /var/cache/gradle), shared by the base builds. The same choice as
+  # baseCacheVolume: a claim keeps the downloaded dependencies across restarts.
+  gradleCacheVolume:
+    claimName: ""
+    sizeLimit: ""
+  # Secret holding the read-only Reposilite token that the base build needs to resolve its dependencies
+  # (VULPES_BASE_MAVEN_USERNAME / _PASSWORD). Empty name = none. Never the publish credential of mavenSecret.
+  baseMavenSecret:
+    name: ""
+    usernameKey: username
+    passwordKey: password
 
 # Traces-only OTel Java agent instrumentation. Metrics/logs already flow via
 # the chart's own Prometheus scrape (metrics.serviceMonitor) and container
