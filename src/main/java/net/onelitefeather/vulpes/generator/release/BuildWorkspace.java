@@ -55,16 +55,26 @@ public final class BuildWorkspace implements AutoCloseable {
      */
     @Override
     public void close() {
-        if (!Files.exists(dir)) {
+        deleteTree(dir);
+    }
+
+    /**
+     * Deletes a directory with everything in it. A missing directory is left alone.
+     *
+     * @param root the directory to delete
+     * @throws UncheckedIOException when a file cannot be deleted
+     */
+    static void deleteTree(Path root) {
+        if (!Files.exists(root)) {
             return;
         }
-        try (Stream<Path> walk = Files.walk(dir)) {
+        try (Stream<Path> walk = Files.walk(root)) {
             List<Path> paths = walk.sorted(Comparator.reverseOrder()).toList();
             for (Path path : paths) {
                 Files.deleteIfExists(path);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("cannot delete build workspace " + dir, e);
+            throw new UncheckedIOException("cannot delete directory " + root, e);
         }
     }
 }
