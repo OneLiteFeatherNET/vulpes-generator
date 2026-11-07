@@ -115,6 +115,15 @@ vulpes:
     # Serves POST /generator/release for the editor, which needs no token. Off unless the generator is only
     # reachable from the internal network.
     editor-route-enabled: ${VULPES_RELEASE_EDITOR_ROUTE_ENABLED:false}
+  # The vulpes-base checkout that releases and local builds are compiled against. The clone URL is github.clone-url.
+  base:
+    repository: OneLiteFeatherNET/vulpes-base
+    cache-dir: ${VULPES_BASE_CACHE_DIR:}
+    # Most recently used commits kept in the base build cache.
+    cache-entries: 3
+    # Limits of the shallow clone and of one Gradle build of a base checkout.
+    clone-timeout: 2m
+    build-timeout: 10m
   content:
     maven:
       username: ${ONELITEFEATHER_MAVEN_USERNAME:}
