@@ -231,14 +231,19 @@ publishing {
 // part of `test`; run them with `./gradlew integrationTest`.
 sourceSets {
     create("integrationTest") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
+        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
     }
 }
 
 configurations {
     named("integrationTestImplementation") { extendsFrom(configurations.testImplementation.get()) }
     named("integrationTestRuntimeOnly") { extendsFrom(configurations.testRuntimeOnly.get()) }
+}
+
+dependencies {
+    // The base that the minestom template of the codegen library is built against (vulpes-codegen/versions.properties).
+    add("integrationTestImplementation", libs.vulpes.base)
 }
 
 tasks.register<Test>("integrationTest") {
