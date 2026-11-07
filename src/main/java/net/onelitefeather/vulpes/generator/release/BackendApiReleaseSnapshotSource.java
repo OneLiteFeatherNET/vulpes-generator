@@ -14,9 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.CONTENT_CHANGED;
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.UNKNOWN_PROJECT;
+import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.UNSUPPORTED_CONTENT;
 
 /**
  * Assembles the format 1 snapshot of a project from the REST endpoints of the backend, instead of a frozen snapshot
@@ -32,10 +34,12 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedExcepti
  * @since 1.0.0
  */
 @Singleton
-public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource {
+public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource, ProjectSource {
 
     /** The number of attempts, each made of two reads in a row. */
     static final int ATTEMPTS = 3;
+
+    private static final Pattern PROJECT_KEY = Pattern.compile("[a-z][a-z0-9-]*");
 
     private final BackendApiClient backend;
     private final ProjectSnapshotMapper mapper;
@@ -60,6 +64,18 @@ public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource {
     @Override
     public byte[] fetch(UUID projectId) {
         return assemble(projectId).bytes();
+    }
+
+    @Override
+    public String projectKey(UUID projectId) {
+        JsonNode project = backend.find("/project/" + projectId).orElseThrow(() -> new ReleaseRejectedException(
+                UNKNOWN_PROJECT, "backend does not know project " + projectId));
+        String key = project.path("key").asText("");
+        if (!PROJECT_KEY.matcher(key).matches()) {
+            throw new ReleaseRejectedException(UNSUPPORTED_CONTENT, "the backend key '" + key
+                    + "' of project " + projectId + " is not a valid project key");
+        }
+        return key;
     }
 
     /**

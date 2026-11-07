@@ -1,16 +1,19 @@
 package net.onelitefeather.vulpes.generator.controller.release;
 
 import io.micronaut.serde.annotation.Serdeable;
+import net.onelitefeather.vulpes.generator.release.ReleaseBase;
 
 /**
  * The body of a successful {@code POST /releases}.
  *
- * @param coordinates the Maven coordinates {@code group:artifact:version} of the published JAR
- * @param revision    the revision the JAR was built from
+ * @param coordinates   the Maven coordinates {@code group:artifact:version} of the published JAR
+ * @param revision      the revision the JAR was built from
+ * @param base          the {@code vulpes-base} branch and the full commit the release was verified against
+ * @param repositoryUrl the URL of the repository the version was published to
  * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */
 @Serdeable
-public record ReleaseResponse(String coordinates, String revision) {
+public record ReleaseResponse(String coordinates, String revision, ReleaseBase base, String repositoryUrl) {
 }

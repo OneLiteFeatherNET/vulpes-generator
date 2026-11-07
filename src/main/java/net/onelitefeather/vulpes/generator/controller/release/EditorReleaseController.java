@@ -91,7 +91,9 @@ public class EditorReleaseController {
     @Post(value = "/release", consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
     @ExecuteOn(TaskExecutors.BLOCKING)
     public HttpResponse<ReleaseResponse> release(@Body EditorReleaseRequest request) {
-        ReleaseResult result = editorReleaseService.release(request.projectId(), request.version());
-        return HttpResponse.created(new ReleaseResponse(result.coordinates().toString(), result.revision()));
+        ReleaseResult result = editorReleaseService.release(request.projectId(), request.version(),
+                request.baseBranch());
+        return HttpResponse.created(new ReleaseResponse(result.coordinates().toString(), result.revision(),
+                result.base(), result.repositoryUrl()));
     }
 }

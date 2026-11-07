@@ -20,6 +20,10 @@ final class ReleaseTestData {
 
     static final UUID PROJECT_ID = UUID.fromString("0f8fad5b-d9cb-469f-a165-8c0a7b6c3d11");
     static final Instant CREATED_AT = Instant.parse("2026-10-28T12:00:00Z");
+    static final String BASE_REPOSITORY = "OneLiteFeatherNET/vulpes-base";
+    static final String BASE_BRANCH = "develop";
+    static final String BASE_COMMIT = "0123456789abcdef0123456789abcdef01234567";
+    static final ReleaseBase BASE = new ReleaseBase(BASE_REPOSITORY, BASE_BRANCH, BASE_COMMIT);
 
     private ReleaseTestData() {
     }
@@ -38,7 +42,7 @@ final class ReleaseTestData {
     }
 
     static ReleaseRequest request(String version, String revision) {
-        return new ReleaseRequest(PROJECT_ID, "eldoria", version, revision, "theEvilReaper", CREATED_AT);
+        return new ReleaseRequest(PROJECT_ID, "eldoria", version, revision, "theEvilReaper", CREATED_AT, BASE_BRANCH);
     }
 
     static ReleaseRequest request() {

@@ -31,7 +31,13 @@ public class FakeMavenRepositoryController {
     }
 
     @Get("/repo/{+path}")
-    public HttpResponse<byte[]> get(@PathVariable String path) {
+    public HttpResponse<byte[]> get(@PathVariable String path,
+                                    @Nullable @Header("Authorization") String authorization) {
+        repository.countRequest();
+        repository.recordAuthorization(authorization);
+        if (repository.failureFor(path).isPresent()) {
+            return HttpResponse.status(io.micronaut.http.HttpStatus.valueOf(repository.failureFor(path).get()));
+        }
         byte[] content = repository.get(path);
         if (content == null) {
             return HttpResponse.notFound();
@@ -43,6 +49,7 @@ public class FakeMavenRepositoryController {
     public HttpResponse<Void> put(@PathVariable String path,
                                   @Body byte[] content,
                                   @Nullable @Header("Authorization") String authorization) {
+        repository.countRequest();
         repository.recordAuthorization(authorization);
         repository.store(path, content);
         return HttpResponse.ok();

@@ -30,4 +30,12 @@ public interface ContentPublisher {
      *                                  when the upload fails
      */
     void publish(ContentCoordinates coordinates, Path jarFile);
+
+    /**
+     * Returns the URL of the repository the coordinates are published to.
+     *
+     * @param coordinates the coordinates of a release
+     * @return the releases URL for {@code X.Y.Z}, the snapshots URL for {@code X.Y.Z-SNAPSHOT}
+     */
+    String repositoryUrl(ContentCoordinates coordinates);
 }

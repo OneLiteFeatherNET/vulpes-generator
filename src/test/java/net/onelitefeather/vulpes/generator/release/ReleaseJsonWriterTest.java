@@ -23,12 +23,14 @@ class ReleaseJsonWriterTest {
     @Test
     void writesExactCanonicalBytesForOneRequest() {
         ReleaseRequest request = ReleaseTestData.request();
-        String expected = "{\"format\":1,\"packs\":[],\"project\":\"eldoria\",\"projectId\":\"" + PROJECT_ID
+        String expected = "{\"base\":{\"branch\":\"develop\",\"commit\":\"" + ReleaseTestData.BASE_COMMIT
+                + "\",\"repository\":\"OneLiteFeatherNET/vulpes-base\"},\"format\":2,\"packs\":[],"
+                + "\"project\":\"eldoria\",\"projectId\":\"" + PROJECT_ID
                 + "\",\"provenance\":{\"createdAt\":\"2026-10-28T12:00:00Z\",\"createdBy\":\"theEvilReaper\","
                 + "\"generator\":\"1.0.0\"},\"revision\":\"" + request.revision()
                 + "\",\"version\":\"1.2.0\"}";
 
-        byte[] json = writer.write(request, "1.0.0");
+        byte[] json = writer.write(request, ReleaseTestData.BASE, "1.0.0");
 
         assertEquals(expected, new String(json, StandardCharsets.UTF_8),
                 "release.json must use sorted keys, empty packs and no insignificant whitespace");
@@ -37,9 +39,10 @@ class ReleaseJsonWriterTest {
     @Test
     void createdAtIsTakenFromTheRequest() {
         ReleaseRequest request = new ReleaseRequest(PROJECT_ID, "eldoria", "1.2.0",
-                ReleaseTestData.request().revision(), "theEvilReaper", Instant.parse("2001-02-03T04:05:06Z"));
+                ReleaseTestData.request().revision(), "theEvilReaper", Instant.parse("2001-02-03T04:05:06Z"),
+                ReleaseTestData.BASE_BRANCH);
 
-        String json = text(writer.write(request, "1.0.0"));
+        String json = text(writer.write(request, ReleaseTestData.BASE, "1.0.0"));
 
         assertEquals("2001-02-03T04:05:06Z", provenance(json).get("createdAt").asText(),
                 "provenance.createdAt must be the request value, not the clock");
@@ -47,7 +50,7 @@ class ReleaseJsonWriterTest {
 
     @Test
     void generatorIsTakenFromTheGeneratorVersion() {
-        String json = text(writer.write(ReleaseTestData.request(), "7.8.9"));
+        String json = text(writer.write(ReleaseTestData.request(), ReleaseTestData.BASE, "7.8.9"));
 
         assertEquals("7.8.9", provenance(json).get("generator").asText(),
                 "provenance.generator must be the generator version passed in");
@@ -55,25 +58,35 @@ class ReleaseJsonWriterTest {
 
     @Test
     void packsIsAnEmptyArray() {
-        JsonNode root = parse(writer.write(ReleaseTestData.request(), "1.0.0"));
+        JsonNode root = parse(writer.write(ReleaseTestData.request(), ReleaseTestData.BASE, "1.0.0"));
 
         assertTrue(root.get("packs").isArray(), "packs must be an array");
         assertEquals(0, root.get("packs").size(), "packs must be an empty array in this change");
     }
 
     @Test
-    void formatIsOne() {
-        JsonNode root = parse(writer.write(ReleaseTestData.request(), "1.0.0"));
+    void formatIsTwo() {
+        JsonNode root = parse(writer.write(ReleaseTestData.request(), ReleaseTestData.BASE, "1.0.0"));
 
-        assertEquals(1, root.get("format").asInt(), "release format must be 1");
+        assertEquals(2, root.get("format").asInt(), "release format must be 2");
+    }
+
+    @Test
+    void baseIsRecordedWithRepositoryBranchAndCommit() {
+        JsonNode base = parse(writer.write(ReleaseTestData.request(), ReleaseTestData.BASE, "1.0.0")).get("base");
+
+        assertEquals("OneLiteFeatherNET/vulpes-base", base.get("repository").asText(), "base.repository must be recorded");
+        assertEquals("develop", base.get("branch").asText(), "base.branch must be recorded");
+        assertEquals(ReleaseTestData.BASE_COMMIT, base.get("commit").asText(), "base.commit must be recorded");
     }
 
     @Test
     void specialCharactersInStringsAreEscaped() {
         ReleaseRequest request = new ReleaseRequest(PROJECT_ID, "eldoria", "1.2.0",
-                ReleaseTestData.request().revision(), "quote\" back\\slash\nnewline\u0001", Instant.EPOCH);
+                ReleaseTestData.request().revision(), "quote\" back\\slash\nnewline\u0001", Instant.EPOCH,
+                ReleaseTestData.BASE_BRANCH);
 
-        String json = text(writer.write(request, "1.0.0"));
+        String json = text(writer.write(request, ReleaseTestData.BASE, "1.0.0"));
 
         assertEquals("quote\" back\\slash\nnewline\u0001", provenance(json).get("createdBy").asText(),
                 "strings must round-trip through a standard JSON parser");
@@ -82,9 +95,10 @@ class ReleaseJsonWriterTest {
     @Test
     void nonAsciiCharactersAreWrittenAsUtf8() {
         ReleaseRequest request = new ReleaseRequest(PROJECT_ID, "eldoria", "1.2.0",
-                ReleaseTestData.request().revision(), "Jörg", Instant.EPOCH);
+                ReleaseTestData.request().revision(), "Jörg", Instant.EPOCH,
+                ReleaseTestData.BASE_BRANCH);
 
-        String json = new String(writer.write(request, "1.0.0"), StandardCharsets.UTF_8);
+        String json = new String(writer.write(request, ReleaseTestData.BASE, "1.0.0"), StandardCharsets.UTF_8);
 
         assertEquals("Jörg", provenance(json).get("createdBy").asText(), "non-ASCII must survive UTF-8 encoding");
     }

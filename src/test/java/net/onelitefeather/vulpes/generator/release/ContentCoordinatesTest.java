@@ -19,8 +19,8 @@ class ContentCoordinatesTest {
 
     @Test
     void toStringIsGroupArtifactVersion() {
-        assertEquals("net.onelitefeather.vulpes.content:eldoria:1.2.0-dev.3",
-                ContentCoordinates.forRelease("eldoria", "1.2.0-dev.3").toString(),
+        assertEquals("net.onelitefeather.vulpes.content:eldoria:1.2.0-SNAPSHOT",
+                ContentCoordinates.forRelease("eldoria", "1.2.0-SNAPSHOT").toString(),
                 "coordinates must render as group:artifact:version");
     }
 }

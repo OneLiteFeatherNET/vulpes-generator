@@ -81,6 +81,9 @@ dependencies {
     implementation(platform(libs.mycelium.bom))
     implementation(mn.micronaut.http.client)
     implementation(libs.bundles.vulpes)
+    // Code generator of the Vulpes Gradle plugin: the codegen facade and the format reader of content releases.
+    implementation(libs.vulpes.codegen)
+    implementation(libs.vulpes.format)
     implementation(libs.jetbrains.annotation)
     implementation(libs.javapoet)
     implementation(libs.minestom)
@@ -222,4 +225,38 @@ publishing {
             url = if (version.toString().contains("BETA") || version.toString().contains("ALPHA") || version.toString().contains("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
         }
     }
+}
+
+// The runtime image needs a full JDK, not a JRE: the in-process compile gate uses javax.tools, and the base build
+// runs the Gradle wrapper of vulpes-base. The Micronaut default is eclipse-temurin:25-jre.
+tasks.named<io.micronaut.gradle.docker.MicronautDockerfile>("optimizedDockerfile") {
+    baseImage("eclipse-temurin:25-jdk")
+}
+
+// Integration tests start real Gradle builds (a vulpes-base fixture). They live in their own source set and are not
+// part of `test`; run them with `./gradlew integrationTest`.
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    }
+}
+
+configurations {
+    named("integrationTestImplementation") { extendsFrom(configurations.testImplementation.get()) }
+    named("integrationTestRuntimeOnly") { extendsFrom(configurations.testRuntimeOnly.get()) }
+}
+
+dependencies {
+    // The base that the minestom template of the codegen library is built against (vulpes-codegen/versions.properties).
+    add("integrationTestImplementation", libs.vulpes.base)
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs the integration tests, including the real Gradle build of a vulpes-base fixture."
+    group = "verification"
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    useJUnitPlatform()
+    shouldRunAfter(tasks.named("test"))
 }

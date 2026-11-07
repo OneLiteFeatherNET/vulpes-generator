@@ -135,6 +135,26 @@ spec:
                   key: {{ .passwordKey }}
             {{- end }}
             {{- end }}
+            {{- with .Values.release.baseMavenSecret }}
+            {{- if .name }}
+            - name: VULPES_BASE_MAVEN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .usernameKey }}
+            - name: VULPES_BASE_MAVEN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .passwordKey }}
+            {{- end }}
+            {{- end }}
+            - name: VULPES_RELEASE_EDITOR_ROUTE_ENABLED
+              value: {{ .Values.release.editorRouteEnabled | quote }}
+            - name: VULPES_BASE_CACHE_DIR
+              value: /var/cache/vulpes-base
+            - name: GRADLE_USER_HOME
+              value: /var/cache/gradle
             {{- if .Values.tracing.enabled }}
             # JDK_JAVA_OPTIONS is independent of JAVA_TOOL_OPTIONS (which
             # apps commonly override wholesale via .Values.env above), so
@@ -178,8 +198,12 @@ spec:
               port: http
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          {{- $resources := deepCopy .Values.resources }}
+          {{- with .Values.release.memoryLimit }}
+          {{- $_ := set $resources "limits" (mergeOverwrite (default dict $resources.limits) (dict "memory" .)) }}
+          {{- end }}
           resources:
-{{ toYaml .Values.resources | indent 12 }}
+{{ toYaml $resources | indent 12 }}
           volumeMounts:
             # The root filesystem is read-only; the JVM still wants a scratch
             # dir (java.io.tmpdir, Netty, JIT dumps).
@@ -187,6 +211,11 @@ spec:
               mountPath: /tmp
             - name: config
               mountPath: /config
+            # The base build cache and the Gradle home of the base builds.
+            - name: base-cache
+              mountPath: /var/cache/vulpes-base
+            - name: gradle-cache
+              mountPath: /var/cache/gradle
             {{- if and .Values.secrets.enabled .Values.secrets.files }}
             - name: secrets
               mountPath: /secrets
@@ -202,6 +231,10 @@ spec:
         - name: config
           configMap:
             name: {{ include "micronaut.fullname" . }}-config
+        - name: base-cache
+          {{- include "vulpes.cacheVolume" .Values.release.baseCacheVolume | nindent 10 }}
+        - name: gradle-cache
+          {{- include "vulpes.cacheVolume" .Values.release.gradleCacheVolume | nindent 10 }}
         {{- if and .Values.secrets.enabled .Values.secrets.files }}
         - name: secrets
           secret:

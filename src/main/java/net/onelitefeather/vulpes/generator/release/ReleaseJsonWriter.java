@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Writes {@code META-INF/vulpes/release.json} in release format 1.
+ * Writes {@code META-INF/vulpes/release.json} in release format 2, which adds the {@code base} object.
  * The JSON is written by hand so that the key order, the absence of whitespace and the escaping
  * are fixed by this class and not by a serializer.
  *
@@ -20,14 +20,22 @@ public class ReleaseJsonWriter {
     /**
      * Encodes the release metadata as canonical UTF-8 JSON.
      * {@code createdAt} and {@code createdBy} come from the request; {@code generator} is the given generator version.
+     * The {@code base} object names the {@code vulpes-base} repository, branch and full commit of the request.
      *
-     * @param request        the validated release request
+     * @param request         the validated release request
+     * @param base            the verified {@code vulpes-base} checkout
      * @param generatorVersion the version of this generator
      * @return the UTF-8 encoded {@code release.json} content
      */
-    public byte[] write(ReleaseRequest request, String generatorVersion) {
+    public byte[] write(ReleaseRequest request, ReleaseBase base, String generatorVersion) {
         StringBuilder json = new StringBuilder(256);
-        json.append("{\"format\":1,\"packs\":[],\"project\":");
+        json.append("{\"base\":{\"branch\":");
+        appendString(json, base.branch());
+        json.append(",\"commit\":");
+        appendString(json, base.commit());
+        json.append(",\"repository\":");
+        appendString(json, base.repository());
+        json.append("},\"format\":2,\"packs\":[],\"project\":");
         appendString(json, request.project());
         json.append(",\"projectId\":");
         appendString(json, request.projectId().toString());

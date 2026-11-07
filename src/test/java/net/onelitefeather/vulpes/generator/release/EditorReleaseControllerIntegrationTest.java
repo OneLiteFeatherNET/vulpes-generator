@@ -61,10 +61,18 @@ class EditorReleaseControllerIntegrationTest implements TestPropertyProvider {
     @Inject
     BackendApiReleaseSnapshotSource source;
 
+    @Inject
+    FakeBaseBranches branches;
+
+    @Inject
+    FakeBaseVerification verification;
+
     @BeforeEach
     void resetEnvironment() {
         backend.reset();
         repository.reset();
+        branches.reset();
+        verification.reset();
     }
 
     @Test
@@ -74,8 +82,53 @@ class EditorReleaseControllerIntegrationTest implements TestPropertyProvider {
         Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0\"}");
 
         assertEquals(201, outcome.status(), "an editor release of a known project must answer 201");
-        assertEquals("{\"coordinates\":\"net.onelitefeather.vulpes.content:eldoria:1.2.0\",\"revision\":\"" + revision + "\"}",
-                outcome.body(), "the body must carry the project key as coordinates and the revision of the snapshot");
+        JsonNode body = json(outcome.body());
+        assertEquals("net.onelitefeather.vulpes.content:eldoria:1.2.0", body.get("coordinates").asText(),
+                "the body must carry the project key as coordinates");
+        assertEquals(revision, body.get("revision").asText(), "the body must carry the revision of the snapshot");
+        assertEquals("develop", body.get("base").get("branch").asText(), "an omitted baseBranch must be develop");
+        assertEquals(ReleaseTestData.BASE_COMMIT, body.get("base").get("commit").asText(),
+                "base.commit must be the full commit that was verified");
+        assertTrue(body.get("repositoryUrl").asText().endsWith("/onelitefeather-releases"),
+                "the body must name the repository of the version: " + outcome.body());
+    }
+
+    @Test
+    void editorReleaseOfAnUnknownBaseBranchAnswers422AndUploadsNothing() {
+        Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0\",\"baseBranch\":\"no-such-branch\"}");
+
+        assertEquals(422, outcome.status(), "an unknown base branch must answer 422");
+        assertTrue(outcome.body().contains("UNKNOWN_BASE_BRANCH"), "the body must name the reason: " + outcome.body());
+        assertTrue(repository.keys().isEmpty(), "nothing may be uploaded for an unknown base branch");
+    }
+
+    @Test
+    void editorReleaseAgainstAFeatureBranchRecordsTheBranch() {
+        Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0\",\"baseBranch\":\"feature/font\"}");
+
+        assertEquals(201, outcome.status(), "a known feature branch must answer 201");
+        assertEquals("feature/font", json(outcome.body()).get("base").get("branch").asText(),
+                "base.branch must be the requested branch");
+    }
+
+    @Test
+    void invalidVersionsAnswer400BeforeTheBackendIsCalled() {
+        Outcome leadingZero = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.02.0\"}");
+        Outcome retiredDev = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0-dev.1\"}");
+
+        assertEquals(400, leadingZero.status(), "1.02.0 must answer 400");
+        assertEquals(400, retiredDev.status(), "1.2.0-dev.1 must answer 400");
+        assertEquals(0, backend.requestCount(), "an invalid version must not reach the backend");
+    }
+
+    @Test
+    void snapshotVersionThatAlreadyExistsIsReplacedAnswers201() {
+        repository.store("onelitefeather-snapshots/net/onelitefeather/vulpes/content/eldoria/1.2.0-SNAPSHOT/eldoria-1.2.0-SNAPSHOT.pom",
+                new byte[]{1});
+
+        Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0-SNAPSHOT\"}");
+
+        assertEquals(201, outcome.status(), "an existing snapshot version must be replaced, not refused");
     }
 
     @Test
@@ -156,6 +209,14 @@ class EditorReleaseControllerIntegrationTest implements TestPropertyProvider {
 
         assertEquals(400, outcome.status(), "a version with a leading zero must answer 400, as on POST /releases");
         assertTrue(repository.keys().isEmpty(), "nothing may be uploaded for an invalid version");
+    }
+
+    private static JsonNode json(String body) {
+        try {
+            return ProjectFixture.JSON.readTree(body);
+        } catch (Exception e) {
+            throw new AssertionError("the body is not JSON: " + body, e);
+        }
     }
 
     private Outcome post(String json) {

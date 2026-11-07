@@ -27,12 +27,12 @@ public record ContentCoordinates(String groupId, String artifactId, String versi
     }
 
     /**
-     * Tells whether the version is a development version such as {@code 1.2.0-dev.3}.
+     * Tells whether the version is a snapshot version such as {@code 1.2.0-SNAPSHOT}.
      *
-     * @return {@code true} when the version carries the {@code -dev.N} suffix
+     * @return {@code true} when the version carries the {@code -SNAPSHOT} suffix
      */
-    public boolean isDevVersion() {
-        return version.contains("-dev.");
+    public boolean isSnapshotVersion() {
+        return version.endsWith("-SNAPSHOT");
     }
 
     @Override

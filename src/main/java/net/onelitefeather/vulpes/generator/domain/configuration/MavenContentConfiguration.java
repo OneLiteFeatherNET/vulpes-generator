@@ -4,7 +4,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 
 /**
  * Configuration of the Maven repositories the content data JARs are published to.
- * Versions {@code X.Y.Z} go to the releases repository, {@code X.Y.Z-dev.N} to the snapshots repository.
+ * Versions {@code X.Y.Z} go to the releases repository, {@code X.Y.Z-SNAPSHOT} to the snapshots repository.
  *
  * @param username     the user name for the repositories, may be blank for anonymous access
  * @param password     the password for the repositories

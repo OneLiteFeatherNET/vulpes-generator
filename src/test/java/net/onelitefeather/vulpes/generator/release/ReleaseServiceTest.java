@@ -1,5 +1,7 @@
 package net.onelitefeather.vulpes.generator.release;
 
+import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -8,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,12 +23,12 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJEC
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.snapshot;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests for the release package.
+ * Tests the release flow of {@link ReleaseService}: the existence check, the base verification, the JAR and the
+ * publication. The base branch resolver and the base verification are fakes; no repository, backend or clone is used.
  *
  * @author TheMeinerLP
  */
@@ -33,6 +36,11 @@ class ReleaseServiceTest {
 
     private static final ContentCoordinates COORDINATES =
             new ContentCoordinates(ContentCoordinates.GROUP_ID, "eldoria", "1.2.0");
+    private static final ContentCoordinates SNAPSHOT_COORDINATES =
+            new ContentCoordinates(ContentCoordinates.GROUP_ID, "eldoria", "2.0.0-SNAPSHOT");
+    private static final String REPOSITORY_URL = "https://repo.test/onelitefeather-releases";
+    private static final BaseConfiguration BASE = new BaseConfiguration(ReleaseTestData.BASE_REPOSITORY, "",
+            3, Duration.ofMinutes(2), Duration.ofMinutes(10));
 
     @TempDir
     Path workDir;
@@ -41,15 +49,26 @@ class ReleaseServiceTest {
     private final FakeSource source = new FakeSource(snapshot);
     private final FakePublisher publisher = new FakePublisher();
     private final FakeListener listener = new FakeListener();
+    private final FakeBaseBranches branches = new FakeBaseBranches();
+    private final FakeBaseVerification verification = new FakeBaseVerification();
+
+    @BeforeEach
+    void resetFakes() {
+        branches.reset();
+        verification.reset();
+    }
 
     @Test
-    void successfulReleaseReturnsCoordinatesAndRevision() {
+    void successfulReleaseReturnsCoordinatesRevisionBaseAndRepositoryUrl() {
         ReleaseRequest request = ReleaseTestData.request();
 
         ReleaseResult result = service().release(request);
 
         assertEquals(COORDINATES, result.coordinates(), "result must carry the Maven coordinates");
         assertEquals(request.revision(), result.revision(), "result must carry the requested revision");
+        assertEquals(new ReleaseBase(ReleaseTestData.BASE_REPOSITORY, "develop", ReleaseTestData.BASE_COMMIT),
+                result.base(), "result must carry the verified base with the full commit");
+        assertEquals(REPOSITORY_URL, result.repositoryUrl(), "result must carry the repository of the version");
     }
 
     @Test
@@ -69,14 +88,14 @@ class ReleaseServiceTest {
     }
 
     @Test
-    void publishedJarContainsTheReleaseMetadataOfTheRequest() throws IOException {
+    void publishedJarContainsTheReleaseMetadataWithTheVerifiedBase() throws IOException {
         ReleaseRequest request = ReleaseTestData.request();
 
         service().release(request);
 
-        assertArrayEquals(new ReleaseJsonWriter().write(request, "1.0.0"),
+        assertArrayEquals(new ReleaseJsonWriter().write(request.withBaseBranch("develop"), ReleaseTestData.BASE, "1.0.0"),
                 entry(publisher.publishedJar, DataJarBuilder.RELEASE_JSON_NAME),
-                "the release entry must be the metadata written for the request");
+                "the release entry must be the metadata written for the verified base");
     }
 
     @Test
@@ -91,7 +110,38 @@ class ReleaseServiceTest {
     }
 
     @Test
-    void existingVersionIsRejectedWithoutFetchingTheSnapshot() {
+    void omittedBaseBranchIsResolvedToDevelop() {
+        service().release(ReleaseTestData.request().withBaseBranch(null));
+
+        assertEquals("develop", verification.inputs().get(0).branch(), "a release without a branch must use develop");
+    }
+
+    @Test
+    void unknownBaseBranchFetchesNothingAndPublishesNothing() {
+        ReleaseRequest request = ReleaseTestData.request().withBaseBranch("no-such-branch");
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> service().release(request));
+
+        assertEquals(ReleaseRejectedException.Reason.UNKNOWN_BASE_BRANCH, e.getReason(), "reason must be UNKNOWN_BASE_BRANCH");
+        assertEquals(0, source.fetchCount, "an unknown branch must be refused before the snapshot is fetched");
+        assertEquals(0, publisher.publishCount, "an unknown branch must publish nothing");
+    }
+
+    @Test
+    void compileFailureUploadsNothingAndNotifiesNobody() {
+        verification.failWith(new ReleaseRejectedException(ReleaseRejectedException.Reason.COMPILATION_FAILED,
+                "does not compile", List.of(new ReleaseDiagnostic("Eldoria.java", 3, "error")), false));
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
+                () -> service().release(ReleaseTestData.request()));
+
+        assertEquals(ReleaseRejectedException.Reason.COMPILATION_FAILED, e.getReason(), "reason must be COMPILATION_FAILED");
+        assertEquals(0, publisher.publishCount, "a snapshot that does not compile must not be uploaded");
+        assertEquals(0, listener.calls.size(), "the listener must not be called for a refused release");
+    }
+
+    @Test
+    void existingReleaseVersionIsRejectedWithoutFetchingTheSnapshot() {
         publisher.alreadyPublished = true;
 
         ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
@@ -99,15 +149,28 @@ class ReleaseServiceTest {
 
         assertEquals(ReleaseRejectedException.Reason.VERSION_EXISTS, e.getReason(), "reason must be VERSION_EXISTS");
         assertEquals(0, source.fetchCount, "the snapshot must not be fetched for an existing version");
+        assertEquals(0, branches.callCount(), "the base must not be resolved for an existing version");
     }
 
     @Test
-    void existingVersionIsRejectedWithoutPublishing() {
+    void existingReleaseVersionIsRejectedWithoutPublishing() {
         publisher.alreadyPublished = true;
 
         assertThrows(ReleaseRejectedException.class, () -> service().release(ReleaseTestData.request()));
 
         assertEquals(0, publisher.publishCount, "nothing must be uploaded for an existing version");
+    }
+
+    @Test
+    void existingSnapshotVersionIsReplacedNotRefused() {
+        publisher.alreadyPublished = true;
+        ReleaseRequest request = ReleaseTestData.request("2.0.0-SNAPSHOT", ReleaseTestData.digest(snapshot));
+
+        ReleaseResult result = service().release(request);
+
+        assertEquals(SNAPSHOT_COORDINATES, result.coordinates(), "the snapshot must be published under its coordinates");
+        assertEquals(1, publisher.publishCount, "an existing snapshot version must be uploaded again");
+        assertEquals(0, publisher.existsCount, "snapshot versions must not be checked for existence");
     }
 
     @Test
@@ -190,19 +253,19 @@ class ReleaseServiceTest {
     }
 
     @Test
-    void releaseOfAssembledSnapshotPublishesTheGivenBytesWithoutFetchingAgain() {
-        service().releaseSnapshot(ReleaseTestData.request(), snapshot);
+    void publishVerifiedPublishesTheGivenBytesWithoutFetchingAgain() {
+        service().publishVerified(ReleaseTestData.request().withBaseBranch("develop"), snapshot);
 
         assertEquals(0, source.fetchCount, "a snapshot that the caller assembled must not be fetched again");
         assertEquals(1, publisher.publishCount, "the assembled snapshot must be published exactly once");
     }
 
     @Test
-    void releaseOfAssembledSnapshotRejectsARevisionOfAnotherSnapshot() {
+    void publishVerifiedRejectsARevisionOfAnotherSnapshot() {
         ReleaseRequest request = ReleaseTestData.request("1.2.0", "sha256:" + "0".repeat(64));
 
         ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
-                () -> service().releaseSnapshot(request, snapshot));
+                () -> service().publishVerified(request, snapshot));
 
         assertEquals(ReleaseRejectedException.Reason.REVISION_MISMATCH, e.getReason(), "reason must be REVISION_MISMATCH");
         assertEquals(0, publisher.publishCount, "a snapshot with another revision must publish nothing");
@@ -220,7 +283,7 @@ class ReleaseServiceTest {
 
     private ReleaseService service() {
         return new ReleaseService(source, new SnapshotVerifier(), new ReleaseJsonWriter(), new DataJarBuilder(),
-                publisher, listener, "1.0.0", workDir.toString());
+                publisher, listener, branches, verification, BASE, "1.0.0", workDir.toString());
     }
 
     private static byte[] entry(byte[] jar, String name) throws IOException {
@@ -288,6 +351,11 @@ class ReleaseServiceTest {
             if (failWith != null) {
                 throw failWith;
             }
+        }
+
+        @Override
+        public String repositoryUrl(ContentCoordinates coordinates) {
+            return REPOSITORY_URL;
         }
     }
 

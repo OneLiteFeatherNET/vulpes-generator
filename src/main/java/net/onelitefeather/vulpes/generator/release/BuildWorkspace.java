@@ -2,6 +2,7 @@ package net.onelitefeather.vulpes.generator.release;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -33,6 +34,7 @@ public final class BuildWorkspace implements AutoCloseable {
      */
     public static BuildWorkspace create(Path baseDir) {
         try {
+            Files.createDirectories(baseDir);
             return new BuildWorkspace(Files.createTempDirectory(baseDir, "vulpes-release-"));
         } catch (IOException e) {
             throw new UncheckedIOException("cannot create build workspace in " + baseDir, e);
@@ -55,16 +57,41 @@ public final class BuildWorkspace implements AutoCloseable {
      */
     @Override
     public void close() {
-        if (!Files.exists(dir)) {
+        deleteTree(dir);
+    }
+
+    /**
+     * Deletes a directory with everything in it. A missing directory is left alone.
+     *
+     * @param root the directory to delete
+     * @throws UncheckedIOException when a file cannot be deleted
+     */
+    public static void deleteTree(Path root) {
+        if (!Files.exists(root)) {
             return;
         }
-        try (Stream<Path> walk = Files.walk(dir)) {
+        try (Stream<Path> walk = Files.walk(root)) {
             List<Path> paths = walk.sorted(Comparator.reverseOrder()).toList();
             for (Path path : paths) {
-                Files.deleteIfExists(path);
+                delete(path);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("cannot delete build workspace " + dir, e);
+            throw new UncheckedIOException("cannot delete directory " + root, e);
+        }
+    }
+
+    /**
+     * Deletes one file or empty directory. JGit writes its pack files read-only, and Windows refuses to delete a
+     * read-only file, so a refused delete clears the read-only flag and tries once more.
+     */
+    private static void delete(Path path) throws IOException {
+        try {
+            Files.deleteIfExists(path);
+        } catch (AccessDeniedException e) {
+            if (!path.toFile().setWritable(true)) {
+                throw e;
+            }
+            Files.deleteIfExists(path);
         }
     }
 }

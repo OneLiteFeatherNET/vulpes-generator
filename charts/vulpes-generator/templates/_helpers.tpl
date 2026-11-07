@@ -71,3 +71,15 @@ Selector labels
 app.kubernetes.io/name: {{ include "micronaut.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+{{/*
+A cache volume: a PersistentVolumeClaim when a claim name is given, otherwise an emptyDir with the optional size limit.
+Input: the volume values (claimName, sizeLimit).
+*/}}
+{{- define "vulpes.cacheVolume" -}}
+{{- if .claimName -}}
+persistentVolumeClaim:
+  claimName: {{ .claimName }}
+{{- else -}}
+emptyDir: {{ if .sizeLimit }}{sizeLimit: {{ .sizeLimit | quote }}}{{ else }}{}{{ end }}
+{{- end -}}
+{{- end }}

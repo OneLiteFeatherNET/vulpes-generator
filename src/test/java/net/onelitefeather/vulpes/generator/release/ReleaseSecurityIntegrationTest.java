@@ -145,6 +145,7 @@ class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
     private static String body(String revision) {
         return "{\"projectId\":\"" + PROJECT_ID + "\",\"project\":\"eldoria\",\"version\":\"1.2.0\","
                 + "\"revision\":\"" + revision + "\",\"createdBy\":\"TheMeinerLP\","
-                + "\"createdAt\":\"2026-10-28T12:00:00Z\"}";
+                + "\"createdAt\":\"2026-10-28T12:00:00Z\","
+                + "\"baseBranch\":\"develop\"}";
     }
 }

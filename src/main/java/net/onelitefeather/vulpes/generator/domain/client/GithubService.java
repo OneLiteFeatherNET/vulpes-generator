@@ -1,6 +1,7 @@
 package net.onelitefeather.vulpes.generator.domain.client;
 
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.client.exceptions.HttpClientException;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -9,6 +10,7 @@ import net.onelitefeather.vulpes.generator.domain.release.GitBranch;
 import net.onelitefeather.vulpes.generator.domain.release.GitReleaseDTO;
 import net.onelitefeather.vulpes.generator.domain.release.GitRelease;
 import net.onelitefeather.vulpes.generator.domain.release.GitTag;
+import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 
 import java.util.List;
 
@@ -33,20 +35,35 @@ public class GithubService {
     }
 
     /**
-     * Returns a list of all branches in the repository.
+     * Returns a list of all branches in the repository. The configured {@code github.password} is sent as the
+     * bearer token when it is set, because the unauthenticated rate limit is small.
      *
      * @return a list of all branches
+     * @throws ReleaseRejectedException with {@code BASE_UNAVAILABLE} when GitHub does not answer with 200 or cannot
+     *                                  be reached; an empty list would refuse every branch
      */
     public List<String> getBranches() {
-        HttpResponse<List<GitBranch>> response = client.branches(config.owner(), config.repo(), 100, 1);
+        HttpResponse<List<GitBranch>> response;
+        try {
+            response = client.branches(config.owner(), config.repo(), 100, 1, authorization());
+        } catch (HttpClientException e) {
+            throw new ReleaseRejectedException(ReleaseRejectedException.Reason.BASE_UNAVAILABLE,
+                    "branches of " + config.owner() + "/" + config.repo() + " cannot be read from GitHub");
+        }
         if (response.code() != 200) {
-            return List.of();
+            throw new ReleaseRejectedException(ReleaseRejectedException.Reason.BASE_UNAVAILABLE,
+                    "branches of " + config.owner() + "/" + config.repo() + " answered " + response.code());
         }
 
         List<GitBranch> branches = response.body();
         return branches.stream()
                 .map(GitBranch::name)
                 .toList();
+    }
+
+    private String authorization() {
+        String password = config.password();
+        return password == null || password.isBlank() ? null : "Bearer " + password;
     }
 
     /**
