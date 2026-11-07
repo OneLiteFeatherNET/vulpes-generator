@@ -2,6 +2,7 @@ package net.onelitefeather.vulpes.generator.release.base;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import net.onelitefeather.vulpes.generator.domain.configuration.BaseBuildCredentials;
 import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason;
@@ -37,6 +38,9 @@ public class BaseBuildRunner implements BaseBuild {
     private static final String INIT_SCRIPT_RESOURCE = "/vulpes-base-export.init.gradle";
     private static final String INIT_SCRIPT_NAME = "vulpes-export.init.gradle";
     private static final String LOG_NAME = "vulpes-base-build.log";
+    /** The Gradle project properties that the base build reads its read-only repository credential from. */
+    static final String GRADLE_USER_NAME = "ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryUsername";
+    static final String GRADLE_PASSWORD = "ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryPassword";
     /** Environment variables that the build may inherit; every other variable is dropped. */
     private static final List<String> INHERITED = List.of("PATH", "HOME", "JAVA_HOME", "LANG", "LC_ALL", "TMPDIR",
             "GRADLE_USER_HOME");
@@ -44,16 +48,29 @@ public class BaseBuildRunner implements BaseBuild {
     private final ProcessRunner processes;
     private final Duration buildTimeout;
     private final Map<String, String> parentEnvironment;
+    private final BaseBuildCredentials credentials;
 
     /**
      * Creates the runner with the configured build time limit.
      *
      * @param processes the process runner
-     * @param base      the {@code vulpes.base.*} configuration with the build time limit
+     * @param base        the {@code vulpes.base.*} configuration with the build time limit
+     * @param credentials the read-only repository credential passed to the build, if configured
      */
     @Inject
-    public BaseBuildRunner(ProcessRunner processes, BaseConfiguration base) {
-        this(processes, base.buildTimeout(), System.getenv());
+    public BaseBuildRunner(ProcessRunner processes, BaseConfiguration base, BaseBuildCredentials credentials) {
+        this(processes, base.buildTimeout(), System.getenv(), credentials);
+    }
+
+    /**
+     * Creates the runner without a read-only credential. The tests pass a fake process runner and a parent environment.
+     *
+     * @param processes         the process runner
+     * @param buildTimeout      the time limit of one build
+     * @param parentEnvironment the environment the allowed variables are copied from
+     */
+    public BaseBuildRunner(ProcessRunner processes, Duration buildTimeout, Map<String, String> parentEnvironment) {
+        this(processes, buildTimeout, parentEnvironment, new BaseBuildCredentials("", ""));
     }
 
     /**
@@ -62,11 +79,14 @@ public class BaseBuildRunner implements BaseBuild {
      * @param processes         the process runner
      * @param buildTimeout      the time limit of one build
      * @param parentEnvironment the environment the allowed variables are copied from
+     * @param credentials       the read-only repository credential, passed only when it is configured
      */
-    public BaseBuildRunner(ProcessRunner processes, Duration buildTimeout, Map<String, String> parentEnvironment) {
+    public BaseBuildRunner(ProcessRunner processes, Duration buildTimeout, Map<String, String> parentEnvironment,
+                           BaseBuildCredentials credentials) {
         this.processes = processes;
         this.buildTimeout = buildTimeout;
         this.parentEnvironment = Map.copyOf(parentEnvironment);
+        this.credentials = credentials;
     }
 
     @Override
@@ -104,6 +124,10 @@ public class BaseBuildRunner implements BaseBuild {
             if (value != null) {
                 environment.put(name, value);
             }
+        }
+        if (credentials.configured()) {
+            environment.put(GRADLE_USER_NAME, credentials.username());
+            environment.put(GRADLE_PASSWORD, credentials.password() == null ? "" : credentials.password());
         }
         return Map.copyOf(environment);
     }

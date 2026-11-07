@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.release.base;
 
+import net.onelitefeather.vulpes.generator.domain.configuration.BaseBuildCredentials;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason;
 import org.junit.jupiter.api.Test;
@@ -152,6 +153,50 @@ class BaseBuildRunnerTest {
 
         assertEquals(Reason.BASE_UNAVAILABLE, e.getReason());
         assertTrue(processes.calls().isEmpty(), "no process may start without a wrapper");
+    }
+
+    @Test
+    void passesTheReadOnlyCredentialUnderTheGradleProjectNames() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = exportingRunner(tempDir.resolve("export"));
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT,
+                new BaseBuildCredentials("reader", "reader-secret"));
+
+        runner.build(checkout, tempDir.resolve("export"));
+
+        Map<String, String> environment = processes.calls().getFirst().environment();
+        assertEquals("reader", environment.get("ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryUsername"),
+                "the read-only user must reach the build under the Gradle project name");
+        assertEquals("reader-secret", environment.get("ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryPassword"),
+                "the read-only password must reach the build under the Gradle project name");
+    }
+
+    @Test
+    void neverPassesThePublishCredentialToTheBuild() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = exportingRunner(tempDir.resolve("export"));
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT,
+                new BaseBuildCredentials("reader", "reader-secret"));
+
+        runner.build(checkout, tempDir.resolve("export"));
+
+        Map<String, String> environment = processes.calls().getFirst().environment();
+        assertFalse(environment.containsValue("maven-user"), "the publish user must never reach the build");
+        assertFalse(environment.containsValue("maven-secret"), "the publish password must never reach the build");
+    }
+
+    @Test
+    void passesNoRepositoryVariableWithoutTheReadOnlyCredential() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = exportingRunner(tempDir.resolve("export"));
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT,
+                new BaseBuildCredentials("", ""));
+
+        runner.build(checkout, tempDir.resolve("export"));
+
+        Map<String, String> environment = processes.calls().getFirst().environment();
+        assertTrue(environment.keySet().stream().noneMatch(name -> name.startsWith("ORG_GRADLE_PROJECT_OneLiteFeatherRepository")),
+                "no repository variable may be set without the read-only credential: " + environment.keySet());
     }
 
     private Path checkoutWithWrapper() throws IOException {

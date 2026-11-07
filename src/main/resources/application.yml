@@ -124,6 +124,10 @@ vulpes:
     # Limits of the shallow clone and of one Gradle build of a base checkout.
     clone-timeout: 2m
     build-timeout: 10m
+    # Read-only Reposilite token passed to the base build (ORG_GRADLE_PROJECT_OneLiteFeatherRepository*). Never the publish credential.
+    maven:
+      username: ${VULPES_BASE_MAVEN_USERNAME:}
+      password: ${VULPES_BASE_MAVEN_PASSWORD:}
   content:
     maven:
       username: ${ONELITEFEATHER_MAVEN_USERNAME:}
