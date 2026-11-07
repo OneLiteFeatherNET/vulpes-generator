@@ -101,7 +101,7 @@ vulpes:
   generator:
     version: ${VULPES_GENERATOR_VERSION:dev}
   backend:
-    url: ${VULPES_BACKEND_URL:http://localhost:8081}
+    url: ${VULPES_BACKEND_URL:`http://localhost:8081`}
     token: ${VULPES_BACKEND_TOKEN:}
     # Largest snapshot the backend client accepts, in bytes (67108864 = 64 MiB).
     max-snapshot-size: ${VULPES_BACKEND_MAX_SNAPSHOT_SIZE:67108864}
