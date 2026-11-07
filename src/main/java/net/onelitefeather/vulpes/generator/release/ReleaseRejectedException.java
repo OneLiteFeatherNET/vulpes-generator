@@ -33,7 +33,17 @@ public class ReleaseRejectedException extends RuntimeException {
         /** The backend answered, but not with a usable snapshot. */
         SOURCE_UNAVAILABLE,
         /** The Maven repository could not be reached or refused the upload. */
-        REPOSITORY_UNAVAILABLE
+        REPOSITORY_UNAVAILABLE,
+        /** The requested base branch does not exist in the vulpes-base repository. */
+        UNKNOWN_BASE_BRANCH,
+        /** The vulpes-base repository, its branch list, its clone or its base build cannot be used. */
+        BASE_UNAVAILABLE,
+        /** The generated sources do not compile against the base classes of the selected commit. */
+        COMPILATION_FAILED,
+        /** The code generator refused the snapshot content. */
+        GENERATION_REFUSED,
+        /** The published content data JAR cannot be read or does not match its revision. */
+        PUBLISHED_JAR_CORRUPT
     }
 
     private final Reason reason;
