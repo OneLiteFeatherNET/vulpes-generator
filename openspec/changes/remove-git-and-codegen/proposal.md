@@ -33,7 +33,7 @@ The design "2026-10-28 — Vulpes: Content-Releases ohne Git (Design)" (https://
 **Breaking change.** Commit footer:
 
 ```
-BREAKING CHANGE: GET /download, GET /build/data and GET /generator/generate are removed. Stelaris must switch to the release flow (POST /releases).
+BREAKING CHANGE: GET /download, GET /build/data and GET /generator/generate are removed. Stelaris must switch to the editor release flow (GET /projects/{projectId}/local-build and POST /generator/release).
 ```
 
 ## Capabilities
