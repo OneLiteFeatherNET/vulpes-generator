@@ -22,6 +22,9 @@ class ConfigurationBindingTest {
     BaseConfiguration base;
 
     @Inject
+    BaseBuildCredentials credentials;
+
+    @Inject
     Environment environment;
 
     @Test
@@ -48,6 +51,12 @@ class ConfigurationBindingTest {
     @Test
     void cacheDirDefaultsToBlankMeaningTheWorkDirectory() {
         assertEquals("", base.cacheDir(), "vulpes.base.cache-dir must be blank when not configured");
+    }
+
+    @Test
+    void readOnlyBaseCredentialIsNotConfiguredByDefault() {
+        assertFalse(credentials.configured(),
+                "vulpes.base.maven.username must default to blank, so that the base build receives no repository variable");
     }
 
     @Test
