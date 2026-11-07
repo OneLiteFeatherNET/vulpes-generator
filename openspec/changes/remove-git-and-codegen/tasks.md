@@ -12,8 +12,8 @@ Test notes for all sections:
 ## 1. Pin the new boundary with tests
 
 - [ ] 1.1 Write the failing integration test that the application starts with no datasource configuration and `GET /health` answers `200`
-- [ ] 1.2 Write the failing integration test that the application starts with no GitHub configuration and makes no outbound request to GitHub (fake HTTP client that fails the test on any call)
-- [ ] 1.3 Write the failing integration test that `GET /download`, `GET /git/branches`, `GET /build/data` and `GET /generator/generate` each answer `404`
+- [ ] 1.2 Write the failing integration test that the application starts with no GitHub configuration and makes no outbound request to GitHub at startup (fake HTTP client that fails the test on any call outside `GET /git/branches`)
+- [ ] 1.3 Write the failing integration test that `GET /download`, `GET /build/data` and `GET /generator/generate` each answer `404`, and that `GET /git/branches` does not (it stays for `add-editor-release-flow`)
 
 ## 2. Remove Java code generation
 
@@ -24,14 +24,14 @@ Test notes for all sections:
 
 ## 3. Remove the Git and GitHub integration
 
-- [ ] 3.1 Delete `git/*`, `domain/client/GithubClient`, `domain/client/GithubService`, `domain/release/*` and `util/BranchFilter`, with their tests
-- [ ] 3.2 Delete `domain/configuration/{GithubConfiguration,CommitConfiguration,BranchFilterConfiguration}`
-- [ ] 3.3 Delete `util/FileHelper`, remove the obsolete entries of `util/Constants` (delete the file if nothing remains) and delete `util/package-info.java` if `util` is empty
+- [ ] 3.1 Delete `domain/release/GitReleaseDTO`, `GithubService.getLatestVersion()` with `fallbackToTags()`, and `GitProjectWorker.push()`, with their tests; keep `GithubClient`, `GithubService.getBranches()`, `GitBranch`, `GitTag`, `GitRelease`, `GitProjectWorker.cloneBaseRepo()`, `git/package-info.java` and `util/BranchFilter` (`GET /git/branches` needs them), with their tests
+- [ ] 3.2 Delete `domain/configuration/CommitConfiguration`; keep `GithubConfiguration` and `BranchFilterConfiguration`
+- [ ] 3.3 Delete `util/FileHelper` and remove the obsolete entries of `util/Constants` (delete the file if nothing remains); keep `util/package-info.java`, since `util` keeps `BranchFilter`
 - [ ] 3.4 Run `./gradlew compileJava compileTestJava --max-workers=2` and fix all remaining references
 
 ## 4. Remove the endpoints
 
-- [ ] 4.1 Delete `controller/git/*` (`GitBranchController`, `GitReleaseController`) with their tests
+- [ ] 4.1 Delete `controller/git/GitReleaseController` with its tests; keep `controller/git/GitBranchController` and its tests
 - [ ] 4.2 Delete `controller/CodeGenerationHandler` and `controller/download/VulpesDownloadController`, with their tests
 - [ ] 4.3 Run the test from 1.3 and confirm it is green
 
@@ -43,14 +43,14 @@ Test notes for all sections:
 
 ## 6. Dependencies, configuration and deployment
 
-- [ ] 6.1 Remove JavaPoet, JGit, the vulpes-model dependency, Micronaut Data JPA, Hibernate, the JDBC and Hikari pool, the PostgreSQL driver and the JDBC tracing module from `build.gradle.kts`; remove Guava, commons-io and commons-compress only if `git grep` shows no remaining use
-- [ ] 6.2 Remove `datasources`, `jpa`, `github`, `commit`, `filter` and `micronaut.http.services.github` from `application.yml`, and the matching keys from `application-test.yml`
-- [ ] 6.3 Remove the database and GitHub examples from `charts/vulpes-generator/values.yaml` (including the `secrets` example and the comment about cloning) and check the Helm templates for references
+- [ ] 6.1 Remove JavaPoet, the vulpes-model dependency, Micronaut Data JPA, Hibernate, the JDBC and Hikari pool, the PostgreSQL driver and the JDBC tracing module from `build.gradle.kts`; keep JGit; remove Guava, commons-io and commons-compress only if `git grep` shows no remaining use
+- [ ] 6.2 Remove `datasources`, `jpa` and `commit` from `application.yml`, and the matching database and commit keys from `application-test.yml`; keep `github`, `filter` and `micronaut.http.services.github`
+- [ ] 6.3 Remove the database examples from `charts/vulpes-generator/values.yaml` and check the Helm templates for references to removed keys; keep the GitHub token example and the comment about cloning, which still describes the base clone
 - [ ] 6.4 Remove the Postgres service from `docker/docker-compose.yml`; delete the file if no service remains
 - [ ] 6.5 Check `.github/workflows` for Postgres service containers or GitHub token use that only served the removed code, and remove them
 
 ## 7. Verification and pull request
 
-- [ ] 7.1 Run `git grep -nE "javapoet|jgit|vulpes\.api\.model|github|datasource" -- src charts docker` and confirm there are no hits outside the documented kept files
+- [ ] 7.1 Run `git grep -nE "javapoet|jgit|vulpes\.api\.model|github|datasource" -- src charts docker` and confirm that every hit is in a kept file (the branch list, clone and GitHub client files, the JGit imports, the `github` and `filter` keys) and that no hit remains in removed code or configuration
 - [ ] 7.2 Run `./gradlew test --max-workers=2` and `./gradlew build --max-workers=2`, and fix all failures
 - [ ] 7.3 Open the pull request titled `refactor(generator)!: remove java generation and git integration`, linking the plugin commit from 0.1 and including the BREAKING CHANGE footer
