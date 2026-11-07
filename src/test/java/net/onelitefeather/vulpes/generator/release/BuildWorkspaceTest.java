@@ -65,4 +65,16 @@ class BuildWorkspaceTest {
             return entries.count();
         }
     }
+
+    @Test
+    void deleteTreeRemovesReadOnlyFilesLikeGitPacks(@TempDir Path base) throws Exception {
+        Path pack = base.resolve("clone/.git/objects/pack/pack-1.pack");
+        Files.createDirectories(pack.getParent());
+        Files.writeString(pack, "pack");
+        assertTrue(pack.toFile().setReadOnly(), "the fixture file must be read-only");
+
+        BuildWorkspace.deleteTree(base.resolve("clone"));
+
+        assertFalse(Files.exists(base.resolve("clone")), "a read-only file must not stop the cleanup");
+    }
 }
