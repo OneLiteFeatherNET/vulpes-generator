@@ -21,7 +21,6 @@ java {
 dependencies {
     // Annotation processing
     annotationProcessor(mn.micronaut.serde.processor)
-    annotationProcessor(mn.micronaut.data.processor)
     annotationProcessor(mn.micronaut.inject.java)
     annotationProcessor(mn.micronaut.openapi)
     annotationProcessor(mn.micronaut.validation.processor)
@@ -37,16 +36,6 @@ dependencies {
     implementation(mn.micronaut.management)
     implementation(mn.micronaut.micrometer.core)
     implementation(mn.micronaut.micrometer.registry.prometheus)
-
-    // SQL (JPA / read-only). Postgres, because that is where the Vulpes data
-    // actually lives: the backend was migrated to the shared CNPG cluster and
-    // no MariaDB `vulpes` database exists any more.
-    implementation(mn.micronaut.jdbc.hikari)
-    implementation(mn.micronaut.hibernate.jpa)
-    implementation(mn.micronaut.data.hibernate.jpa)
-    implementation(mn.micronaut.data.tx.hibernate)
-    implementation(mn.postgresql)
-    implementation(mn.micronaut.data.jpa)
 
     // Health endpoints and the Prometheus scrape target. The Helm chart in
     // charts/ already probes /health and points a ServiceMonitor at
@@ -65,7 +54,6 @@ dependencies {
     // Distributed tracing (OpenTelemetry). Spans/export are only active when
     // OTEL_TRACES_EXPORTER=otlp is set (prod/Docker) — see application.yml.
     implementation(mn.micronaut.tracing.opentelemetry.http)
-    implementation(mn.micronaut.tracing.opentelemetry.jdbc)
     implementation(libs.opentelemetry.exporter.otlp)
     // Structured JSON logging for Grafana Loki + trace/log correlation.
     // logstash encoder renders JSON; the OTel MDC appender injects trace_id/span_id.
@@ -80,17 +68,12 @@ dependencies {
     // Misc
     implementation(platform(libs.mycelium.bom))
     implementation(mn.micronaut.http.client)
-    implementation(libs.bundles.vulpes)
     // Code generator of the Vulpes Gradle plugin: the codegen facade and the format reader of content releases.
     implementation(libs.vulpes.codegen)
     implementation(libs.vulpes.format)
     implementation(libs.jetbrains.annotation)
-    implementation(libs.javapoet)
     implementation(libs.minestom)
     implementation(libs.jgit)
-    implementation(libs.guava)
-    implementation(libs.commons.io)
-    implementation(libs.commons.compress)
     // Maven Resolver publishes content data JARs to Reposilite (release package).
     implementation(libs.maven.resolver.supplier)
     implementation(libs.maven.resolver.transport.jdk)

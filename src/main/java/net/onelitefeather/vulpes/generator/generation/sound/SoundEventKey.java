@@ -1,7 +1,5 @@
 package net.onelitefeather.vulpes.generator.generation.sound;
 
-import net.kyori.adventure.key.Key;
-import net.onelitefeather.vulpes.api.model.sound.SoundEventEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,42 +17,6 @@ import org.jetbrains.annotations.NotNull;
  */
 @ApiStatus.Internal
 public record SoundEventKey(String namespace, String path) {
-
-    /**
-     * Resolves the key of a sound event entity.
-     *
-     * @param entity the sound event to resolve
-     * @return the validated key of the event
-     * @throws IllegalArgumentException if the key name is missing, has no project or does not form a valid key
-     */
-    public static @NotNull SoundEventKey of(@NotNull SoundEventEntity entity) {
-        String keyName = entity.getKeyName();
-        if (keyName == null || keyName.isBlank()) {
-            throw new IllegalArgumentException("sound '" + entity.getKey() + "' has no key name");
-        }
-
-        String namespace;
-        String path;
-        int separator = keyName.indexOf(':');
-        if (separator >= 0) {
-            namespace = keyName.substring(0, separator);
-            path = keyName.substring(separator + 1);
-        } else {
-            if (entity.getProject() == null) {
-                throw new IllegalArgumentException("sound '" + keyName + "' has no project");
-            }
-            String namespacedKey = entity.getNamespacedKey();
-            namespace = namespacedKey.substring(0, namespacedKey.indexOf(':'));
-            path = keyName;
-        }
-
-        try {
-            Key.key(namespace, path);
-        } catch (RuntimeException e) {
-            throw new IllegalArgumentException("sound '" + keyName + "' has an invalid key: " + e.getMessage(), e);
-        }
-        return new SoundEventKey(namespace, path);
-    }
 
     /**
      * Returns the namespaced key as text, for example {@code eldoria:ui.click}.

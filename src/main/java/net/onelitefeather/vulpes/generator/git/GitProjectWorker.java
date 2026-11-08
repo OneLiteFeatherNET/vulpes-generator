@@ -5,8 +5,6 @@ import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.generator.domain.configuration.GithubConfiguration;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -83,17 +81,6 @@ public final class GitProjectWorker {
         } catch (Exception exception) {
             LOGGER.warn("Something went wrong during the fetch process", exception);
             return null;
-        }
-    }
-
-    /**
-     * @param git
-     */
-    public void push(PushCommand git) {
-        try {
-            git.call();
-        } catch (GitAPIException exception) {
-            LOGGER.info("Unable to push content to ", exception);
         }
     }
 }

@@ -5,8 +5,6 @@ import net.minestom.server.codec.Codec;
 import net.minestom.server.codec.Result;
 import net.minestom.server.codec.StructCodec;
 import net.minestom.server.codec.Transcoder;
-import net.onelitefeather.vulpes.api.model.FontEntity;
-import net.onelitefeather.vulpes.api.model.font.FontStringEntity;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
@@ -21,8 +19,6 @@ import java.util.regex.Pattern;
  * <p>
  * The {@code height} is optional and defaults to {@link #DEFAULT_HEIGHT}. All rows of {@code chars} must have the same
  * length in codepoints, which is a vanilla rule for bitmap providers.
- * <p>
- * {@link #fromFont(FontEntity)} builds a validated provider from a font entity and adds the font key to every error.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -101,33 +97,6 @@ public final class BitmapFontProviderCodec {
     );
 
     /**
-     * Builds a validated provider from a font entity. The rows are sorted by their order index.
-     *
-     * @param font the font to convert
-     * @return the validated provider
-     * @throws IllegalArgumentException if the provider is not {@value #TYPE}, or if the font data is invalid.
-     *                                  The message always contains the font key.
-     */
-    public static BitmapFontProvider fromFont(FontEntity font) {
-        String key = font.getKey();
-        if (!TYPE.equals(font.getProvider())) {
-            throw new IllegalArgumentException("font '" + key + "' uses provider '" + font.getProvider() + "' but only '" + TYPE + "' is supported");
-        }
-
-        int height = font.getHeight() == 0 ? DEFAULT_HEIGHT : font.getHeight();
-        List<String> rows = font.getChars() == null ? List.of() : font.getChars().stream()
-                .sorted()
-                .map(FontStringEntity::getLine)
-                .toList();
-
-        try {
-            return new BitmapFontProvider(font.getTexturePath(), font.getAscent(), height, rows);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("font '" + key + "' is invalid: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Encodes a provider to a JSON object.
      *
      * @param provider the provider to encode
@@ -141,17 +110,6 @@ public final class BitmapFontProviderCodec {
         }
         String reason = result instanceof Result.Error<JsonElement> error ? error.message() : "no value encoded";
         throw new IllegalStateException("unable to encode bitmap font provider for " + provider.file() + ": " + reason);
-    }
-
-    /**
-     * Returns the namespace of a font, which is the project part of its namespaced key.
-     *
-     * @param font the font
-     * @return the namespace, for example {@code eldoria}
-     */
-    public static String namespaceOf(FontEntity font) {
-        String namespacedKey = font.getNamespacedKey();
-        return namespacedKey.substring(0, namespacedKey.indexOf(':'));
     }
 
     private static String checkType(String type) {
