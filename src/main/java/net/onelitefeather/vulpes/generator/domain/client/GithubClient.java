@@ -7,7 +7,6 @@ import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.http.client.annotation.Client;
 import jakarta.annotation.Nullable;
 import net.onelitefeather.vulpes.generator.domain.release.GitBranch;
-import net.onelitefeather.vulpes.generator.domain.release.GitBranchHead;
 import net.onelitefeather.vulpes.generator.domain.release.GitTag;
 import net.onelitefeather.vulpes.generator.domain.release.GitRelease;
 
@@ -45,24 +44,6 @@ public interface GithubClient {
      */
     @Get("/repos/{owner}/{repo}/tags")
     List<GitTag> tags(String owner, String repo);
-
-    /**
-     * Returns one branch of the given repository with the commit its head points to. The branch name may contain
-     * slashes; the client encodes it as one path segment.
-     *
-     * @param owner         the owner of the repository
-     * @param repo          the repository name
-     * @param branch        the branch name, such as {@code feature/font}
-     * @param authorization the Authorization header value, such as {@code Bearer <token>}; {@code null} sends none
-     * @return the branch with its head commit
-     */
-    @Get("/repos/{owner}/{repo}/branches/{branch}")
-    HttpResponse<GitBranchHead> branch(
-            String owner,
-            String repo,
-            String branch,
-            @Nullable @Header("Authorization") String authorization
-    );
 
     /**
      * Returns all branches for the given repository

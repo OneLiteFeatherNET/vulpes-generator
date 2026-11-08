@@ -10,12 +10,14 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.function.Function;
 
 /**
@@ -98,6 +100,50 @@ public class BaseCheckout {
             String commit = cloneWithRetry(branch, workspace.dir());
             return action.apply(new Checkout(workspace.dir(), commit));
         }
+    }
+
+    /**
+     * Returns the full SHA of the head of a branch, read with {@code git ls-remote} from the clone URL. No clone is
+     * made and no API is called, so a warm build costs one Git request. A failed request is logged with its cause and
+     * retried once.
+     *
+     * @param branch the branch to resolve, such as {@code develop} or {@code feature/font}
+     * @return the full 40-character lower-case SHA-1 of the branch head
+     * @throws ReleaseRejectedException with {@code BASE_UNAVAILABLE} when the branch does not exist or the remote
+     *                                  cannot be read
+     */
+    public String headCommit(String branch) {
+        for (int attempt = 1; attempt <= CLONE_ATTEMPTS; attempt++) {
+            try {
+                String commit = remoteHead(branch);
+                if (commit == null) {
+                    throw unavailable(branch);
+                }
+                return commit;
+            } catch (GitAPIException e) {
+                LOG.warn("ls-remote of branch {} from {} failed (attempt {} of {}): {}", branch, cloneUrl, attempt,
+                        CLONE_ATTEMPTS, causeChain(e));
+            }
+        }
+        throw unavailable(branch);
+    }
+
+    /**
+     * Asks the remote for the head of one branch.
+     *
+     * @return the SHA of the head, or {@code null} when the remote has no such branch
+     */
+    String remoteHead(String branch) throws GitAPIException {
+        Collection<Ref> heads = Git.lsRemoteRepository()
+                .setRemote(cloneUrl)
+                .setHeads(true)
+                .setTimeout((int) Math.max(1, cloneTimeout.toSeconds()))
+                .call();
+        return heads.stream()
+                .filter(ref -> ref.getName().equals(Constants.R_HEADS + branch))
+                .findFirst()
+                .map(ref -> ref.getObjectId().name())
+                .orElse(null);
     }
 
     /**

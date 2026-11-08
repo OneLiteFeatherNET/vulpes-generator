@@ -4,8 +4,8 @@ import net.onelitefeather.vulpes.generator.git.BaseCheckout;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason;
 import net.onelitefeather.vulpes.generator.release.codegen.CodegenGate;
-import net.onelitefeather.vulpes.generator.release.codegen.GeneratedFile;
 import net.onelitefeather.vulpes.generator.release.codegen.CodegenPort;
+import net.onelitefeather.vulpes.generator.release.codegen.GeneratedFile;
 import net.onelitefeather.vulpes.generator.release.compile.CompilationGate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests the base step with a local origin, a fake commit resolver, a fake base build and a fake code generator.
- * No network, no Gradle.
+ * Tests the base step with a local origin, a fake base build and a fake code generator. The head commit is read from
+ * the local origin with ls-remote; no network, no Gradle.
  *
  * @author TheMeinerLP
  */
@@ -87,12 +87,12 @@ class BaseVerificationTest {
                 throw new AssertionError("a cached commit must be verified without cloning " + branch);
             }
         };
-        BaseVerification verification = new BaseVerification(commits(origin), noClone, cache,
+        BaseVerification verification = new BaseVerification(noClone, cache,
                 new CodegenGate(sourceOf(SWORD)), new CompilationGate(), work().toString());
 
         BaseVerification.VerifiedBase verified = verification.verify(input());
 
-        assertEquals(origin.head(), verified.commit(), "the cached commit must be the one the API resolved");
+        assertEquals(origin.head(), verified.commit(), "the cached commit must be the one the remote reports");
         assertEquals(1, build.builds(), "the cached commit must not be built again");
     }
 
@@ -109,16 +109,21 @@ class BaseVerificationTest {
     }
 
     @Test
-    void cloneHeadWinsWhenTheBranchMovedAfterTheApiAnswered() throws Exception {
+    void cloneHeadWinsWhenTheBranchMovedAfterTheHeadWasRead() throws Exception {
         LocalBaseOrigin.Origin origin = LocalBaseOrigin.create(tempDir.resolve("origin"));
-        BaseVerification verification = new BaseVerification(commits(origin).with("develop", OTHER_HEAD),
-                checkout(origin), cache(new FakeBaseBuild()), new CodegenGate(sourceOf(SWORD)),
-                new CompilationGate(), work().toString());
+        BaseCheckout movedHead = new BaseCheckout(origin.url(), Duration.ofMinutes(2), work()) {
+            @Override
+            public String headCommit(String branch) {
+                return OTHER_HEAD;
+            }
+        };
+        BaseVerification verification = new BaseVerification(movedHead, cache(new FakeBaseBuild()),
+                new CodegenGate(sourceOf(SWORD)), new CompilationGate(), work().toString());
 
         BaseVerification.VerifiedBase verified = verification.verify(input());
 
         assertEquals(origin.head(), verified.commit(),
-                "the commit of the clone must be used when the branch moved between the two lookups");
+                "the commit of the clone must be used when the branch moved between the two reads");
     }
 
     @Test
@@ -178,16 +183,9 @@ class BaseVerificationTest {
     }
 
     private BaseVerification verification(LocalBaseOrigin.Origin origin, FakeBaseBuild build, CodegenPort codegen) {
-        return new BaseVerification(commits(origin), checkout(origin), cache(build), new CodegenGate(codegen),
-                new CompilationGate(), work().toString());
-    }
-
-    private FakeBaseCommits commits(LocalBaseOrigin.Origin origin) {
-        return new FakeBaseCommits().with("develop", origin.head());
-    }
-
-    private BaseCheckout checkout(LocalBaseOrigin.Origin origin) {
-        return new BaseCheckout(origin.url(), Duration.ofMinutes(2), work());
+        BaseCheckout checkout = new BaseCheckout(origin.url(), Duration.ofMinutes(2), work());
+        return new BaseVerification(checkout, cache(build), new CodegenGate(codegen), new CompilationGate(),
+                work().toString());
     }
 
     private BaseClassCache cache(FakeBaseBuild build) {
