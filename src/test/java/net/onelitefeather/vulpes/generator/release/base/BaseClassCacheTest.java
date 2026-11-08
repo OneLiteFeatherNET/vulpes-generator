@@ -209,6 +209,45 @@ class BaseClassCacheTest {
         }
     }
 
+    @Test
+    void cachedReturnsNothingForACommitWithoutEntryAndBuildsNothing() {
+        FakeBaseBuild build = new FakeBaseBuild();
+        BaseClassCache cache = cache(build, 3);
+
+        assertTrue(cache.cached(FIRST).isEmpty(), "a commit without an entry must not be reported as cached");
+        assertEquals(0, build.builds(), "a lookup must never build the classes of a commit");
+    }
+
+    @Test
+    void cachedReturnsTheClassesOfAStoredCommitWithoutBuilding() throws IOException {
+        FakeBaseBuild build = new FakeBaseBuild();
+        BaseClassCache cache = cache(build, 3);
+        cache.resolve(FIRST, checkout("a"));
+
+        BaseClasses classes = cache.cached(FIRST).orElseThrow();
+
+        assertEquals(tempDir.resolve("cache").resolve(FIRST).resolve("vulpes-base.jar"), classes.jar(),
+                "the cached classes must be the jar of the stored entry");
+        assertEquals(1, build.builds(), "a cached commit must not be built again");
+    }
+
+    @Test
+    void cachedMarksTheEntryAsUsedSoItSurvivesEviction() throws IOException {
+        BaseClassCache cache = cache(new FakeBaseBuild(), 2);
+        cache.resolve(FIRST, checkout("a"));
+        clock.advance(Duration.ofMinutes(1));
+        cache.resolve(SECOND, checkout("b"));
+        clock.advance(Duration.ofMinutes(1));
+        cache.cached(FIRST);
+        clock.advance(Duration.ofMinutes(1));
+
+        cache.resolve(THIRD, checkout("c"));
+
+        Path root = tempDir.resolve("cache");
+        assertTrue(Files.exists(root.resolve(FIRST)), "an entry looked up by cached() must count as used");
+        assertFalse(Files.exists(root.resolve(SECOND)), "the entry not used since the others must be evicted");
+    }
+
     private BaseClassCache cache(BaseBuild build, int entries) {
         return new BaseClassCache(build, tempDir.resolve("cache"), entries, clock);
     }

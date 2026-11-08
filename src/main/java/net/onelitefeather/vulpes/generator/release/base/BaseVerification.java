@@ -9,13 +9,14 @@ import net.onelitefeather.vulpes.generator.release.codegen.CodegenGate;
 import net.onelitefeather.vulpes.generator.release.compile.CompilationGate;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * The base step of a local build and of a release: the branch is cloned and resolved to its full commit, the classes
- * of that commit are taken from the cache or built, the snapshot is generated and the sources are compiled against
- * the classes. Nothing is kept afterwards: the clone and the request directory are deleted, and the cache keeps only
- * the classes.
+ * The base step of a local build and of a release: the head commit of the branch is read from the remote. When
+ * the cache holds the classes of that commit, they are used and nothing is cloned. Otherwise the branch is cloned and
+ * its commit is built. The snapshot is generated and the sources are compiled against the classes. Nothing is kept
+ * afterwards: the clone and the request directory are deleted, and the cache keeps only the classes.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -33,7 +34,8 @@ public class BaseVerification {
     /**
      * Creates the verification.
      *
-     * @param checkout the shallow clone of the base branch
+     * @param checkout the checkout of the base branch: its head commit is read, and it is cloned only when the commit
+     *                 is not cached
      * @param cache    the base build cache per commit
      * @param codegen  the code generator gate
      * @param compiler the compilation gate
@@ -54,23 +56,32 @@ public class BaseVerification {
      *
      * @param input the branch, the project and the snapshot to verify
      * @return the branch and the full commit the snapshot was compiled against
-     * @throws net.onelitefeather.vulpes.generator.release.ReleaseRejectedException when the branch cannot be cloned or
-     *                                  built ({@code BASE_UNAVAILABLE}), the generator refuses the snapshot
+     * @throws net.onelitefeather.vulpes.generator.release.ReleaseRejectedException when the branch cannot be resolved,
+     *                                  cloned or built ({@code BASE_UNAVAILABLE}), the generator refuses the snapshot
      *                                  ({@code GENERATION_REFUSED}) or the sources do not compile
      *                                  ({@code COMPILATION_FAILED})
      */
     public VerifiedBase verify(Input input) {
+        String commit = checkout.headCommit(input.branch());
+        Optional<BaseClasses> cached = cache.cached(commit);
+        if (cached.isPresent()) {
+            return compileAgainst(input, commit, cached.get());
+        }
         return checkout.withCheckout(input.branch(), resolved -> {
             BaseClasses classes = cache.resolve(resolved.commit(), resolved.directory());
-            byte[] releaseJson = input.releaseJsonFor().apply(resolved.commit());
-            try (BuildWorkspace request = BuildWorkspace.create(workDir)) {
-                Path generated = request.dir().resolve("generated");
-                codegen.generateInto(generated, releaseJson, input.snapshotJson(), input.packageName(),
-                        input.projectName());
-                compiler.compile(generated, request.dir().resolve("classes"), classes.classpath());
-            }
-            return new VerifiedBase(input.branch(), resolved.commit(), releaseJson);
+            return compileAgainst(input, resolved.commit(), classes);
         });
+    }
+
+    private VerifiedBase compileAgainst(Input input, String commit, BaseClasses classes) {
+        byte[] releaseJson = input.releaseJsonFor().apply(commit);
+        try (BuildWorkspace request = BuildWorkspace.create(workDir)) {
+            Path generated = request.dir().resolve("generated");
+            codegen.generateInto(generated, releaseJson, input.snapshotJson(), input.packageName(),
+                    input.projectName());
+            compiler.compile(generated, request.dir().resolve("classes"), classes.classpath());
+        }
+        return new VerifiedBase(input.branch(), commit, releaseJson);
     }
 
     /**

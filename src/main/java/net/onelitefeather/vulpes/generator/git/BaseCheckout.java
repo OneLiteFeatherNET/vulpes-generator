@@ -10,16 +10,20 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.function.Function;
 
 /**
- * Makes a shallow clone of one branch of the {@code vulpes-base} repository and resolves the commit the branch points to.
- * The clone lives in a fresh directory of the work directory, which is deleted when the action has finished, whether it
- * succeeded or failed.
+ * Makes a shallow clone of one branch of the {@code vulpes-base} repository and reads the commit the branch points to.
+ * A failed clone is logged with its cause and retried once in a fresh directory. The clone lives in a fresh directory
+ * of the work directory, which is deleted when the action has finished, whether it succeeded or failed.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -27,6 +31,9 @@ import java.util.function.Function;
  */
 @Singleton
 public class BaseCheckout {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BaseCheckout.class);
+    private static final int CLONE_ATTEMPTS = 2;
 
     private final String cloneUrl;
     private final Duration cloneTimeout;
@@ -90,23 +97,73 @@ public class BaseCheckout {
      */
     public <T> T withCheckout(String branch, Function<Checkout, T> action) {
         try (BuildWorkspace workspace = BuildWorkspace.create(workDir)) {
-            String commit = cloneShallow(branch, workspace.dir());
+            String commit = cloneWithRetry(branch, workspace.dir());
             return action.apply(new Checkout(workspace.dir(), commit));
         }
     }
 
     /**
-     * Returns the full SHA of the head of a branch. The clone is deleted before this method returns.
+     * Returns the full SHA of the head of a branch, read with {@code git ls-remote} from the clone URL. No clone is
+     * made and no API is called, so a warm build costs one Git request. A failed request is logged with its cause and
+     * retried once.
      *
-     * @param branch the branch to resolve
-     * @return the full 40-character lower-case SHA-1
-     * @throws ReleaseRejectedException with {@code BASE_UNAVAILABLE} when the branch cannot be cloned
+     * @param branch the branch to resolve, such as {@code develop} or {@code feature/font}
+     * @return the full 40-character lower-case SHA-1 of the branch head
+     * @throws ReleaseRejectedException with {@code BASE_UNAVAILABLE} when the branch does not exist or the remote
+     *                                  cannot be read
      */
-    public String resolveCommit(String branch) {
-        return withCheckout(branch, Checkout::commit);
+    public String headCommit(String branch) {
+        for (int attempt = 1; attempt <= CLONE_ATTEMPTS; attempt++) {
+            try {
+                String commit = remoteHead(branch);
+                if (commit == null) {
+                    throw unavailable(branch);
+                }
+                return commit;
+            } catch (GitAPIException e) {
+                LOG.warn("ls-remote of branch {} from {} failed (attempt {} of {}): {}", branch, cloneUrl, attempt,
+                        CLONE_ATTEMPTS, causeChain(e));
+            }
+        }
+        throw unavailable(branch);
     }
 
-    private String cloneShallow(String branch, Path target) {
+    /**
+     * Asks the remote for the head of one branch.
+     *
+     * @return the SHA of the head, or {@code null} when the remote has no such branch
+     */
+    String remoteHead(String branch) throws GitAPIException {
+        Collection<Ref> heads = Git.lsRemoteRepository()
+                .setRemote(cloneUrl)
+                .setHeads(true)
+                .setTimeout((int) Math.max(1, cloneTimeout.toSeconds()))
+                .call();
+        return heads.stream()
+                .filter(ref -> ref.getName().equals(Constants.R_HEADS + branch))
+                .findFirst()
+                .map(ref -> ref.getObjectId().name())
+                .orElse(null);
+    }
+
+    /**
+     * Clones the branch, retrying a failed clone once. Every failed attempt is logged with its cause and its partial
+     * clone is deleted, so the next attempt starts in an empty directory.
+     */
+    private String cloneWithRetry(String branch, Path target) {
+        for (int attempt = 1; attempt <= CLONE_ATTEMPTS; attempt++) {
+            try {
+                return cloneShallow(branch, target);
+            } catch (GitAPIException | IOException e) {
+                LOG.warn("clone of branch {} from {} failed (attempt {} of {}): {}", branch, cloneUrl, attempt,
+                        CLONE_ATTEMPTS, causeChain(e));
+                BuildWorkspace.deleteTree(target);
+            }
+        }
+        throw unavailable(branch);
+    }
+
+    String cloneShallow(String branch, Path target) throws GitAPIException, IOException {
         try (Git git = Git.cloneRepository()
                 .setURI(cloneUrl)
                 .setDirectory(target.toFile())
@@ -120,9 +177,18 @@ public class BaseCheckout {
                 throw unavailable(branch);
             }
             return head.name();
-        } catch (GitAPIException | IOException e) {
-            throw unavailable(branch);
         }
+    }
+
+    private static String causeChain(Throwable e) {
+        StringBuilder chain = new StringBuilder();
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (!chain.isEmpty()) {
+                chain.append(" <- ");
+            }
+            chain.append(cause.getClass().getSimpleName()).append(": ").append(cause.getMessage());
+        }
+        return chain.toString();
     }
 
     private static ReleaseRejectedException unavailable(String branch) {
