@@ -26,8 +26,6 @@ public class ReleaseRejectedException extends RuntimeException {
         PROJECT_MISMATCH,
         /** The backend holds content the format cannot express yet, such as an advancement; nothing is dropped. */
         UNSUPPORTED_CONTENT,
-        /** The project changed while the snapshot was assembled and did not settle within the attempts. */
-        CONTENT_CHANGED,
         /** The backend does not know the requested project. */
         UNKNOWN_PROJECT,
         VERSION_NOT_PUBLISHED,

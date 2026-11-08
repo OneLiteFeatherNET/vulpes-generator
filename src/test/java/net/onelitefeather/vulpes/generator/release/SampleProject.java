@@ -23,6 +23,10 @@ import static net.onelitefeather.vulpes.generator.release.ProjectFixture.obj;
  * </ul>
  * The captured component and lore records are attached to {@code statistics} and the glyph row to
  * {@code glitch_glitch_marker}, because the captures carry no parent id and their ids follow those parents.
+ * <p>
+ * The content export of the same project, which the release reads, is committed as
+ * {@code release/content-export/cygnus-content.json} and is built from these captures with the same completions;
+ * see {@link #export()}.
  *
  * @author TheMeinerLP
  */
@@ -62,6 +66,22 @@ final class SampleProject {
         fixture.expressions().addAll(content("expressions.json"));
         fixture.assets().addAll(content("assets.json"));
         return fixture;
+    }
+
+    /**
+     * Reads the committed content export of the sample project, as {@code GET /project/{id}/content} answers it.
+     *
+     * @return the export object
+     */
+    static JsonNode export() {
+        try (InputStream in = SampleProject.class.getResourceAsStream("/release/content-export/cygnus-content.json")) {
+            if (in == null) {
+                throw new IllegalStateException("the sample export is missing from the test resources");
+            }
+            return JSON.readTree(in);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**

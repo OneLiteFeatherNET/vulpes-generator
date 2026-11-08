@@ -8,26 +8,21 @@ import io.micronaut.http.client.annotation.Client;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.CONTENT_CHANGED;
+import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE;
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.UNKNOWN_PROJECT;
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.UNSUPPORTED_CONTENT;
 
 /**
- * Assembles the format 1 snapshot of a project from the REST endpoints of the backend, instead of a frozen snapshot
- * endpoint that the backend does not have.
- * <p>
- * The project is read twice in a row and the snapshot is used only when both results are byte-identical. A project
- * that changed in between is read again, up to {@value #ATTEMPTS} times in all; then the release is refused with
- * {@link ReleaseRejectedException.Reason#CONTENT_CHANGED}. The check narrows the window for a mixed state but does not
- * close it: an edit that is reverted between the two reads goes unnoticed.
+ * Assembles the format 1 snapshot of a project from the content export of the backend,
+ * {@code GET /project/{projectId}/content}. The backend answers the whole project in one consistent read, so a
+ * release reads it once and never mixes two states of the project.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -35,9 +30,6 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedExcepti
  */
 @Singleton
 public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource, ProjectSource {
-
-    /** The number of attempts, each made of two reads in a row. */
-    static final int ATTEMPTS = 3;
 
     private static final Pattern PROJECT_KEY = Pattern.compile("[a-z][a-z0-9-]*");
 
@@ -79,57 +71,77 @@ public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource, P
     }
 
     /**
-     * Assembles the snapshot of a project, with its key.
+     * Assembles the snapshot of a project from one read of its content export, with the key of the export.
      *
      * @param projectId the id of the project
-     * @return the stable snapshot
+     * @return the snapshot
      * @throws ReleaseRejectedException with {@link ReleaseRejectedException.Reason#UNKNOWN_PROJECT},
-     *                                  {@link ReleaseRejectedException.Reason#SOURCE_UNAVAILABLE},
-     *                                  {@link ReleaseRejectedException.Reason#UNSUPPORTED_CONTENT} or
-     *                                  {@link ReleaseRejectedException.Reason#CONTENT_CHANGED}
+     *                                  {@link ReleaseRejectedException.Reason#SOURCE_UNAVAILABLE} or
+     *                                  {@link ReleaseRejectedException.Reason#UNSUPPORTED_CONTENT}
      */
     public AssembledSnapshot assemble(UUID projectId) {
-        for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
-            AssembledSnapshot first = readOnce(projectId);
-            AssembledSnapshot second = readOnce(projectId);
-            if (Arrays.equals(first.bytes(), second.bytes())) {
-                return second;
-            }
-        }
-        throw new ReleaseRejectedException(CONTENT_CHANGED,
-                "content of project " + projectId + " changed during the release, try again");
+        JsonNode export = backend.find("/project/" + projectId + "/content").orElseThrow(() ->
+                new ReleaseRejectedException(UNKNOWN_PROJECT, "backend does not know project " + projectId));
+        return mapper.map(toProjectData(export));
     }
 
-    private AssembledSnapshot readOnce(UUID projectId) {
-        String project = "/project/" + projectId;
-        JsonNode projectNode = backend.find(project).orElseThrow(() -> new ReleaseRejectedException(UNKNOWN_PROJECT,
-                "backend does not know project " + projectId));
-        List<JsonNode> items = backend.list(project + "/item");
-        List<JsonNode> fonts = backend.list(project + "/font");
-        List<JsonNode> sounds = backend.list(project + "/sound");
-        ProjectData data = new ProjectData(
-                projectNode,
+    /**
+     * Groups the children of the export by the id of their parent. The export holds them inside their parents, so
+     * the order of every list is the order of the export.
+     */
+    private static ProjectData toProjectData(JsonNode export) {
+        if (!export.isObject()) {
+            throw unavailable("the content export is not a JSON object");
+        }
+        JsonNode project = export.get("project");
+        if (project == null || !project.isObject()) {
+            throw unavailable("the content export has no project object");
+        }
+        List<JsonNode> items = array(export, "items");
+        Map<String, List<JsonNode>> components = new LinkedHashMap<>();
+        Map<String, List<JsonNode>> lore = new LinkedHashMap<>();
+        for (JsonNode item : items) {
+            String id = item.path("id").asText();
+            components.put(id, array(item, "components"));
+            lore.put(id, array(item, "lore"));
+        }
+        List<JsonNode> fonts = array(export, "fonts");
+        Map<String, List<JsonNode>> glyphRows = new LinkedHashMap<>();
+        for (JsonNode font : fonts) {
+            glyphRows.put(font.path("id").asText(), array(font, "chars"));
+        }
+        List<JsonNode> sounds = array(export, "sounds");
+        Map<String, List<JsonNode>> sources = new LinkedHashMap<>();
+        for (JsonNode sound : sounds) {
+            sources.put(sound.path("id").asText(), array(sound, "sources"));
+        }
+        return new ProjectData(
+                project,
                 items,
-                perParent(items, id -> "/item/" + id + "/components"),
-                perParent(items, id -> "/item/" + id + "/lore"),
-                backend.list(project + "/attribute"),
+                components,
+                lore,
+                array(export, "attributes"),
                 fonts,
-                perParent(fonts, id -> "/font/chars/" + id),
+                glyphRows,
                 sounds,
-                perParent(sounds, id -> "/sound/" + id + "/sources"),
-                backend.list(project + "/expression-function"),
-                backend.list(project + "/expression"),
-                backend.list(project + "/asset"),
-                backend.list(project + "/advancement"));
-        return mapper.map(data);
+                sources,
+                array(export, "expressionFunctions"),
+                array(export, "expressions"),
+                array(export, "assets"),
+                array(export, "advancements"));
     }
 
-    private Map<String, List<JsonNode>> perParent(List<JsonNode> parents, Function<String, String> path) {
-        Map<String, List<JsonNode>> result = new LinkedHashMap<>();
-        for (JsonNode parent : parents) {
-            String id = parent.get("id").asText();
-            result.put(id, backend.list(path.apply(id)));
+    private static List<JsonNode> array(JsonNode node, String field) {
+        JsonNode value = node.get(field);
+        if (value == null || !value.isArray()) {
+            throw unavailable("the content export has no " + field + " list");
         }
-        return result;
+        List<JsonNode> entries = new ArrayList<>();
+        value.forEach(entries::add);
+        return entries;
+    }
+
+    private static ReleaseRejectedException unavailable(String message) {
+        return new ReleaseRejectedException(SOURCE_UNAVAILABLE, "backend: " + message);
     }
 }

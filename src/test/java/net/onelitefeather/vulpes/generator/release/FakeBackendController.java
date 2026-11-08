@@ -8,7 +8,6 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Header;
 import io.micronaut.http.annotation.PathVariable;
-import io.micronaut.http.annotation.QueryValue;
 
 /**
  * The backend REST API, served by the embedded test server under {@code /fake-backend}. The answers come from
@@ -27,10 +26,8 @@ public class FakeBackendController {
 
     @Get("/{+path}")
     public HttpResponse<String> get(@PathVariable String path,
-                                    @Nullable @Header("Authorization") String authorization,
-                                    @Nullable @QueryValue Integer size,
-                                    @Nullable @QueryValue Integer page) {
-        FakeBackend.FakeReply reply = backend.serve(path, authorization, size, page);
+                                    @Nullable @Header("Authorization") String authorization) {
+        FakeBackend.FakeReply reply = backend.serve(path, authorization);
         if (reply.status() == 200) {
             return HttpResponse.ok(reply.body()).contentType(MediaType.APPLICATION_JSON_TYPE);
         }
