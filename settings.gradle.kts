@@ -45,7 +45,7 @@ dependencyResolutionManagement {
             version("logstash.logback.encoder", "9.0")
             version("janino", "3.1.12")
             version("opentelemetry.instrumentation.alpha", "2.20.1-alpha")
-            version("maven.resolver", "2.0.24")
+            version("maven.resolver", "2.0.25")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
