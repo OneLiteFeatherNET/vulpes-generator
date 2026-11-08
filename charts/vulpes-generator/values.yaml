@@ -145,6 +145,7 @@ httpRoute:
   hostnames:
   - chart-example.local
   rules:
+  # A rule may also set timeouts: {request: 300s, backendRequest: 300s} (Gateway API).
   - matches:
     - path:
         type: PathPrefix
