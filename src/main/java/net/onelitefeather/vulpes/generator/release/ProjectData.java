@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The entities of one project as the backend REST endpoints returned them, before any mapping.
+ * The entities of one project as the backend content export holds them, before any mapping.
  * Sub-resources are keyed by the id of their parent: components and lore by item id, glyph rows by font id,
  * sound sources by sound id. A parent without an entry has no sub-resources.
  *

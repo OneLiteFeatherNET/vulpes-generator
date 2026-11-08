@@ -12,24 +12,19 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE;
 
 /**
- * Reads the REST endpoints of the Vulpes backend. Every request carries the bearer token when one is configured.
- * List endpoints are read page by page until {@code totalSize} entries are collected; a bare JSON array is taken whole.
+ * Reads the REST endpoints of the Vulpes backend that a release uses: the project object and the content export.
+ * Every request carries the bearer token when one is configured.
  *
  * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
  */
 final class BackendApiClient {
-
-    /** The page size of every list request. */
-    static final int PAGE_SIZE = 100;
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -72,38 +67,6 @@ final class BackendApiClient {
             throw unavailable(path + " answered " + e.getStatus());
         } catch (HttpClientException e) {
             throw unavailable("backend cannot be reached: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Reads every entry of a list endpoint.
-     *
-     * @param path the path below the base URL, without query
-     * @return all entries in the order the backend returned them
-     * @throws ReleaseRejectedException with {@link ReleaseRejectedException.Reason#SOURCE_UNAVAILABLE} when a page is
-     *                                  missing, malformed or the backend stops before {@code totalSize}
-     */
-    List<JsonNode> list(String path) {
-        List<JsonNode> entries = new ArrayList<>();
-        for (int page = 0; ; page++) {
-            String pagePath = path + "?size=" + PAGE_SIZE + "&page=" + page;
-            JsonNode body = find(pagePath).orElseThrow(() -> unavailable(path + " does not exist"));
-            if (body.isArray()) {
-                body.forEach(entries::add);
-                return entries;
-            }
-            JsonNode content = body.get("content");
-            JsonNode totalSize = body.get("totalSize");
-            if (content == null || !content.isArray() || totalSize == null || !totalSize.isNumber()) {
-                throw unavailable(path + " answered no page");
-            }
-            content.forEach(entries::add);
-            if (entries.size() >= totalSize.asLong()) {
-                return entries;
-            }
-            if (content.isEmpty()) {
-                throw unavailable(path + " ended at " + entries.size() + " of " + totalSize.asLong() + " entries");
-            }
         }
     }
 

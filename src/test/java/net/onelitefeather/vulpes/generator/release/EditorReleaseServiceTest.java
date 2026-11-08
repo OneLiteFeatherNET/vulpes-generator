@@ -132,6 +132,18 @@ class EditorReleaseServiceTest {
     }
 
     @Test
+    void keyInTheExportDifferentFromTheKeyReadBeforeIsRefusedWithProjectMismatch() {
+        projects.exportKey = "eldoria-next";
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
+                () -> service().release(PROJECT_ID, "2.0.0", null));
+
+        assertEquals(ReleaseRejectedException.Reason.PROJECT_MISMATCH, e.getReason(),
+                "a snapshot of another key than the key read first must be refused as PROJECT_MISMATCH");
+        assertEquals(0, publisher.publishCount, "nothing may be uploaded for a mismatched project");
+    }
+
+    @Test
     void snapshotThatDoesNotCompileUploadsNothing() {
         verification.failWith(new ReleaseRejectedException(ReleaseRejectedException.Reason.COMPILATION_FAILED,
                 "does not compile", java.util.List.of(new ReleaseDiagnostic("Eldoria.java", 1, "error")), false));
@@ -180,6 +192,7 @@ class EditorReleaseServiceTest {
         private int keyCount;
         private int assembleCount;
         private RuntimeException failKeyWith;
+        private String exportKey = "eldoria";
 
         @Override
         public String projectKey(UUID projectId) {
@@ -193,7 +206,7 @@ class EditorReleaseServiceTest {
         @Override
         public AssembledSnapshot assemble(UUID projectId) {
             assembleCount++;
-            return new AssembledSnapshot("eldoria", snapshot(projectId));
+            return new AssembledSnapshot(exportKey, snapshot(projectId));
         }
     }
 

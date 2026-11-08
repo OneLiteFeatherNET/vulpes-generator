@@ -1,0 +1,246 @@
+{
+  "revision": "fixture-from-backend-3.3.0-captures",
+  "project": {
+    "id": "01a193c1-fc5d-7546-8749-03c442235f29",
+    "displayName": "Cygnus",
+    "key": "cygnus",
+    "projectUrl": null,
+    "docuUrl": null,
+    "description": "Aus cygnus-pack importiert (lokaler Gesamttest)",
+    "labor": true
+  },
+  "items": [
+    {
+      "id": "01a193ca-db9f-79db-8f39-2ad9372c0efc",
+      "key": "statistics",
+      "uiName": "Statistics",
+      "comment": "Rolle: lobby. Aus Cygnus utils/Items.java",
+      "groupName": "meta",
+      "components": [
+        {
+          "id": "01a193ca-dba1-78d9-af35-8697eaabd92d",
+          "componentKey": "stelaris:material",
+          "value": "minecraft:book"
+        },
+        {
+          "id": "01a193ca-dbac-7393-ace8-ad9863807708",
+          "componentKey": "minecraft:custom_name",
+          "value": {
+            "text": "Statistics",
+            "color": "gold"
+          }
+        }
+      ],
+      "lore": [
+        {
+          "id": "01a193ca-dbaf-7e4f-99eb-556321106f28",
+          "text": "Right click to open your",
+          "orderIndex": 0
+        },
+        {
+          "id": "01a193ca-dbb3-77f9-aeca-71f6defa3ca8",
+          "text": "statistics of this year",
+          "orderIndex": 1
+        }
+      ]
+    },
+    {
+      "id": "01a193ca-dbb5-7e2e-8930-c8ff0197d2e9",
+      "key": "how_to_play",
+      "uiName": "How to play",
+      "comment": "Rolle: lobby. Aus Cygnus utils/Items.java",
+      "groupName": "meta",
+      "components": [
+        {
+          "id": "01a193ca-0000-7000-8000-000000000900",
+          "componentKey": "stelaris:material",
+          "value": "minecraft:writable_book"
+        }
+      ],
+      "lore": []
+    }
+  ],
+  "attributes": [
+    {
+      "id": "01a193cd-762b-732b-b230-ca5d3ba8da33",
+      "uiName": "Adrenaline",
+      "key": "adrenaline",
+      "defaultValue": 0.2,
+      "minimumValue": 0.0,
+      "maximumValue": 1.0,
+      "synced": false,
+      "comment": "Aus AttributeHelper: Modifier auf movement_speed, ADD_MULTIPLIED_TOTAL"
+    },
+    {
+      "id": "01a193cd-7647-763d-b806-7b3d241a5421",
+      "uiName": "Freeze",
+      "key": "freeze",
+      "defaultValue": -1.0,
+      "minimumValue": -1.0,
+      "maximumValue": 1.0,
+      "synced": false,
+      "comment": "Aus AttributeHelper: Modifier auf movement_speed, ADD_MULTIPLIED_TOTAL"
+    }
+  ],
+  "fonts": [
+    {
+      "id": "01a193cd-777d-731d-8fc9-e5b19bcb276c",
+      "key": "glitch_glitch_marker",
+      "uiName": "cygnus:glitch / glitch_marker",
+      "provider": "bitmap",
+      "mapper": "font",
+      "texturePath": "cygnus:font/glitch_marker.png",
+      "comment": "Font cygnus:glitch",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        {
+          "id": "01a193cd-778c-765b-8042-f5431edf3388",
+          "line": "\ue000",
+          "orderIndex": 0
+        }
+      ]
+    },
+    {
+      "id": "01a193cd-77bb-7657-a593-cec8c1673fa5",
+      "key": "icons_icons_builder",
+      "uiName": "cygnus:icons / icons_builder",
+      "provider": "bitmap",
+      "mapper": "font",
+      "texturePath": "cygnus:font/icons/builder.png",
+      "comment": "Font cygnus:icons",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        {
+          "id": "01a193cd-0000-7000-8000-000000000901",
+          "line": "\ue001",
+          "orderIndex": 0
+        }
+      ]
+    }
+  ],
+  "sounds": [
+    {
+      "id": "01a193cd-764e-714a-8373-c40d42552c34",
+      "key": "vhs_static",
+      "keyName": "vhs_static",
+      "uiName": "vhs_static",
+      "subTitle": "subtitles.cygnus.vhs_static",
+      "comment": "Aus cygnus/sounds.json",
+      "replace": false,
+      "sources": [
+        {
+          "id": "01a193cd-7660-783c-8b33-699202fd4042",
+          "name": "cygnus:vhs_static_1",
+          "volume": 1.0,
+          "pitch": 1.0,
+          "weight": 1,
+          "stream": false,
+          "attenuationDistance": 16,
+          "preload": false,
+          "type": "file"
+        },
+        {
+          "id": "01a193cd-7667-7b57-8194-c891faced397",
+          "name": "cygnus:vhs_static_2",
+          "volume": 1.0,
+          "pitch": 1.0,
+          "weight": 1,
+          "stream": false,
+          "attenuationDistance": 16,
+          "preload": false,
+          "type": "file"
+        },
+        {
+          "id": "01a193cd-766b-7d2d-ae1a-f1d392ffc776",
+          "name": "cygnus:vhs_static_3",
+          "volume": 1.0,
+          "pitch": 1.0,
+          "weight": 1,
+          "stream": false,
+          "attenuationDistance": 16,
+          "preload": false,
+          "type": "file"
+        }
+      ]
+    },
+    {
+      "id": "01a193cd-766f-7ef9-abb8-8ebd5369acec",
+      "key": "minecraft.music.creative",
+      "keyName": "music.creative",
+      "uiName": "minecraft:music.creative",
+      "subTitle": null,
+      "comment": "replace=true. Aus minecraft/sounds.json Eigentlich minecraft:music.creative.",
+      "replace": false,
+      "sources": []
+    }
+  ],
+  "expressionFunctions": [],
+  "expressions": [
+    {
+      "id": "01a193c2-090f-783d-b589-2598e57852c1",
+      "uiName": "pageProgress",
+      "expression": "collected / total * 100",
+      "comment": "Beispiel, nicht aus Cygnus",
+      "variables": [
+        {
+          "name": "collected",
+          "type": "NUMBER",
+          "testValue": "3"
+        },
+        {
+          "name": "total",
+          "type": "NUMBER",
+          "testValue": "6"
+        }
+      ]
+    },
+    {
+      "id": "01a193c9-6a20-7af3-9785-29d50e103695",
+      "uiName": "displayedHealth",
+      "expression": "MAX(1, CEILING(points / 5))",
+      "comment": "Outline Cygnus: Leben: angezeigte Health",
+      "variables": [
+        {
+          "name": "points",
+          "type": "NUMBER",
+          "testValue": "42"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "01a193c1-fc71-73ed-b5d3-6a62c2fcd40e",
+      "key": "cygnus:entity/equipment/humanoid/empty",
+      "displayName": "cygnus:entity/equipment/humanoid/empty",
+      "kind": "TEXTURE",
+      "fileName": "empty.png",
+      "contentType": "image/png",
+      "size": 88,
+      "sha1": "3018dec4de6b2a4dedded228b5e716a17f64a507",
+      "width": 64,
+      "height": 32,
+      "sourceAssetId": null,
+      "derivedAssetIds": []
+    },
+    {
+      "id": "01a193c1-fc78-735c-b252-398a0adaffc8",
+      "key": "cygnus:font/glitch_marker",
+      "displayName": "cygnus:font/glitch_marker",
+      "kind": "TEXTURE",
+      "fileName": "glitch_marker.png",
+      "contentType": "image/png",
+      "size": 72,
+      "sha1": "473ee87bbba0cedc30d7e7f45aed4f21bb271528",
+      "width": 8,
+      "height": 8,
+      "sourceAssetId": null,
+      "derivedAssetIds": []
+    }
+  ],
+  "advancements": [],
+  "dimensions": [],
+  "packs": []
+}

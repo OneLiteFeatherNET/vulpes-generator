@@ -27,7 +27,7 @@ public interface ProjectSource {
      * Assembles the snapshot of a project, with its key.
      *
      * @param projectId the id of the project in the backend
-     * @return the stable snapshot
+     * @return the snapshot, with the key of the project as the backend holds it in the content export
      * @throws ReleaseRejectedException when the snapshot cannot be assembled
      */
     AssembledSnapshot assemble(UUID projectId);

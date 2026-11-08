@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipInputStream;
 
 import static net.onelitefeather.vulpes.generator.release.ProjectFixture.id;
@@ -162,14 +161,24 @@ class EditorReleaseControllerIntegrationTest implements TestPropertyProvider {
     }
 
     @Test
-    void projectThatKeepsChangingAnswers409AndUploadsNothing() {
-        AtomicInteger reads = new AtomicInteger();
-        backend.putObject("project/" + PROJECT_ID, () -> FakeBackend.project(PROJECT_ID, "eldoria", "Eldoria " + reads.incrementAndGet()));
+    void releaseReadsTheProjectKeyAndTheExportOnceEachAndAnswers201() {
+        Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0\"}");
+
+        assertEquals(201, outcome.status(), "an unchanged project must be released, not refused as changing");
+        assertEquals(List.of("project/" + PROJECT_ID, "project/" + PROJECT_ID + "/content"), backend.requestedPaths(),
+                "a release must read the project key and then the content export, once each");
+    }
+
+    @Test
+    void keyChangedBetweenTheKeyReadAndTheExportAnswers422AndUploadsNothing() {
+        backend.putObject("project/" + PROJECT_ID, FakeBackend.project(PROJECT_ID, "eldoria", "Eldoria"));
+        backend.putExport(PROJECT_ID, ContentExport.of(ProjectFixture.project(PROJECT_ID, "eldoria-next", "Eldoria").build()));
 
         Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0\"}");
 
-        assertEquals(409, outcome.status(), "a project that keeps changing while it is read must answer 409");
-        assertTrue(repository.keys().isEmpty(), "nothing may be uploaded for a project that kept changing");
+        assertEquals(422, outcome.status(), "a key that differs between the key read and the export must answer 422");
+        assertTrue(outcome.body().contains("PROJECT_MISMATCH"), "the body must name the reason: " + outcome.body());
+        assertTrue(repository.keys().isEmpty(), "nothing may be uploaded for a project whose key changed");
     }
 
     @Test

@@ -7,12 +7,14 @@ import java.time.Clock;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.INVALID_REQUEST;
+import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.PROJECT_MISMATCH;
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.VERSION_EXISTS;
 
 /**
  * Starts a release on behalf of the editor. The order is fixed: the version is checked, the project key is read from
  * the backend, an existing release version is refused, the base branch is resolved, and only then the snapshot is
- * assembled and verified against the base. The release runs with the editor as creator.
+ * assembled, its key is checked against the key read first, and it is verified against the base. The release runs
+ * with the editor as creator.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -71,6 +73,10 @@ public class EditorReleaseService {
         }
         String branch = branches.resolve(baseBranch);
         AssembledSnapshot snapshot = projects.assemble(projectId);
+        if (!snapshot.projectKey().equals(project)) {
+            throw new ReleaseRejectedException(PROJECT_MISMATCH, "the key of project " + projectId + " changed from "
+                    + project + " to " + snapshot.projectKey() + " while the release was prepared");
+        }
         ReleaseRequest request = new ReleaseRequest(projectId, project, version,
                 SnapshotVerifier.digest(snapshot.bytes()), CREATED_BY, clock.instant(), branch);
         return releaseService.publishVerified(request, snapshot.bytes());

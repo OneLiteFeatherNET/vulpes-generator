@@ -66,7 +66,7 @@ public class EditorReleaseController {
     @ApiResponse(responseCode = "404", description = "The editor route is disabled.")
     @ApiResponse(
             responseCode = "409",
-            description = "The version already exists, or the project changed while the snapshot was assembled.",
+            description = "The version already exists.",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(implementation = ReleaseErrorResponse.class)
@@ -74,7 +74,8 @@ public class EditorReleaseController {
     )
     @ApiResponse(
             responseCode = "422",
-            description = "The project is unknown or holds content the release cannot express yet.",
+            description = "The project is unknown, its key changed while the release was prepared, or it holds content "
+                    + "the release cannot express yet.",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(implementation = ReleaseErrorResponse.class)
