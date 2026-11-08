@@ -1,9 +1,7 @@
 package net.onelitefeather.vulpes.generator.generation.sound;
 
-import net.onelitefeather.vulpes.api.model.sound.SoundEventEntity;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -28,20 +26,5 @@ public record SoundEventDefinition(boolean replace, String subtitle, List<SoundE
      */
     public SoundEventDefinition {
         sounds = sounds == null ? List.of() : List.copyOf(sounds);
-    }
-
-    /**
-     * Maps a sound event of the database to its definition.
-     *
-     * @param entity the event to map, its sound data is loaded lazily
-     * @return the definition of the event
-     */
-    public static SoundEventDefinition from(SoundEventEntity entity) {
-        List<SoundEntry> entries = entity.getSoundData() == null ? List.of() : entity.getSoundData().stream()
-                .map(SoundEntry::from)
-                .sorted(Comparator.comparing(SoundEntry::name, Comparator.nullsLast(Comparator.naturalOrder())))
-                .toList();
-        // TODO(vulpes-model): use isReplace() once released
-        return new SoundEventDefinition(false, entity.getSubTitle(), entries);
     }
 }

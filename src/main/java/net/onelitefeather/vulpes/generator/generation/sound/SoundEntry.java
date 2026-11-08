@@ -1,6 +1,5 @@
 package net.onelitefeather.vulpes.generator.generation.sound;
 
-import net.onelitefeather.vulpes.api.model.sound.SoundFileSource;
 import org.jetbrains.annotations.ApiStatus;
 
 /**
@@ -32,23 +31,4 @@ public record SoundEntry(
         boolean preload,
         String type
 ) {
-
-    /**
-     * Creates the entry of a sound file source of the database.
-     *
-     * @param source the source to map
-     * @return the entry with the values of the source
-     */
-    public static SoundEntry from(SoundFileSource source) {
-        return new SoundEntry(
-                source.getName(),
-                source.getVolume(),
-                source.getPitch(),
-                source.getWeight(),
-                source.isStreamable(),
-                source.getAttenuationDistance(),
-                source.isPreloadable(),
-                source.getType()
-        );
-    }
 }
