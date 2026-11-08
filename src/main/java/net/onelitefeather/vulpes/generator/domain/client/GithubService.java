@@ -2,14 +2,10 @@ package net.onelitefeather.vulpes.generator.domain.client;
 
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.client.exceptions.HttpClientException;
-import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.generator.domain.configuration.GithubConfiguration;
 import net.onelitefeather.vulpes.generator.domain.release.GitBranch;
-import net.onelitefeather.vulpes.generator.domain.release.GitReleaseDTO;
-import net.onelitefeather.vulpes.generator.domain.release.GitRelease;
-import net.onelitefeather.vulpes.generator.domain.release.GitTag;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 
 import java.util.List;
@@ -23,8 +19,7 @@ public class GithubService {
     /**
      * Creates a new instance of the {@link GithubService}
      *
-     * @param client the {@link GithubClient} to use for retrieving the latest
-     *               release information.
+     * @param client the {@link GithubClient} to use for retrieving the branches.
      * @param config the {@link GithubConfiguration} to use for retrieving the
      *               repository information.
      */
@@ -64,35 +59,5 @@ public class GithubService {
     private String authorization() {
         String password = config.password();
         return password == null || password.isBlank() ? null : "Bearer " + password;
-    }
-
-    /**
-     * Returns the latest release information from the Github repository.
-     *
-     * @return the latest release information
-     */
-    public GitReleaseDTO getLatestVersion() {
-        try {
-            GitRelease release = client.latestRelease(
-                    config.owner(),
-                    config.repo()
-            );
-            if (release == null) {
-                return fallbackToTags();
-            }
-            return GitReleaseDTO.fromRelease(release);
-        } catch (HttpClientResponseException _) {
-            return fallbackToTags();
-        }
-    }
-
-    /**
-     * Fallback method to get the latest tag if no releases are found
-     *
-     * @return the latest tag
-     */
-    private GitReleaseDTO fallbackToTags() {
-        List<GitTag> tags = client.tags(config.owner(), config.repo());
-        return tags.isEmpty() ? GitReleaseDTO.unknown() : GitReleaseDTO.fromTag(tags.getFirst().name());
     }
 }
