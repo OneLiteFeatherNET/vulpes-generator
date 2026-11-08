@@ -22,7 +22,7 @@ class FakeBaseVerification extends BaseVerification {
     private ReleaseRejectedException failure;
 
     FakeBaseVerification() {
-        super(null, null, null, null, "");
+        super(null, null, null, null, null, "");
     }
 
     @Override

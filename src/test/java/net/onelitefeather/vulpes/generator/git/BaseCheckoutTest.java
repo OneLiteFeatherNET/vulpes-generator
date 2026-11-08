@@ -32,7 +32,7 @@ class BaseCheckoutTest {
         String head = createOriginWithTwoCommits();
         BaseCheckout checkout = new BaseCheckout(origin().toUri().toString(), Duration.ofMinutes(2), tempDir);
 
-        String commit = checkout.resolveCommit("develop");
+        String commit = checkout.withCheckout("develop", BaseCheckout.Checkout::commit);
 
         assertEquals(head, commit, "the commit must be the head of the branch at clone time");
         assertEquals(40, commit.length(), "the commit must be the full 40-character SHA");
@@ -56,7 +56,7 @@ class BaseCheckoutTest {
         BaseCheckout checkout = new BaseCheckout(missing.toUri().toString(), Duration.ofMinutes(2), tempDir);
 
         ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
-                () -> checkout.resolveCommit("develop"));
+                () -> checkout.withCheckout("develop", BaseCheckout.Checkout::commit));
 
         assertEquals(ReleaseRejectedException.Reason.BASE_UNAVAILABLE, e.getReason(),
                 "an unreachable vulpes-base must be reported as BASE_UNAVAILABLE");

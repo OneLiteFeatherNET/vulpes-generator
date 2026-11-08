@@ -15,6 +15,7 @@ import java.nio.file.attribute.FileTime;
 import java.time.Clock;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -82,6 +83,21 @@ public class BaseClassCache {
         }
         Path base = workDir.isBlank() ? Path.of(System.getProperty("java.io.tmpdir")) : Path.of(workDir);
         return base.resolve("base-cache");
+    }
+
+    /**
+     * Returns the classes of a commit when the cache holds an entry for it. A lookup never builds and never clones;
+     * a found entry counts as used, like one returned by {@link #resolve(String, Path)}.
+     *
+     * @param commit the full 40-character lower-case SHA-1 of the commit
+     * @return the classes of the commit, or empty when the commit has no entry
+     */
+    public Optional<BaseClasses> cached(String commit) {
+        if (!COMMIT.matcher(commit).matches()) {
+            throw new IllegalArgumentException("commit must be a full 40-character lower-case SHA-1: " + commit);
+        }
+        Path entry = cacheDir.resolve(commit);
+        return isEntry(entry) ? Optional.of(use(entry)) : Optional.empty();
     }
 
     /**

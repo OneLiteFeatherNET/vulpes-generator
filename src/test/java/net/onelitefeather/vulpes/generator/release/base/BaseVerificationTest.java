@@ -5,6 +5,7 @@ import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason;
 import net.onelitefeather.vulpes.generator.release.codegen.CodegenGate;
 import net.onelitefeather.vulpes.generator.release.codegen.GeneratedFile;
+import net.onelitefeather.vulpes.generator.release.codegen.CodegenPort;
 import net.onelitefeather.vulpes.generator.release.compile.CompilationGate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,13 +24,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests the base step with a local origin, a fake base build and a fake code generator. No network, no Gradle.
+ * Tests the base step with a local origin, a fake commit resolver, a fake base build and a fake code generator.
+ * No network, no Gradle.
  *
  * @author TheMeinerLP
  */
 class BaseVerificationTest {
 
     private static final String SWORD = "package items;\n\npublic final class Sword {\n}\n";
+    private static final String OTHER_HEAD = "a".repeat(40);
 
     @TempDir
     Path tempDir;
@@ -72,6 +76,52 @@ class BaseVerificationTest {
     }
 
     @Test
+    void cachedCommitIsVerifiedWithoutCloning() throws Exception {
+        LocalBaseOrigin.Origin origin = LocalBaseOrigin.create(tempDir.resolve("origin"));
+        FakeBaseBuild build = new FakeBaseBuild();
+        BaseClassCache cache = cache(build);
+        cache.resolve(origin.head(), Files.createDirectories(tempDir.resolve("prebuilt")));
+        BaseCheckout noClone = new BaseCheckout(origin.url(), Duration.ofMinutes(2), work()) {
+            @Override
+            public <T> T withCheckout(String branch, Function<BaseCheckout.Checkout, T> action) {
+                throw new AssertionError("a cached commit must be verified without cloning " + branch);
+            }
+        };
+        BaseVerification verification = new BaseVerification(commits(origin), noClone, cache,
+                new CodegenGate(sourceOf(SWORD)), new CompilationGate(), work().toString());
+
+        BaseVerification.VerifiedBase verified = verification.verify(input());
+
+        assertEquals(origin.head(), verified.commit(), "the cached commit must be the one the API resolved");
+        assertEquals(1, build.builds(), "the cached commit must not be built again");
+    }
+
+    @Test
+    void uncachedCommitIsClonedAndBuiltOnce() throws Exception {
+        LocalBaseOrigin.Origin origin = LocalBaseOrigin.create(tempDir.resolve("origin"));
+        FakeBaseBuild build = new FakeBaseBuild();
+        BaseVerification verification = verification(origin, build, sourceOf(SWORD));
+
+        BaseVerification.VerifiedBase verified = verification.verify(input());
+
+        assertEquals(origin.head(), verified.commit());
+        assertEquals(1, build.builds(), "an uncached commit must be built once after the clone");
+    }
+
+    @Test
+    void cloneHeadWinsWhenTheBranchMovedAfterTheApiAnswered() throws Exception {
+        LocalBaseOrigin.Origin origin = LocalBaseOrigin.create(tempDir.resolve("origin"));
+        BaseVerification verification = new BaseVerification(commits(origin).with("develop", OTHER_HEAD),
+                checkout(origin), cache(new FakeBaseBuild()), new CodegenGate(sourceOf(SWORD)),
+                new CompilationGate(), work().toString());
+
+        BaseVerification.VerifiedBase verified = verification.verify(input());
+
+        assertEquals(origin.head(), verified.commit(),
+                "the commit of the clone must be used when the branch moved between the two lookups");
+    }
+
+    @Test
     void compilationFailureGivesCompilationFailedWithDiagnostics() throws Exception {
         LocalBaseOrigin.Origin origin = LocalBaseOrigin.create(tempDir.resolve("origin"));
         String broken = "package items;\n\npublic final class Sword {\n    int damage = \"twelve\";\n}\n";
@@ -86,7 +136,7 @@ class BaseVerificationTest {
     }
 
     @Test
-    void unknownBranchInTheCloneGivesBaseUnavailableAndBuildsNothing() throws Exception {
+    void unknownBranchGivesBaseUnavailableAndBuildsNothing() throws Exception {
         LocalBaseOrigin.Origin origin = LocalBaseOrigin.create(tempDir.resolve("origin"));
         FakeBaseBuild build = new FakeBaseBuild();
         BaseVerification verification = verification(origin, build, sourceOf(SWORD));
@@ -127,14 +177,25 @@ class BaseVerificationTest {
         }
     }
 
-    private BaseVerification verification(LocalBaseOrigin.Origin origin, FakeBaseBuild build,
-                                          net.onelitefeather.vulpes.generator.release.codegen.CodegenPort codegen) {
-        Path work = tempDir.resolve("work");
-        BaseCheckout checkout = new BaseCheckout(origin.url(), Duration.ofMinutes(2), work);
-        BaseClassCache cache = new BaseClassCache(build, work.resolve("base-cache"), 3,
-                new AdvancingClock());
-        return new BaseVerification(checkout, cache, new CodegenGate(codegen), new CompilationGate(),
-                work.toString());
+    private BaseVerification verification(LocalBaseOrigin.Origin origin, FakeBaseBuild build, CodegenPort codegen) {
+        return new BaseVerification(commits(origin), checkout(origin), cache(build), new CodegenGate(codegen),
+                new CompilationGate(), work().toString());
+    }
+
+    private FakeBaseCommits commits(LocalBaseOrigin.Origin origin) {
+        return new FakeBaseCommits().with("develop", origin.head());
+    }
+
+    private BaseCheckout checkout(LocalBaseOrigin.Origin origin) {
+        return new BaseCheckout(origin.url(), Duration.ofMinutes(2), work());
+    }
+
+    private BaseClassCache cache(FakeBaseBuild build) {
+        return new BaseClassCache(build, work().resolve("base-cache"), 3, new AdvancingClock());
+    }
+
+    private Path work() {
+        return tempDir.resolve("work");
     }
 
     private BaseVerification.Input input() {
@@ -143,7 +204,7 @@ class BaseVerificationTest {
     }
 
     /** A generator that writes one source file with the given content. */
-    private static net.onelitefeather.vulpes.generator.release.codegen.CodegenPort sourceOf(String content) {
+    private static CodegenPort sourceOf(String content) {
         return (releaseJson, snapshotJson, packageName, projectName) ->
                 List.of(new GeneratedFile("items/Sword.java", content));
     }
