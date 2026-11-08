@@ -12,7 +12,7 @@
 #
 # Only what identifies *this* application is changed from the original below
 # (image, port, metrics path). Everything environment-specific -- hostnames,
-# replica counts, database secrets, log labels -- stays in the cluster
+# replica counts, secrets, log labels -- stays in the cluster
 # repository's overlays.
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
@@ -179,7 +179,7 @@ readinessProbe:
 
 # Off by default. Mainly needed when tracing.enabled: OTel bytecode
 # instrumentation adds real seconds to JVM cold start (class transformation
-# on Micronaut/Hibernate/Hikari), which can push first-successful-health
+# on Micronaut), which can push first-successful-health
 # past livenessProbe's steady-state deadline and SIGTERM-loop the pod
 # before it ever finishes starting. Uses the readiness path/port since
 # that's the only health endpoint the app exposes.
@@ -241,12 +241,6 @@ config:
 secrets:
   enabled: false
   files: {}
-  # Example:
-  # files:
-  #   prod: |-
-  #     datasource:
-  #       username: ${DB_USER}
-  #       password: ${DB_PASS}
 
 # Environment-Variablen
 env:

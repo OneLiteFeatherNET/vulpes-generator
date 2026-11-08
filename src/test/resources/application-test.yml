@@ -9,14 +9,6 @@ micronaut:
     optimize-class-loading: false
     precompute-operations: false
 
-datasources:
-  default:
-    enabled: false
-
-jpa:
-  default:
-    enabled: false
-
 filter:
   exclude:
     - renovate

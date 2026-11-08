@@ -38,37 +38,6 @@ micronaut:
         paths: classpath:META-INF/swagger/views/swagger-ui
         mapping: /swagger-ui
 
-commit:
-  commitName: "Vulpes"
-  commitMail: "vulpes@onelitefeather.com"
-  defaultMessage: "Initial commit"
-
-# Driver and dialect stay configurable so the deployment can still override
-# them, but the defaults now point at Postgres: the Vulpes data lives in the
-# shared Postgres (CNPG) cluster, and the docker-compose setup beside this repo
-# was moved to match.
-datasources:
-  default:
-    url: ${DB_URL:`jdbc:postgresql://localhost:5432/vulpes`}
-    driverClassName: ${DB_DRIVER:org.postgresql.Driver}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:vulpes}
-    dialect: POSTGRES
-    read-only: true
-    maximum-pool-size: 10
-
-jpa:
-  default:
-    entity-scan:
-      packages:
-        - net.onelitefeather.vulpes
-    properties:
-      hibernate:
-        hbm2ddl.auto: none
-        dialect: ${DB_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
-        show_sql: ${SHOW_SQL:false}
-        format_sql: true
-
 # The /prometheus endpoint below is declared further down; this is what gives it
 # something to serve.
 micrometer:
@@ -159,8 +128,8 @@ endpoints:
     sensitive: false
 
 # OpenTelemetry — tracing is disabled unless OTEL_TRACES_EXPORTER=otlp is set
-# (do this in the Docker/prod container). HTTP (server/client) and JDBC spans
-# are instrumented automatically once enabled.
+# (do this in the Docker/prod container). HTTP (server/client) spans are
+# instrumented automatically once enabled.
 otel:
   service:
     name: ${OTEL_SERVICE_NAME:vulpes-generator}
