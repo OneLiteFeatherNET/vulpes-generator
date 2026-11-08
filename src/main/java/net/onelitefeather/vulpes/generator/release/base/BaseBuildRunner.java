@@ -6,6 +6,8 @@ import net.onelitefeather.vulpes.generator.domain.configuration.BaseBuildCredent
 import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +40,9 @@ public class BaseBuildRunner implements BaseBuild {
     private static final String INIT_SCRIPT_RESOURCE = "/vulpes-base-export.init.gradle";
     private static final String INIT_SCRIPT_NAME = "vulpes-export.init.gradle";
     private static final String LOG_NAME = "vulpes-base-build.log";
+    /** The number of lines of the build log that a warning for a failed attempt quotes. */
+    private static final int LOG_TAIL_LINES = 40;
+    private static final Logger LOG = LoggerFactory.getLogger(BaseBuildRunner.class);
     /** The Gradle project properties that the base build reads its read-only repository credential from. */
     static final String GRADLE_USER_NAME = "ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryUsername";
     static final String GRADLE_PASSWORD = "ORG_GRADLE_PROJECT_OneLiteFeatherRepositoryPassword";
@@ -104,8 +109,11 @@ public class BaseBuildRunner implements BaseBuild {
         List<String> command = List.of(wrapper.toAbsolutePath().toString(), "--no-daemon", "--console=plain",
                 "--no-configuration-cache", "--init-script", initScript.toAbsolutePath().toString(),
                 "-PvulpesExportDir=" + export.toAbsolutePath(), EXPORT_TASK);
-        ProcessRunner.ProcessResult result = processes.run(command, checkout, environment(), buildTimeout,
-                checkout.resolveSibling(LOG_NAME));
+        Path log = checkout.resolveSibling(LOG_NAME);
+        ProcessRunner.ProcessResult result = attempt(command, checkout, log, 1);
+        if (failed(result)) {
+            result = attempt(command, checkout, log, 2);
+        }
         if (result.timedOut()) {
             throw unavailable("the vulpes-base build exceeded the time limit of " + minutes(buildTimeout));
         }
@@ -114,6 +122,37 @@ public class BaseBuildRunner implements BaseBuild {
         }
         if (!Files.isRegularFile(export.resolve(JAR_NAME))) {
             throw unavailable("the vulpes-base build exported no jar");
+        }
+    }
+
+    /**
+     * Runs one attempt of the build and logs a warning with the end of its log when the attempt failed.
+     *
+     * @param command the Gradle command line
+     * @param checkout the working directory of the build
+     * @param log the file that receives the build output
+     * @param number the number of the attempt, one or two
+     * @return the outcome of the attempt
+     */
+    private ProcessRunner.ProcessResult attempt(List<String> command, Path checkout, Path log, int number) {
+        ProcessRunner.ProcessResult result = processes.run(command, checkout, environment(), buildTimeout, log);
+        if (failed(result)) {
+            LOG.warn("The vulpes-base build failed with exit code {} on attempt {}. Last {} lines of {}:\n{}",
+                    result.exitCode(), number, LOG_TAIL_LINES, log, logTail(log));
+        }
+        return result;
+    }
+
+    private static boolean failed(ProcessRunner.ProcessResult result) {
+        return result.exitCode() != 0 && !result.timedOut();
+    }
+
+    private static String logTail(Path log) {
+        try {
+            List<String> lines = Files.readAllLines(log, StandardCharsets.UTF_8);
+            return String.join("\n", lines.subList(Math.max(0, lines.size() - LOG_TAIL_LINES), lines.size()));
+        } catch (IOException e) {
+            return "(the build log cannot be read: " + e.getClass().getSimpleName() + ")";
         }
     }
 

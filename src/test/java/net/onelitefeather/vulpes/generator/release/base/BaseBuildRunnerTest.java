@@ -1,16 +1,24 @@
 package net.onelitefeather.vulpes.generator.release.base;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import net.onelitefeather.vulpes.generator.domain.configuration.BaseBuildCredentials;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException;
 import net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +35,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BaseBuildRunnerTest {
 
     private static final Duration BUILD_TIMEOUT = Duration.ofMinutes(10);
+    private static final ProcessRunner.ProcessResult SUCCESS = new ProcessRunner.ProcessResult(0, false);
+    private static final ProcessRunner.ProcessResult FAILURE = new ProcessRunner.ProcessResult(1, false);
+    private static final ProcessRunner.ProcessResult TIMEOUT = new ProcessRunner.ProcessResult(-1, true);
     private static final Map<String, String> PARENT_ENVIRONMENT = Map.of(
             "PATH", "/usr/bin",
             "HOME", "/home/generator",
@@ -41,6 +52,22 @@ class BaseBuildRunnerTest {
 
     @TempDir
     Path tempDir;
+
+    private Logger logger;
+    private ListAppender<ILoggingEvent> appender;
+
+    @BeforeEach
+    void attachAppender() {
+        logger = (Logger) LoggerFactory.getLogger(BaseBuildRunner.class);
+        appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+    }
+
+    @AfterEach
+    void detachAppender() {
+        logger.detachAppender(appender);
+    }
 
     @Test
     void runsTheClonesOwnGradleWrapperInsideTheCheckout() throws IOException {
@@ -199,6 +226,91 @@ class BaseBuildRunnerTest {
                 "no repository variable may be set without the read-only credential: " + environment.keySet());
     }
 
+    @Test
+    void buildThatFailsOnceThenSucceedsRunsTwiceAndProducesTheExport() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        Path export = tempDir.resolve("export");
+        FakeProcessRunner processes = attempts(export, FAILURE, SUCCESS);
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT);
+
+        runner.build(checkout, export);
+
+        assertEquals(2, processes.calls().size(), "a failed build must be retried exactly once");
+        assertTrue(Files.isRegularFile(export.resolve(BaseBuildRunner.JAR_NAME)),
+                "the retried build must produce the export");
+    }
+
+    @Test
+    void buildFailingTwiceGivesBaseUnavailableWithTheExitCodeOfTheSecondAttempt() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = attempts(tempDir.resolve("export"),
+                new ProcessRunner.ProcessResult(3, false), new ProcessRunner.ProcessResult(7, false));
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT);
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
+                () -> runner.build(checkout, tempDir.resolve("export")));
+
+        assertEquals(Reason.BASE_UNAVAILABLE, e.getReason());
+        assertTrue(e.getMessage().contains("failed with exit code 7"),
+                "the message must name the exit code of the last attempt: " + e.getMessage());
+        assertEquals(2, processes.calls().size(), "a build that fails twice must run exactly twice");
+    }
+
+    @Test
+    void timedOutBuildIsNotRetried() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = attempts(tempDir.resolve("export"), TIMEOUT);
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT);
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
+                () -> runner.build(checkout, tempDir.resolve("export")));
+
+        assertEquals(1, processes.calls().size(), "a build that hit the time limit must not be retried");
+        assertTrue(e.getMessage().contains("time limit"), "the message must name the time limit: " + e.getMessage());
+    }
+
+    @Test
+    void secondAttemptTimingOutGivesTheTimeLimitError() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = attempts(tempDir.resolve("export"), FAILURE, TIMEOUT);
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT);
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
+                () -> runner.build(checkout, tempDir.resolve("export")));
+
+        assertEquals(Reason.BASE_UNAVAILABLE, e.getReason());
+        assertTrue(e.getMessage().contains("time limit"), "the message must name the time limit: " + e.getMessage());
+    }
+
+    @Test
+    void failedAttemptLogsAWarningWithTheLastFortyLinesOfTheBuildLog() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = attempts(tempDir.resolve("export"), FAILURE, SUCCESS);
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT);
+
+        runner.build(checkout, tempDir.resolve("export"));
+
+        assertEquals(1, appender.list.size(), "exactly one warning must be logged for the failed attempt");
+        ILoggingEvent event = appender.list.getFirst();
+        assertEquals(Level.WARN, event.getLevel(), "a failed attempt must be logged as a WARN");
+        String message = event.getFormattedMessage();
+        assertTrue(message.contains("step-50"), "the warning must contain the last line of the log: " + message);
+        assertTrue(message.contains("step-11"), "the warning must contain the fortieth line from the end: " + message);
+        assertFalse(message.contains("step-10"), "the warning must not contain lines older than forty: " + message);
+    }
+
+    @Test
+    void warningForFailedAttemptSaysWhenTheBuildLogCannotBeRead() throws IOException {
+        Path checkout = checkoutWithWrapper();
+        FakeProcessRunner processes = new FakeProcessRunner(call -> FAILURE);
+        BaseBuildRunner runner = new BaseBuildRunner(processes, BUILD_TIMEOUT, PARENT_ENVIRONMENT);
+
+        assertThrows(ReleaseRejectedException.class, () -> runner.build(checkout, tempDir.resolve("export")));
+
+        assertTrue(appender.list.getFirst().getFormattedMessage().contains("cannot be read"),
+                "a missing build log must be named in the warning: " + appender.list.getFirst().getFormattedMessage());
+    }
+
     private Path checkoutWithWrapper() throws IOException {
         Path checkout = Files.createDirectories(tempDir.resolve("clone"));
         Files.writeString(checkout.resolve("gradlew"), "#!/bin/sh\n", StandardCharsets.UTF_8);
@@ -208,14 +320,46 @@ class BaseBuildRunnerTest {
     /** A runner that behaves like a successful Gradle build: it writes the jar and one dependency into the export. */
     private static FakeProcessRunner exportingRunner(Path export) {
         return new FakeProcessRunner(call -> {
-            try {
-                Files.createDirectories(export.resolve("lib"));
-                Files.writeString(export.resolve("vulpes-base.jar"), "jar", StandardCharsets.UTF_8);
-                Files.writeString(export.resolve("lib").resolve("minestom.jar"), "jar", StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-            return new ProcessRunner.ProcessResult(0, false);
+            writeExport(export);
+            return SUCCESS;
         });
+    }
+
+    /**
+     * A runner that answers the attempts in the given order. Every attempt writes fifty numbered lines into its log,
+     * as Gradle would, and a successful attempt exports the jar. An attempt beyond the given results fails the test.
+     */
+    private static FakeProcessRunner attempts(Path export, ProcessRunner.ProcessResult... results) {
+        Iterator<ProcessRunner.ProcessResult> answers = List.of(results).iterator();
+        return new FakeProcessRunner(call -> {
+            writeLog(call.log());
+            ProcessRunner.ProcessResult result = answers.next();
+            if (result.exitCode() == 0) {
+                writeExport(export);
+            }
+            return result;
+        });
+    }
+
+    private static void writeExport(Path export) {
+        try {
+            Files.createDirectories(export.resolve("lib"));
+            Files.writeString(export.resolve(BaseBuildRunner.JAR_NAME), "jar", StandardCharsets.UTF_8);
+            Files.writeString(export.resolve("lib").resolve("minestom.jar"), "jar", StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static void writeLog(Path log) {
+        StringBuilder lines = new StringBuilder();
+        for (int line = 1; line <= 50; line++) {
+            lines.append(String.format("step-%02d%n", line));
+        }
+        try {
+            Files.writeString(log, lines.toString(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
