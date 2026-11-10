@@ -1,5 +1,29 @@
 # Changelog
 
+## [3.0.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v2.0.0...v3.0.0) (2026-11-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **generator:** GET /download, GET /build/data and GET /generator/generate are removed. Stelaris must switch to the editor release flow (GET /projects/{projectId}/local-build and POST /generator/release).
+
+### Bug Fixes
+
+* **chart:** pass route timeouts through to the httproute ([#230](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/230)) ([34f46f9](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/34f46f9a30578db32902874bec7efc328d25535c))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-codegen to v0.4.0 ([#227](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/227)) ([4413b68](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/4413b6852bef288d9436cee433108ca88e792eac))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-codegen to v0.4.1 ([#233](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/233)) ([0e49cd2](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/0e49cd2028f219238eee9da1208b7d849191a97b))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-format to v0.4.0 ([#228](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/228)) ([d144e37](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/d144e37dc760567faac66258d1906abdde21df65))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-format to v0.4.1 ([#234](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/234)) ([f62b617](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/f62b617b80fcc33389b1b4b96b265357a7d0e040))
+* **deps:** update maven.resolver to v2.0.25 ([#226](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/226)) ([8c708ec](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/8c708ecea0ccca44515c62866061cc07fb40fe03))
+* **release:** read the release snapshot from the backend content export ([#237](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/237)) ([9adc334](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/9adc33458d8e576908e0352f06ce9227c99f47f0))
+* **release:** retry a failed base build once and log its output ([#231](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/231)) ([997eb79](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/997eb798f4794adfd1238f9e0465be8b1eac10ac))
+* **release:** skip the base clone when the commit is cached and log clone failures ([#235](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/235)) ([6e78740](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/6e7874093fb7ab4b0d37fe96b7f2fbee9fc0f887))
+
+
+### Code Refactoring
+
+* **generator:** remove java generation and git integration ([#232](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/232)) ([33bbc98](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/33bbc982bb530987962b9205e3c6645c780fe35e))
+
 ## [2.0.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v1.0.0...v2.0.0) (2026-11-07)
 
 
