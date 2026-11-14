@@ -240,6 +240,30 @@ class ProjectSnapshotMapperTest {
     }
 
     @Test
+    void packInputsHoldThePackSettingsAndTheIdsOfItsTexturesAndIcon() {
+        ProjectFixture fixture = eldoria();
+        fixture.assets().add(asset(id(4), "eldoria:entity/equipment/empty", "TEXTURE", 88));
+        fixture.assets().add(asset(id(5), "eldoria:slender", "BBMODEL", 120));
+        fixture.assets().add(asset(id(6), "eldoria:icon", "TEXTURE", 40));
+        fixture.packs().add(obj("id", id(7), "packType", "RESOURCE", "description", obj("text", "Eldoria"),
+                "minFormatMajor", 46, "minFormatMinor", 0, "maxFormatMajor", 46, "maxFormatMinor", null,
+                "enabledFeatures", json("[]"), "iconAssetId", id(6)));
+
+        ResourcePackInputs inputs = new ProjectSnapshotMapper(FOREIGN).map(fixture.build()).pack();
+
+        assertEquals("Eldoria", inputs.meta().get("description").get("text").asText(),
+                "the meta must be the resource pack entry of the export");
+        assertEquals(List.of(
+                        new ResourcePackInputs.PackAsset("assets/eldoria/textures/entity/equipment/empty.png",
+                                java.util.UUID.fromString(id(4)), SHA1, 88),
+                        new ResourcePackInputs.PackAsset("assets/eldoria/textures/icon.png",
+                                java.util.UUID.fromString(id(6)), SHA1, 40),
+                        new ResourcePackInputs.PackAsset("pack.png", java.util.UUID.fromString(id(6)), SHA1, 40)),
+                inputs.assets(), "the pack files must be the textures without BBMODEL, then the icon as pack.png, "
+                        + "an icon that is also a texture of the project is packed at both paths");
+    }
+
+    @Test
     void soundAssetMapsToSoundsPathWithOggExtension() {
         ProjectFixture fixture = eldoria();
         fixture.assets().add(asset(id(4), "eldoria:ambient/drone", "SOUND", 512));

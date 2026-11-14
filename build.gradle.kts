@@ -77,6 +77,9 @@ dependencies {
     // Maven Resolver publishes content data JARs to Reposilite (release package).
     implementation(libs.maven.resolver.supplier)
     implementation(libs.maven.resolver.transport.jdk)
+    // S3 client of the resource pack bucket (release package). The Apache HTTP client is the one the SDK uses.
+    implementation(libs.aws.s3)
+    implementation(libs.aws.apache.client)
 
     runtimeOnly(mn.snakeyaml)
 

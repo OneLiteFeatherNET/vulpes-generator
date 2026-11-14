@@ -69,7 +69,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
     void sampleProjectExportIsAssembledIntoAValidFormatOneSnapshot() {
         registerSampleExport();
 
-        byte[] snapshot = source.fetch(SampleProject.ID);
+        byte[] snapshot = source.fetch(SampleProject.ID).bytes();
 
         assertTrue(SnapshotSchema.violations(snapshot).isEmpty(),
                 "the assembled snapshot must validate against the schema, violations: " + SnapshotSchema.violations(snapshot));
@@ -79,15 +79,37 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
     void sampleProjectExportEqualsTheGoldenBytes() throws IOException {
         registerSampleExport();
 
-        byte[] snapshot = source.fetch(SampleProject.ID);
+        byte[] snapshot = source.fetch(SampleProject.ID).bytes();
 
         assertArrayEquals(golden("cygnus-snapshot.json"), snapshot,
                 "the snapshot of the sample project must stay byte-identical to the golden snapshot");
     }
 
     @Test
+    void assetBytesAreReadFromTheContentEndpointOfTheAsset() {
+        UUID asset = UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae8");
+        backend.putReply("project/" + PROJECT_ID + "/asset/" + asset + "/content",
+                new FakeBackend.FakeReply(200, "asset-bytes"));
+
+        byte[] bytes = source.content(PROJECT_ID, asset);
+
+        assertArrayEquals("asset-bytes".getBytes(StandardCharsets.UTF_8), bytes,
+                "the bytes must be the body of the asset content endpoint");
+    }
+
+    @Test
+    void missingAssetContentIsSourceUnavailable() {
+        UUID asset = UUID.fromString("7c9e6679-7425-40de-944b-e07fc1f90ae9");
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.content(PROJECT_ID, asset));
+
+        assertEquals(ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE, e.getReason(),
+                "an asset the backend cannot answer must refuse the release as SOURCE_UNAVAILABLE");
+    }
+
+    @Test
     void releaseReadsTheContentExportExactlyOnce() {
-        source.fetch(PROJECT_ID);
+        source.fetch(PROJECT_ID).bytes();
 
         assertEquals(List.of(EXPORT_PATH), backend.requestedPaths(),
                 "a snapshot must be assembled from one request to the content export and nothing else");
@@ -103,7 +125,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
         }
         backend.registerProject(fixture.build());
 
-        JsonNode items = json(new String(source.fetch(PROJECT_ID), StandardCharsets.UTF_8)).get("items");
+        JsonNode items = json(new String(source.fetch(PROJECT_ID).bytes(), StandardCharsets.UTF_8)).get("items");
 
         assertEquals(150, items.size(), "all 150 items of the export must be in the snapshot");
         assertEquals(1, backend.requestCount(EXPORT_PATH), "the export must be read once, without paging");
@@ -111,7 +133,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
 
     @Test
     void unknownProjectIsRejectedAsUnknownProject() {
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(UNKNOWN_PROJECT));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(UNKNOWN_PROJECT).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.UNKNOWN_PROJECT, e.getReason(),
                 "the export answering 404 must be reported as UNKNOWN_PROJECT");
@@ -121,7 +143,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
     void exportAnsweringServerErrorIsSourceUnavailableAfterOneRequest() {
         backend.putReply(EXPORT_PATH, new FakeBackend.FakeReply(500, ""));
 
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE, e.getReason(),
                 "an export answering 500 must be reported as SOURCE_UNAVAILABLE");
@@ -132,7 +154,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
     void unavailableBackendIsRejectedAsSourceUnavailable() {
         backend.setDown(true);
 
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE, e.getReason(),
                 "a backend answering 503 must be reported as SOURCE_UNAVAILABLE");
@@ -143,7 +165,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
         BackendApiReleaseSnapshotSource unreachable =
                 new BackendApiReleaseSnapshotSource(client, "http://localhost:1", "", List.of("minecraft", "olf"));
 
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> unreachable.fetch(PROJECT_ID));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> unreachable.fetch(PROJECT_ID).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE, e.getReason(),
                 "a backend that refuses the connection must be reported as SOURCE_UNAVAILABLE");
@@ -153,7 +175,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
     void exportWithoutBodyIsSourceUnavailable() {
         backend.putReply(EXPORT_PATH, new FakeBackend.FakeReply(200, ""));
 
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE, e.getReason(),
                 "an export without a body must be reported as SOURCE_UNAVAILABLE");
@@ -163,7 +185,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
     void exportWithInvalidJsonIsSourceUnavailable() {
         backend.putReply(EXPORT_PATH, new FakeBackend.FakeReply(200, "{\"project\":"));
 
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE, e.getReason(),
                 "an export with invalid JSON must be reported as SOURCE_UNAVAILABLE");
@@ -173,7 +195,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
     void exportThatIsNotAnObjectIsSourceUnavailable() {
         backend.putReply(EXPORT_PATH, new FakeBackend.FakeReply(200, "[]"));
 
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE, e.getReason(),
                 "an export that is not a JSON object must be reported as SOURCE_UNAVAILABLE");
@@ -185,7 +207,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
         fixture.advancements().add(obj("id", id(10), "key", "first_page"));
         backend.registerProject(fixture.build());
 
-        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID));
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> source.fetch(PROJECT_ID).bytes());
 
         assertEquals(ReleaseRejectedException.Reason.UNSUPPORTED_CONTENT, e.getReason(),
                 "an advancement must still be refused as UNSUPPORTED_CONTENT");
@@ -194,7 +216,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
 
     @Test
     void configuredTokenIsSentWithEveryBackendCall() {
-        source.fetch(PROJECT_ID);
+        source.fetch(PROJECT_ID).bytes();
 
         assertFalse(backend.authorizations().isEmpty(), "the backend must have been called");
         for (String authorization : backend.authorizations()) {
@@ -208,7 +230,7 @@ class BackendApiReleaseSnapshotSourceIntegrationTest implements TestPropertyProv
         BackendApiReleaseSnapshotSource withoutToken =
                 new BackendApiReleaseSnapshotSource(client, backendUrl, "  ", List.of("minecraft", "olf"));
 
-        withoutToken.fetch(PROJECT_ID);
+        withoutToken.fetch(PROJECT_ID).bytes();
 
         assertFalse(backend.authorizations().isEmpty(), "the backend must have been called");
         for (String authorization : backend.authorizations()) {

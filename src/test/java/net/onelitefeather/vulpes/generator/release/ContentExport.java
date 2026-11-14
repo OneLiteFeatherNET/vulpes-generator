@@ -40,7 +40,7 @@ final class ContentExport {
         export.set("assets", array(data.assets()));
         export.set("advancements", array(data.advancements()));
         export.set("dimensions", JSON.createArrayNode());
-        export.set("packs", JSON.createArrayNode());
+        export.set("packs", array(data.packs()));
         return export;
     }
 

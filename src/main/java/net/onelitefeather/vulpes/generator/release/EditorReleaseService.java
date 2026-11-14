@@ -87,6 +87,6 @@ public class EditorReleaseService {
         }
         ReleaseRequest request = new ReleaseRequest(projectId, project, version,
                 SnapshotVerifier.digest(snapshot.bytes()), CREATED_BY, clock.instant(), branch);
-        return releaseService.publishVerified(request, snapshot.bytes());
+        return releaseService.publishVerified(request, snapshot);
     }
 }

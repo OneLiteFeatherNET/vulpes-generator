@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests the layout of a local build zip: exactly the two metadata files under {@code vulpes/<project>/}, with the
- * bytes given to the writer.
+ * Tests the layout of a local build zip: the two metadata files under {@code vulpes/<project>/} and, when it is given,
+ * the resource pack next to them. The bytes are the ones given to the writer.
  *
  * @author TheMeinerLP
  */
@@ -65,6 +65,19 @@ class LocalBuildZipTest {
         assertArrayEquals(LocalBuildZip.write("eldoria", RELEASE_JSON, SNAPSHOT_JSON),
                 LocalBuildZip.write("eldoria", RELEASE_JSON, SNAPSHOT_JSON),
                 "the zip must not depend on the time it is written");
+    }
+
+    @Test
+    void zipHoldsTheResourcePackNextToTheMetadataWhenGiven() throws IOException {
+        byte[] pack = "pack-zip".getBytes(StandardCharsets.UTF_8);
+
+        Map<String, byte[]> entries = entries(LocalBuildZip.write("eldoria", RELEASE_JSON, SNAPSHOT_JSON, pack));
+
+        assertEquals(List.of("vulpes/eldoria/release.json", "vulpes/eldoria/snapshot.json",
+                        "vulpes/eldoria/eldoria-resourcepack.zip"), new ArrayList<>(entries.keySet()),
+                "a local build with a resource pack holds the two metadata entries and the pack, nothing else");
+        assertArrayEquals(pack, entries.get("vulpes/eldoria/eldoria-resourcepack.zip"),
+                "the pack entry must be the pack bytes unchanged");
     }
 
     private static Map<String, byte[]> entries(byte[] zip) throws IOException {

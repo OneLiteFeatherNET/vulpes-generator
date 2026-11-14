@@ -227,7 +227,7 @@ class ReleaseControllerIntegrationTest implements TestPropertyProvider {
     }
 
     private String revision() {
-        return digest(source.fetch(PROJECT_ID));
+        return digest(source.fetch(PROJECT_ID).bytes());
     }
 
     private Outcome post(String json) {

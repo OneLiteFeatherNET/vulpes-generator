@@ -98,7 +98,7 @@ class ReleaseSecurityIntegrationTest implements TestPropertyProvider {
 
     @Test
     void correctBearerTokenIsAccepted() {
-        Outcome outcome = post("Bearer " + ReleaseTestProperties.TOKEN, digest(source.fetch(PROJECT_ID)));
+        Outcome outcome = post("Bearer " + ReleaseTestProperties.TOKEN, digest(source.fetch(PROJECT_ID).bytes()));
 
         assertEquals(201, outcome.status(), "the configured token must be accepted");
     }

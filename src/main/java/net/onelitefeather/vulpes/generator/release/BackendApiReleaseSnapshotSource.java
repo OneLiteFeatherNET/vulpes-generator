@@ -29,7 +29,7 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedExcepti
  * @since 1.0.0
  */
 @Singleton
-public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource, ProjectSource {
+public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource, ProjectSource, AssetContentSource {
 
     private static final Pattern PROJECT_KEY = Pattern.compile("[a-z][a-z0-9-]*");
 
@@ -54,8 +54,22 @@ public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource, P
     }
 
     @Override
-    public byte[] fetch(UUID projectId) {
-        return assemble(projectId).bytes();
+    public AssembledSnapshot fetch(UUID projectId) {
+        return assemble(projectId);
+    }
+
+    /**
+     * Reads the bytes of one asset with {@code GET /project/{projectId}/asset/{assetId}/content}.
+     *
+     * @param projectId the id of the project in the backend
+     * @param assetId   the id of the asset
+     * @return the bytes of the asset
+     * @throws ReleaseRejectedException with {@link ReleaseRejectedException.Reason#SOURCE_UNAVAILABLE} when the backend
+     *                                  does not answer with the bytes
+     */
+    @Override
+    public byte[] content(UUID projectId, UUID assetId) {
+        return backend.bytes("/project/" + projectId + "/asset/" + assetId + "/content");
     }
 
     @Override
@@ -128,7 +142,8 @@ public class BackendApiReleaseSnapshotSource implements ReleaseSnapshotSource, P
                 array(export, "expressionFunctions"),
                 array(export, "expressions"),
                 array(export, "assets"),
-                array(export, "advancements"));
+                array(export, "advancements"),
+                array(export, "packs"));
     }
 
     private static List<JsonNode> array(JsonNode node, String field) {

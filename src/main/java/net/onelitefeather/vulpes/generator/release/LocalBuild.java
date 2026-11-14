@@ -4,7 +4,8 @@ package net.onelitefeather.vulpes.generator.release;
  * A local build of a project, ready to be downloaded.
  *
  * @param projectKey     the project key, which names the file of the download
- * @param zip            the zip bytes, with exactly the two metadata entries of the project
+ * @param zip            the zip bytes: the two metadata entries of the project and, when the project has pack settings,
+ *                       its resource pack
  * @param contentProblems the number of content problems of the snapshot, zero when the content is valid
  * @author TheMeinerLP
  * @version 1.0.0

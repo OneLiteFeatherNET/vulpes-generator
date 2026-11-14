@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.SOURCE_UNAVAILABLE;
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.UNSUPPORTED_CONTENT;
@@ -35,6 +36,8 @@ final class ProjectSnapshotMapper {
      */
     static final int TEXTURE_RESOLUTION = 16;
 
+    /** The packType of the resource pack entry in the export; the release builds no other pack. */
+    private static final String RESOURCE_PACK = "RESOURCE";
     private static final String MATERIAL = "stelaris:material";
     private static final String LORE = "minecraft:lore";
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -74,9 +77,10 @@ final class ProjectSnapshotMapper {
         root.set("advancements", advancements(data));
         root.set("expressionFunctions", expressionFunctions(data));
         root.set("expressions", expressions(data));
-        root.set("assets", assets(data, namespace));
+        List<ResourcePackInputs.PackAsset> packFiles = new ArrayList<>();
+        root.set("assets", assets(data, namespace, packFiles));
         root.set("pack", pack(displayName));
-        return new AssembledSnapshot(namespace, CanonicalJson.write(root));
+        return new AssembledSnapshot(namespace, CanonicalJson.write(root), packInputs(data, packFiles));
     }
 
     private ArrayNode items(ProjectData data, String namespace) {
@@ -253,7 +257,11 @@ final class ProjectSnapshotMapper {
         return sortedBy(result, "name");
     }
 
-    private ArrayNode assets(ProjectData data, String projectNamespace) {
+    /**
+     * Maps the assets of the project to the snapshot, and collects the files of the resource pack: the textures, models
+     * and sounds, with the ids the bytes are read by. Blockbench models are not packed.
+     */
+    private ArrayNode assets(ProjectData data, String projectNamespace, List<ResourcePackInputs.PackAsset> packFiles) {
         List<ObjectNode> result = new ArrayList<>();
         List<String> rejectedAssets = new ArrayList<>();
         for (JsonNode asset : data.assets()) {
@@ -302,6 +310,8 @@ final class ProjectSnapshotMapper {
                 entry.put("resolution", resolution);
             }
             result.add(entry);
+            packFiles.add(new ResourcePackInputs.PackAsset(packPath, UUID.fromString(requiredText(asset, "id")),
+                    requiredText(asset, "sha1"), asset.path("size").asLong()));
         }
         if (!rejectedAssets.isEmpty()) {
             throw unsupported("assets of these kinds cannot be released yet: " + String.join(", ", rejectedAssets));
@@ -314,6 +324,39 @@ final class ProjectSnapshotMapper {
         pack.putObject("description").put("text", displayName);
         pack.putArray("resolutions").add(TEXTURE_RESOLUTION);
         return pack;
+    }
+
+    /**
+     * Returns the pack inputs of the export: the resource pack entry, and the pack files with the icon last as
+     * {@code pack.png}. A project without a resource pack entry has no pack.
+     */
+    private static ResourcePackInputs packInputs(ProjectData data, List<ResourcePackInputs.PackAsset> packFiles) {
+        JsonNode meta = null;
+        for (JsonNode pack : data.packs()) {
+            if (RESOURCE_PACK.equals(text(pack, "packType"))) {
+                meta = pack;
+            }
+        }
+        if (meta == null) {
+            return new ResourcePackInputs(null, List.of());
+        }
+        List<ResourcePackInputs.PackAsset> files = new ArrayList<>(packFiles);
+        String iconId = text(meta, "iconAssetId");
+        if (iconId != null) {
+            files.add(icon(data, iconId));
+        }
+        return new ResourcePackInputs(meta, files);
+    }
+
+    private static ResourcePackInputs.PackAsset icon(ProjectData data, String iconId) {
+        for (JsonNode asset : data.assets()) {
+            if (iconId.equals(text(asset, "id"))) {
+                return new ResourcePackInputs.PackAsset("pack.png", UUID.fromString(iconId),
+                        requiredText(asset, "sha1"), asset.path("size").asLong());
+            }
+        }
+        throw new ReleaseRejectedException(SOURCE_UNAVAILABLE,
+                "backend: the icon asset " + iconId + " of the resource pack is not in the content export");
     }
 
     /** Maps {@code [{name, type}]} entries in their order, with the type in lower case. */

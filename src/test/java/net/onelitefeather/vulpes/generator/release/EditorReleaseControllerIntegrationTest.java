@@ -76,7 +76,7 @@ class EditorReleaseControllerIntegrationTest implements TestPropertyProvider {
 
     @Test
     void editorReleaseAnswers201WithCoordinatesAndTheRevisionOfTheAssembledSnapshot() {
-        String revision = digest(source.fetch(PROJECT_ID));
+        String revision = digest(source.fetch(PROJECT_ID).bytes());
 
         Outcome outcome = post("{\"projectId\":\"" + PROJECT_ID + "\",\"version\":\"1.2.0\"}");
 
