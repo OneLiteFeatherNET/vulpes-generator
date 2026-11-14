@@ -277,6 +277,15 @@ final class ProjectSnapshotMapper {
                     packKind = "model";
                     resolution = null;
                 }
+                case "SOUND" -> {
+                    packPath = "assets/" + namespace + "/sounds/" + path + ".ogg";
+                    packKind = "sound";
+                    resolution = null;
+                }
+                case "BBMODEL" -> {
+                    // A Blockbench model is an editor source; the pack never contains it.
+                    continue;
+                }
                 default -> {
                     rejectedAssets.add(rawKey + " (" + kind + ")");
                     continue;

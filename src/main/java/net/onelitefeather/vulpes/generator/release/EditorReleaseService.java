@@ -61,6 +61,14 @@ public class EditorReleaseService {
      * @throws ReleaseRejectedException when the release is refused; nothing has been published then
      */
     public ReleaseResult release(UUID projectId, String version, String baseBranch) {
+        try {
+            return start(projectId, version, baseBranch);
+        } catch (ReleaseRejectedException e) {
+            throw e.forProject(projectId);
+        }
+    }
+
+    private ReleaseResult start(UUID projectId, String version, String baseBranch) {
         if (projectId == null) {
             throw new ReleaseRejectedException(INVALID_REQUEST, "projectId must not be null");
         }

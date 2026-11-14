@@ -33,6 +33,8 @@ import java.util.UUID;
 public class LocalBuildController {
 
     static final MediaType ZIP = MediaType.of("application/zip");
+    /** The number of content problems of the snapshot; {@code 0} when the content is valid. */
+    static final String CONTENT_PROBLEMS_HEADER = "Vulpes-Content-Problems";
 
     private final LocalBuildService localBuildService;
     private final PublishedLocalBuildService publishedLocalBuildService;
@@ -55,18 +57,22 @@ public class LocalBuildController {
      *
      * @param projectId  the id of the project in the backend
      * @param baseBranch the {@code vulpes-base} branch, {@code develop} when omitted
-     * @return {@code 200} with the zip as an attachment named {@code <project>-local.zip}
+     * @return {@code 200} with the zip as an attachment named {@code <project>-local.zip} and the header
+     * {@code Vulpes-Content-Problems} with the number of content problems
      */
     @Operation(
             summary = "Download the local build of a project",
             operationId = "getLocalBuild",
             description = "Verifies the snapshot of the project against a vulpes-base branch and returns a zip with "
-                    + "vulpes/<project>/release.json and vulpes/<project>/snapshot.json. No sources and no git data are included.",
+                    + "vulpes/<project>/release.json and vulpes/<project>/snapshot.json. No sources and no git data are included. "
+                    + "Content problems, such as a sound file without an asset, do not refuse the build: each one is logged at WARN "
+                    + "and the Vulpes-Content-Problems header holds their count, 0 for valid content. "
+                    + "GET /projects/{projectId}/validation lists them.",
             tags = {"release"}
     )
     @ApiResponse(
             responseCode = "200",
-            description = "The local build zip.",
+            description = "The local build zip. The Vulpes-Content-Problems header holds the number of content problems.",
             content = @Content(mediaType = "application/zip", schema = @Schema(type = "string", format = "binary"))
     )
     @ApiResponse(
@@ -86,7 +92,8 @@ public class LocalBuildController {
         LocalBuild build = localBuildService.build(projectId, baseBranch);
         return HttpResponse.ok(build.zip())
                 .contentType(ZIP)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + build.projectKey() + "-local.zip\"");
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + build.projectKey() + "-local.zip\"")
+                .header(CONTENT_PROBLEMS_HEADER, String.valueOf(build.contentProblems()));
     }
 
     /**

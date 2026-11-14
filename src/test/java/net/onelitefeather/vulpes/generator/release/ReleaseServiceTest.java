@@ -271,6 +271,42 @@ class ReleaseServiceTest {
         assertEquals(0, publisher.publishCount, "a snapshot with another revision must publish nothing");
     }
 
+    @Test
+    void releaseWithContentProblemsIsRefusedWithInvalidContentListingEveryProblem() {
+        byte[] broken = brokenSnapshot();
+        source.snapshot = broken;
+        ReleaseRequest request = ReleaseTestData.request("1.2.0", ReleaseTestData.digest(broken));
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class, () -> service().release(request));
+
+        assertEquals(ReleaseRejectedException.Reason.INVALID_CONTENT, e.getReason(), "reason must be INVALID_CONTENT");
+        assertEquals(2, e.getDiagnostics().size(), "every missing sound file must be a diagnostic");
+        assertTrue(e.getDiagnostics().get(0).message().startsWith("sound eldoria:vhs_static:"),
+                "the diagnostic must name the sound: " + e.getDiagnostics().get(0).message());
+        assertEquals(0, publisher.publishCount, "content with problems must publish nothing");
+        assertEquals(0, listener.calls.size(), "the listener must not be called for a refused release");
+    }
+
+    @Test
+    void releaseWithContentProblemsDoesNotVerifyTheBaseFirst() {
+        byte[] broken = brokenSnapshot();
+        source.snapshot = broken;
+
+        assertThrows(ReleaseRejectedException.class,
+                () -> service().release(ReleaseTestData.request("1.2.0", ReleaseTestData.digest(broken))));
+
+        assertTrue(verification.inputs().isEmpty(), "the content check must run before the expensive base verification");
+    }
+
+    /** A snapshot whose sound refers to two files that the snapshot has no asset for. */
+    private static byte[] brokenSnapshot() {
+        return ("{\"format\":1,\"projectId\":\"" + PROJECT_ID + "\",\"namespace\":\"eldoria\",\"sounds\":["
+                + "{\"key\":\"eldoria:vhs_static\",\"sounds\":["
+                + "{\"name\":\"eldoria:vhs_static_1\",\"type\":\"file\"},"
+                + "{\"name\":\"eldoria:vhs_static_2\",\"type\":\"file\"}]}]}")
+                .getBytes(StandardCharsets.UTF_8);
+    }
+
     private void assertRejected(ReleaseRejectedException.Reason expected) {
         ReleaseRequest request = ReleaseTestData.request();
 

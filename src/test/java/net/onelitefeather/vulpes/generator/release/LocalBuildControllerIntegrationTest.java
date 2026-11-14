@@ -22,6 +22,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static net.onelitefeather.vulpes.generator.release.ProjectFixture.obj;
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -117,17 +118,50 @@ class LocalBuildControllerIntegrationTest implements TestPropertyProvider {
     }
 
     @Test
+    void validLocalBuildAnswersTheContentProblemHeaderWithZero() {
+        Outcome outcome = get("/projects/" + PROJECT_ID + "/local-build");
+
+        assertEquals("0", outcome.contentProblems(), "valid content must answer the problem count 0");
+    }
+
+    @Test
+    void localBuildWithContentProblemsIsDeliveredWithTheirCount() throws IOException {
+        backend.registerProject(projectWithMissingSound());
+
+        Outcome outcome = get("/projects/" + PROJECT_ID + "/local-build");
+
+        assertEquals(200, outcome.status(), "a local build with content problems must still be delivered");
+        assertEquals("2", outcome.contentProblems(), "the header must count the two missing sound files");
+        assertEquals(List.of("vulpes/eldoria/release.json", "vulpes/eldoria/snapshot.json"), entryNames(outcome.body()),
+                "the zip must hold the two metadata entries");
+    }
+
+    @Test
     void projectIdThatIsNotAUuidAnswers400() {
         assertEquals(400, get("/projects/Eldoria/local-build").status(), "a project id that is not a UUID must answer 400");
+    }
+
+    /** The project of the default fixture with a sound that refers to two files without an asset. */
+    private static ProjectData projectWithMissingSound() {
+        ProjectFixture fixture = ProjectFixture.project(PROJECT_ID, "eldoria", "Eldoria");
+        fixture.sounds().add(obj("id", ProjectFixture.id(5), "key", "vhs_static", "uiName", "vhs_static", "subTitle", null));
+        fixture.sources(ProjectFixture.id(5)).add(obj("id", ProjectFixture.id(6), "name", "eldoria:vhs_static_1",
+                "volume", 1.0, "pitch", 1.0, "weight", 1, "stream", false, "attenuationDistance", 16,
+                "preload", false, "type", "FILE"));
+        fixture.sources(ProjectFixture.id(5)).add(obj("id", ProjectFixture.id(7), "name", "eldoria:vhs_static_2",
+                "volume", 1.0, "pitch", 1.0, "weight", 1, "stream", false, "attenuationDistance", 16,
+                "preload", false, "type", "FILE"));
+        return fixture.build();
     }
 
     private Outcome get(String uri) {
         try {
             HttpResponse<byte[]> response = client.toBlocking().exchange(HttpRequest.GET(uri), byte[].class);
             return new Outcome(response.getStatus().getCode(), response.getContentType().map(MediaType::toString).orElse(""),
-                    response.header("Content-Disposition"), response.body(), "");
+                    response.header("Content-Disposition"), response.header("Vulpes-Content-Problems"),
+                    response.body(), "");
         } catch (HttpClientResponseException e) {
-            return new Outcome(e.getStatus().getCode(), "", null, null,
+            return new Outcome(e.getStatus().getCode(), "", null, null, null,
                     e.getResponse().getBody(String.class).orElse(""));
         }
     }
@@ -143,6 +177,7 @@ class LocalBuildControllerIntegrationTest implements TestPropertyProvider {
         return names;
     }
 
-    private record Outcome(int status, String contentType, String contentDisposition, byte[] body, String text) {
+    private record Outcome(int status, String contentType, String contentDisposition, String contentProblems,
+                           byte[] body, String text) {
     }
 }
