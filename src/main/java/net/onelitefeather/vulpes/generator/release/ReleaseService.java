@@ -7,12 +7,13 @@ import net.onelitefeather.vulpes.generator.release.base.BaseVerification;
 import net.onelitefeather.vulpes.generator.release.base.BaseVerification.VerifiedBase;
 
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Turns one snapshot into a published content data JAR.
  * The steps run in a fixed order: validate, refuse an existing release version before anything is fetched, resolve
- * the base branch, fetch the snapshot, verify it, verify it against the base (clone, cached base classes, codegen,
- * compilation), build the JAR in a temporary workspace, publish, notify.
+ * the base branch, fetch the snapshot, verify it, check its content references and keys, verify it against the base
+ * (clone, cached base classes, codegen, compilation), build the JAR in a temporary workspace, publish, notify.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -80,12 +81,16 @@ public class ReleaseService {
      * @throws ReleaseRejectedException when the release is refused; nothing has been published then
      */
     public ReleaseResult release(ReleaseRequest request) {
-        request.validate();
-        ContentCoordinates coordinates = ContentCoordinates.forRelease(request.project(), request.version());
-        refuseExisting(coordinates);
-        ReleaseRequest resolved = request.withBaseBranch(branches.resolve(request.baseBranch()));
-        byte[] snapshot = source.fetch(request.projectId());
-        return publishVerified(resolved, snapshot);
+        try {
+            request.validate();
+            ContentCoordinates coordinates = ContentCoordinates.forRelease(request.project(), request.version());
+            refuseExisting(coordinates);
+            ReleaseRequest resolved = request.withBaseBranch(branches.resolve(request.baseBranch()));
+            byte[] snapshot = source.fetch(request.projectId());
+            return publishVerified(resolved, snapshot);
+        } catch (ReleaseRejectedException e) {
+            throw e.forProject(request.projectId());
+        }
     }
 
     /**
@@ -101,6 +106,11 @@ public class ReleaseService {
         request.validate();
         ContentCoordinates coordinates = ContentCoordinates.forRelease(request.project(), request.version());
         verifier.verify(request, snapshot);
+        List<ReleaseDiagnostic> problems = ContentValidator.validate(snapshot);
+        if (!problems.isEmpty()) {
+            throw new ReleaseRejectedException(ReleaseRejectedException.Reason.INVALID_CONTENT,
+                    problems.size() + " content problems, nothing is published", problems, false);
+        }
         VerifiedBase verified = baseVerification.verify(new BaseVerification.Input(request.baseBranch(),
                 request.project(), GeneratedPackage.of(request.project()), snapshot,
                 commit -> jsonWriter.write(request, new ReleaseBase(repository, request.baseBranch(), commit),

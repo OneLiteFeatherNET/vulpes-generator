@@ -1,6 +1,7 @@
 package net.onelitefeather.vulpes.generator.release;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Signals that a release was refused. Nothing has been published when this exception is thrown.
@@ -43,6 +44,8 @@ public class ReleaseRejectedException extends RuntimeException {
         COMPILATION_FAILED,
         /** The code generator refused the snapshot content. */
         GENERATION_REFUSED,
+        /** The content has references, keys or glyphs that do not resolve or are inconsistent; the diagnostics list them. */
+        INVALID_CONTENT,
         /** The published content data JAR cannot be read or does not match its revision. */
         PUBLISHED_JAR_CORRUPT
     }
@@ -50,6 +53,7 @@ public class ReleaseRejectedException extends RuntimeException {
     private final Reason reason;
     private final List<ReleaseDiagnostic> diagnostics;
     private final boolean truncated;
+    private UUID projectId;
 
     /**
      * Creates a new rejection.
@@ -102,5 +106,28 @@ public class ReleaseRejectedException extends RuntimeException {
      */
     public boolean isTruncated() {
         return truncated;
+    }
+
+    /**
+     * Records the project the refused request was about, unless a project is already recorded. Used for the log line
+     * of the refusal, which names the project.
+     *
+     * @param id the id of the project in the backend
+     * @return this rejection
+     */
+    public ReleaseRejectedException forProject(UUID id) {
+        if (projectId == null) {
+            projectId = id;
+        }
+        return this;
+    }
+
+    /**
+     * Returns the project the refused request was about.
+     *
+     * @return the project id, or {@code null} when none was recorded
+     */
+    public UUID getProjectId() {
+        return projectId;
     }
 }

@@ -1,12 +1,18 @@
 package net.onelitefeather.vulpes.generator.release;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.JsonNode;
 import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -114,6 +120,49 @@ class LocalBuildServiceTest {
         assertEquals(1, e.getDiagnostics().size(), "the diagnostics must be carried by the refusal");
     }
 
+    @Test
+    void localBuildWithContentProblemsIsDeliveredAndCountsThem() throws IOException {
+        projects.snapshot = brokenSnapshot();
+
+        LocalBuild build = service().build(PROJECT_ID, null);
+
+        assertEquals(2, build.contentProblems(), "both missing sound files must be counted");
+        assertEquals(List.of("vulpes/eldoria/release.json", "vulpes/eldoria/snapshot.json"), entryNames(build.zip()),
+                "a local build with content problems must still be delivered");
+    }
+
+    @Test
+    void localBuildWithValidContentCountsNoProblem() {
+        assertEquals(0, service().build(PROJECT_ID, null).contentProblems(), "valid content must count zero problems");
+    }
+
+    @Test
+    void localBuildWithContentProblemsLogsOneWarnLinePerProblem() {
+        projects.snapshot = brokenSnapshot();
+        Logger logger = (Logger) LoggerFactory.getLogger(LocalBuildService.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            service().build(PROJECT_ID, null);
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        List<ILoggingEvent> warnings = appender.list.stream().filter(e -> e.getLevel() == Level.WARN).toList();
+        assertEquals(2, warnings.size(), "every content problem must be logged at WARN: " + appender.list);
+        assertTrue(warnings.get(0).getFormattedMessage().contains("eldoria:vhs_static"),
+                "the WARN line must name the sound: " + warnings.get(0).getFormattedMessage());
+    }
+
+    private static byte[] brokenSnapshot() {
+        return ("{\"format\":1,\"projectId\":\"" + PROJECT_ID + "\",\"namespace\":\"eldoria\",\"sounds\":["
+                + "{\"key\":\"eldoria:vhs_static\",\"sounds\":["
+                + "{\"name\":\"eldoria:vhs_static_1\",\"type\":\"file\"},"
+                + "{\"name\":\"eldoria:vhs_static_2\",\"type\":\"file\"}]}]}")
+                .getBytes(StandardCharsets.UTF_8);
+    }
+
     private LocalBuildService service() {
         return new LocalBuildService(projects, branches, verification, new ReleaseJsonWriter(), BASE,
                 Clock.fixed(NOW, ZoneOffset.UTC), "1.0.0");
@@ -148,7 +197,7 @@ class LocalBuildServiceTest {
 
     /** Knows one project and records how often the snapshot was assembled. */
     private static final class FakeProjects implements ProjectSource {
-        private final byte[] snapshot = snapshot(PROJECT_ID);
+        private byte[] snapshot = snapshot(PROJECT_ID);
         private int assembleCount;
         private RuntimeException failWith;
 

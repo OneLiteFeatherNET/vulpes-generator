@@ -240,15 +240,40 @@ class ProjectSnapshotMapperTest {
     }
 
     @Test
+    void soundAssetMapsToSoundsPathWithOggExtension() {
+        ProjectFixture fixture = eldoria();
+        fixture.assets().add(asset(id(4), "eldoria:ambient/drone", "SOUND", 512));
+
+        JsonNode asset = map(fixture).get("assets").get(0);
+
+        assertEquals("assets/eldoria/sounds/ambient/drone.ogg", asset.get("path").asText(),
+                "a sound must be written under sounds with an ogg extension");
+        assertEquals("sound", asset.get("kind").asText(), "the kind must be lower case");
+        assertTrue(asset.get("resolution").isNull(), "a sound has no texture resolution");
+        assertEquals(512, asset.get("size").asInt(), "the size must be the backend size");
+        assertEquals(SHA1, asset.get("sha1").asText(), "the sha1 must be the backend sha1");
+    }
+
+    @Test
+    void blockbenchModelAssetIsLeftOutOfAssetsAndDoesNotRefuseTheRelease() {
+        ProjectFixture fixture = eldoria();
+        fixture.assets().add(asset(id(4), "eldoria:slender", "BBMODEL", 120));
+
+        JsonNode snapshot = map(fixture);
+
+        assertEquals(0, snapshot.get("assets").size(), "a Blockbench model is an editor source and must not be an asset");
+    }
+
+    @Test
     void unsupportedAssetKindIsRejectedNamingItsKeys() {
         ProjectFixture fixture = eldoria();
-        fixture.assets().add(asset(id(4), "eldoria:item/cube", "BBMODEL", 120));
+        fixture.assets().add(asset(id(4), "eldoria:particle/cube", "PARTICLE", 120));
 
         ReleaseRejectedException e = assertRejected(fixture);
 
         assertEquals(ReleaseRejectedException.Reason.UNSUPPORTED_CONTENT, e.getReason(),
-                "an asset kind other than TEXTURE and MODEL must be refused");
-        assertTrue(e.getMessage().contains("eldoria:item/cube"), "the message must name the asset key: " + e.getMessage());
+                "an asset kind other than TEXTURE, MODEL, SOUND and BBMODEL must be refused");
+        assertTrue(e.getMessage().contains("eldoria:particle/cube"), "the message must name the asset key: " + e.getMessage());
     }
 
     @Test

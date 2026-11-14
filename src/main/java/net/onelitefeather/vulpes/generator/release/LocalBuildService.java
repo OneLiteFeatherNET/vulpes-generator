@@ -6,16 +6,20 @@ import jakarta.inject.Singleton;
 import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
 import net.onelitefeather.vulpes.generator.release.base.BaseVerification;
 import net.onelitefeather.vulpes.generator.release.base.BaseVerification.VerifiedBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.UUID;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.INVALID_REQUEST;
 
 /**
- * Builds the local build of a project for a developer: the snapshot of the backend, verified against a base branch,
- * packed with its release metadata in release format 2 and the version {@code 0.0.0-SNAPSHOT}. Nothing is published
- * and nothing is written to disk; the zip is built in memory.
+ * Builds the local build of a project for a developer: the snapshot of the backend, checked for content problems,
+ * verified against a base branch, packed with its release metadata in release format 2 and the version
+ * {@code 0.0.0-SNAPSHOT}. Content problems do not refuse the build; each one is logged at {@code WARN} and counted in
+ * the result. Nothing is published and nothing is written to disk; the zip is built in memory.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -24,6 +28,7 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedExcepti
 @Singleton
 public class LocalBuildService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(LocalBuildService.class);
     /** The version of every local build. */
     static final String VERSION = "0.0.0-SNAPSHOT";
     /** The creator written into the provenance of a local build. */
@@ -66,23 +71,35 @@ public class LocalBuildService {
      *
      * @param projectId  the id of the project in the backend
      * @param baseBranch the {@code vulpes-base} branch, {@code develop} when {@code null} or blank
-     * @return the project key and the zip
+     * @return the project key, the zip and the number of content problems, which are logged at {@code WARN}
      * @throws ReleaseRejectedException when the project, the branch or the snapshot is refused, or the sources do not
      *                                  compile against the branch
      */
     public LocalBuild build(UUID projectId, String baseBranch) {
+        try {
+            return buildLocal(projectId, baseBranch);
+        } catch (ReleaseRejectedException e) {
+            throw e.forProject(projectId);
+        }
+    }
+
+    private LocalBuild buildLocal(UUID projectId, String baseBranch) {
         if (projectId == null) {
             throw new ReleaseRejectedException(INVALID_REQUEST, "projectId must not be null");
         }
         String project = projects.projectKey(projectId);
         String branch = branches.resolve(baseBranch);
         AssembledSnapshot snapshot = projects.assemble(projectId);
+        List<ReleaseDiagnostic> problems = ContentValidator.validate(snapshot.bytes());
+        problems.forEach(problem -> LOG.warn("local build project={} has a content problem: {}", projectId,
+                problem.message()));
         ReleaseRequest request = new ReleaseRequest(projectId, project, VERSION,
                 SnapshotVerifier.digest(snapshot.bytes()), CREATED_BY, clock.instant(), branch);
         request.validate();
         VerifiedBase verified = baseVerification.verify(new BaseVerification.Input(branch, project,
                 GeneratedPackage.of(project), snapshot.bytes(),
                 commit -> jsonWriter.write(request, new ReleaseBase(repository, branch, commit), generatorVersion)));
-        return new LocalBuild(project, LocalBuildZip.write(project, verified.releaseJson(), snapshot.bytes()));
+        return new LocalBuild(project, LocalBuildZip.write(project, verified.releaseJson(), snapshot.bytes()),
+                problems.size());
     }
 }
