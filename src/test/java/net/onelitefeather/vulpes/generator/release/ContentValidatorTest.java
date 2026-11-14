@@ -84,17 +84,13 @@ class ContentValidatorTest {
     }
 
     @Test
-    void missingItemModelIsReportedNamingTheItem() {
+    void itemModelNamingADefinitionReportsNoProblem() {
         ProjectFixture fixture = eldoria();
-        addItem(fixture, id(1), "sword");
-        fixture.components(id(1)).add(component("stelaris:material", "\"minecraft:iron_sword\""));
-        fixture.components(id(1)).add(component("minecraft:item_model", "\"eldoria:item/sword\""));
+        addItem(fixture, id(1), "page_1");
+        fixture.components(id(1)).add(component("stelaris:material", "\"minecraft:book\""));
+        fixture.components(id(1)).add(component("minecraft:item_model", "\"eldoria:page_1\""));
 
-        List<String> messages = messages(validate(fixture));
-
-        assertEquals(1, messages.size(), "one missing model must be one problem: " + messages);
-        assertTrue(messages.get(0).startsWith("item eldoria:sword:"), "the problem must name the item: " + messages);
-        assertTrue(messages.get(0).contains("eldoria:item/sword"), "the problem must name the model: " + messages);
+        assertTrue(validate(fixture).isEmpty(), "an item model names a definition in assets/<ns>/items, which is not a project asset and must not be checked");
     }
 
     @Test

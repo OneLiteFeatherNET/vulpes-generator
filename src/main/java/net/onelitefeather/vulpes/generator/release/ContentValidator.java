@@ -19,8 +19,9 @@ import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedExcepti
  * in one pass: references to assets, unique and valid keys and paths, and the consistency of bitmap font glyphs.
  * <p>
  * A reference is resolved against the {@code assets} of the snapshot, by the path a pack would write it to:
- * a texture {@code ns:path} is {@code assets/ns/textures/path}, a sound file {@code ns:path} is
- * {@code assets/ns/sounds/path.ogg} and a model {@code ns:path} is {@code assets/ns/models/path.json}.
+ * a texture {@code ns:path} is {@code assets/ns/textures/path} and a sound file {@code ns:path} is
+ * {@code assets/ns/sounds/path.ogg}. Item models name item model definitions, which live in the game's own pack and
+ * are not project assets, so they are not resolved.
  * References in the {@code minecraft} namespace are vanilla resources and are not checked.
  * <p>
  * Each problem is a {@link ReleaseDiagnostic} without file and line; its message starts with the content entry, for
@@ -35,7 +36,6 @@ final class ContentValidator {
     private static final Pattern RESOURCE_LOCATION = Pattern.compile("[a-z0-9_.-]+:[a-z0-9_./-]+");
     private static final Pattern ASSET_PATH = Pattern.compile("assets/[a-z0-9_.-]+/[a-z0-9_./-]+\\.(png|json|ogg)");
     private static final String VANILLA = "minecraft";
-    private static final String ITEM_MODEL = "minecraft:item_model";
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private ContentValidator() {
@@ -53,7 +53,7 @@ final class ContentValidator {
         JsonNode root = parse(snapshot);
         Problems problems = new Problems();
         Set<String> assetPaths = assetPaths(root, problems);
-        items(root, assetPaths, problems);
+        items(root, problems);
         fonts(root, assetPaths, problems);
         sounds(root, assetPaths, problems);
         return problems.list();
@@ -74,16 +74,12 @@ final class ContentValidator {
         return paths;
     }
 
-    private static void items(JsonNode root, Set<String> assetPaths, Problems problems) {
+    private static void items(JsonNode root, Problems problems) {
         Set<String> keys = new HashSet<>();
         for (JsonNode item : array(root, "items")) {
             String key = item.path("key").asText("");
             String entry = "item " + key;
             checkKey(entry, key, keys, problems);
-            JsonNode model = item.path("components").get(ITEM_MODEL);
-            if (model != null && model.isTextual()) {
-                resolve(entry, model.textValue(), "models/", ".json", assetPaths, problems);
-            }
         }
     }
 
