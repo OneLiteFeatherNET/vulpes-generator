@@ -133,6 +133,9 @@ vulpes:
       # Env: VULPES_PACK_STORAGE_ACCESS_KEY and VULPES_PACK_STORAGE_SECRET_KEY.
       access-key: ${VULPES_PACK_STORAGE_ACCESS_KEY:}
       secret-key: ${VULPES_PACK_STORAGE_SECRET_KEY:}
+      # Canned ACL sent with every upload, for example public-read, which the cygnus-pack bucket uses to make objects
+      # public. Blank sends no ACL header, and then the bucket policy has to make the objects public. Env: VULPES_PACK_STORAGE_ACL.
+      acl: ${VULPES_PACK_STORAGE_ACL:}
 
 # Exposed for the Helm chart: liveness/readiness probe /health, ServiceMonitor
 # scrapes /prometheus. Both are unauthenticated because they are reached from
