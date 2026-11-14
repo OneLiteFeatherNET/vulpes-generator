@@ -13,14 +13,14 @@ import java.util.UUID;
 public interface ReleaseSnapshotSource {
 
     /**
-     * Fetches the snapshot bytes of a project. The bytes are returned exactly as received.
+     * Fetches the snapshot of a project, with the inputs of its resource pack.
      *
      * @param projectId the id of the project
-     * @return the unchanged snapshot bytes
+     * @return the snapshot, whose bytes are the snapshot as assembled
      * @throws ReleaseRejectedException with {@link ReleaseRejectedException.Reason#UNKNOWN_PROJECT}
      *                                  when the project does not exist, or
      *                                  {@link ReleaseRejectedException.Reason#SOURCE_UNAVAILABLE}
      *                                  when no snapshot can be obtained
      */
-    byte[] fetch(UUID projectId);
+    AssembledSnapshot fetch(UUID projectId);
 }

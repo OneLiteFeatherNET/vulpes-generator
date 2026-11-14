@@ -114,6 +114,29 @@ vulpes:
       releases-url: https://repo.onelitefeather.dev/onelitefeather-releases
       snapshots-url: https://repo.onelitefeather.dev/onelitefeather-snapshots
 
+  # The public S3-compatible bucket (Ceph RGW) of the resource packs. A release uploads its pack once under the key
+  # vulpes/<project>/<sha1>.zip, before the data JAR is published, and lists the public URL in release.json. Without
+  # an endpoint or a bucket no pack is uploaded: releases list "packs": [] and the generator logs one WARN at startup.
+  # A local build holds its pack as well, but never uploads it.
+  pack:
+    storage:
+      # Endpoint of the S3 API, used path-style, for example http://ceph-rgw:7480. Env: VULPES_PACK_STORAGE_ENDPOINT.
+      endpoint: ${VULPES_PACK_STORAGE_ENDPOINT:}
+      # Name of the bucket. Env: VULPES_PACK_STORAGE_BUCKET.
+      bucket: ${VULPES_PACK_STORAGE_BUCKET:}
+      # Region sent with the requests; Ceph ignores it. Env: VULPES_PACK_STORAGE_REGION (default us-east-1).
+      region: ${VULPES_PACK_STORAGE_REGION:us-east-1}
+      # Base of the public URLs; the bucket is publicly readable, so the URL is this base, a slash and the key. It is
+      # required when the bucket is configured. Env: VULPES_PACK_STORAGE_PUBLIC_URL.
+      public-url: ${VULPES_PACK_STORAGE_PUBLIC_URL:}
+      # Key pair of the bucket. When one of them is blank, the AWS SDK default credential chain is used.
+      # Env: VULPES_PACK_STORAGE_ACCESS_KEY and VULPES_PACK_STORAGE_SECRET_KEY.
+      access-key: ${VULPES_PACK_STORAGE_ACCESS_KEY:}
+      secret-key: ${VULPES_PACK_STORAGE_SECRET_KEY:}
+      # Canned ACL sent with every upload, for example public-read, which the cygnus-pack bucket uses to make objects
+      # public. Blank sends no ACL header, and then the bucket policy has to make the objects public. Env: VULPES_PACK_STORAGE_ACL.
+      acl: ${VULPES_PACK_STORAGE_ACL:}
+
 # Exposed for the Helm chart: liveness/readiness probe /health, ServiceMonitor
 # scrapes /prometheus. Both are unauthenticated because they are reached from
 # inside the cluster only -- the Service publishes 8080 as ClusterIP and no

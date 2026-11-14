@@ -4,6 +4,7 @@ import jakarta.inject.Singleton;
 
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Writes {@code META-INF/vulpes/release.json} in release format 2, which adds the {@code base} object.
@@ -28,6 +29,19 @@ public class ReleaseJsonWriter {
      * @return the UTF-8 encoded {@code release.json} content
      */
     public byte[] write(ReleaseRequest request, ReleaseBase base, String generatorVersion) {
+        return write(request, base, generatorVersion, List.of());
+    }
+
+    /**
+     * Encodes the release metadata with the packs that the release uploaded, as canonical UTF-8 JSON.
+     *
+     * @param request          the validated release request
+     * @param base             the verified {@code vulpes-base} checkout
+     * @param generatorVersion the version of this generator
+     * @param packs            the resource packs of the release, empty when none is uploaded
+     * @return the UTF-8 encoded {@code release.json} content
+     */
+    public byte[] write(ReleaseRequest request, ReleaseBase base, String generatorVersion, List<ReleasePack> packs) {
         StringBuilder json = new StringBuilder(256);
         json.append("{\"base\":{\"branch\":");
         appendString(json, base.branch());
@@ -35,7 +49,23 @@ public class ReleaseJsonWriter {
         appendString(json, base.commit());
         json.append(",\"repository\":");
         appendString(json, base.repository());
-        json.append("},\"format\":2,\"packs\":[],\"project\":");
+        json.append("},\"format\":2,\"packs\":[");
+        for (int i = 0; i < packs.size(); i++) {
+            ReleasePack pack = packs.get(i);
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append("{\"id\":");
+            appendString(json, pack.id());
+            json.append(",\"resolution\":").append(pack.resolution());
+            json.append(",\"sha1\":");
+            appendString(json, pack.sha1());
+            json.append(",\"size\":").append(pack.size());
+            json.append(",\"url\":");
+            appendString(json, pack.url());
+            json.append('}');
+        }
+        json.append("],\"project\":");
         appendString(json, request.project());
         json.append(",\"projectId\":");
         appendString(json, request.projectId().toString());

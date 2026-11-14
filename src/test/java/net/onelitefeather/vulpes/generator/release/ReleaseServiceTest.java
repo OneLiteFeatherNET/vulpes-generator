@@ -1,5 +1,6 @@
 package net.onelitefeather.vulpes.generator.release;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import net.onelitefeather.vulpes.generator.domain.configuration.BaseConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,11 +15,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static net.onelitefeather.vulpes.generator.release.ReleaseRejectedException.Reason.PACK_STORAGE_UNAVAILABLE;
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJECT_ID;
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.snapshot;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -47,7 +50,10 @@ class ReleaseServiceTest {
 
     private final byte[] snapshot = snapshot(PROJECT_ID);
     private final FakeSource source = new FakeSource(snapshot);
-    private final FakePublisher publisher = new FakePublisher();
+    private final List<String> events = new ArrayList<>();
+    private final FakePublisher publisher = new FakePublisher(events);
+    private final FakeAssetContent assets = new FakeAssetContent();
+    private final InMemoryPackStorage storage = new InMemoryPackStorage(events);
     private final FakeListener listener = new FakeListener();
     private final FakeBaseBranches branches = new FakeBaseBranches();
     private final FakeBaseVerification verification = new FakeBaseVerification();
@@ -254,7 +260,7 @@ class ReleaseServiceTest {
 
     @Test
     void publishVerifiedPublishesTheGivenBytesWithoutFetchingAgain() {
-        service().publishVerified(ReleaseTestData.request().withBaseBranch("develop"), snapshot);
+        service().publishVerified(ReleaseTestData.request().withBaseBranch("develop"), assembled());
 
         assertEquals(0, source.fetchCount, "a snapshot that the caller assembled must not be fetched again");
         assertEquals(1, publisher.publishCount, "the assembled snapshot must be published exactly once");
@@ -265,7 +271,7 @@ class ReleaseServiceTest {
         ReleaseRequest request = ReleaseTestData.request("1.2.0", "sha256:" + "0".repeat(64));
 
         ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
-                () -> service().publishVerified(request, snapshot));
+                () -> service().publishVerified(request, assembled()));
 
         assertEquals(ReleaseRejectedException.Reason.REVISION_MISMATCH, e.getReason(), "reason must be REVISION_MISMATCH");
         assertEquals(0, publisher.publishCount, "a snapshot with another revision must publish nothing");
@@ -298,6 +304,56 @@ class ReleaseServiceTest {
         assertTrue(verification.inputs().isEmpty(), "the content check must run before the expensive base verification");
     }
 
+    @Test
+    void packIsUploadedBeforeTheJarIsPublished() {
+        withPack();
+
+        service().release(ReleaseTestData.request());
+
+        assertEquals(2, events.size(), "the pack and the JAR must each be written once: " + events);
+        assertTrue(events.get(0).startsWith("put vulpes/eldoria/"), "the pack must be uploaded first: " + events);
+        assertEquals("publish", events.get(1), "the JAR must be published after the pack");
+    }
+
+    @Test
+    void failedPackUploadPublishesNothingAndNotifiesNobody() {
+        withPack();
+        storage.failPuts = true;
+
+        ReleaseRejectedException e = assertThrows(ReleaseRejectedException.class,
+                () -> service().release(ReleaseTestData.request()));
+
+        assertEquals(PACK_STORAGE_UNAVAILABLE, e.getReason(), "a failing bucket must refuse the release");
+        assertEquals(0, publisher.publishCount, "a release whose pack cannot be uploaded must publish no JAR");
+        assertEquals(0, listener.calls.size(), "the listener must not be called for a refused release");
+    }
+
+    @Test
+    void releaseMetadataListsTheUploadedPack() throws IOException {
+        withPack();
+
+        service().release(ReleaseTestData.request());
+
+        JsonNode pack = ProjectFixture.JSON.readTree(entry(publisher.publishedJar, DataJarBuilder.RELEASE_JSON_NAME))
+                .get("packs").get(0);
+        assertEquals("eldoria", pack.get("id").asText(), "the pack id must be the project key");
+        assertEquals(16, pack.get("resolution").asInt(), "the pack must be the resolution 16");
+        assertTrue(pack.get("url").asText().startsWith("https://packs.test/vulpes/eldoria/"),
+                "the URL must be the public URL of the uploaded key: " + pack.get("url").asText());
+        assertEquals(40, pack.get("sha1").asText().length(), "the SHA-1 must be listed");
+        assertTrue(pack.get("size").asLong() > 0, "the size of the zip must be listed");
+    }
+
+    /** Gives the project a pack: its settings and its texture and sound, all readable from the fake backend. */
+    private void withPack() {
+        assets.contents.putAll(PackTestData.CONTENTS);
+        source.pack = PackTestData.inputs(PackTestData.meta("Eldoria"));
+    }
+
+    private AssembledSnapshot assembled() {
+        return new AssembledSnapshot("eldoria", snapshot);
+    }
+
     /** A snapshot whose sound refers to two files that the snapshot has no asset for. */
     private static byte[] brokenSnapshot() {
         return ("{\"format\":1,\"projectId\":\"" + PROJECT_ID + "\",\"namespace\":\"eldoria\",\"sounds\":["
@@ -319,7 +375,8 @@ class ReleaseServiceTest {
 
     private ReleaseService service() {
         return new ReleaseService(source, new SnapshotVerifier(), new ReleaseJsonWriter(), new DataJarBuilder(),
-                publisher, listener, branches, verification, BASE, "1.0.0", workDir.toString());
+                publisher, listener, branches, verification, BASE, "1.0.0", workDir.toString(),
+                new ResourcePackService(assets, Optional.of(storage)));
     }
 
     private static byte[] entry(byte[] jar, String name) throws IOException {
@@ -343,6 +400,7 @@ class ReleaseServiceTest {
     /** Returns a fixed snapshot and records how often it was asked for. */
     private static final class FakeSource implements ReleaseSnapshotSource {
         private byte[] snapshot;
+        private ResourcePackInputs pack = ResourcePackInputs.NONE;
         private RuntimeException failWith;
         private int fetchCount;
 
@@ -351,23 +409,28 @@ class ReleaseServiceTest {
         }
 
         @Override
-        public byte[] fetch(UUID projectId) {
+        public AssembledSnapshot fetch(UUID projectId) {
             fetchCount++;
             if (failWith != null) {
                 throw failWith;
             }
-            return snapshot;
+            return new AssembledSnapshot("eldoria", snapshot, pack);
         }
     }
 
     /** Records the publish calls and keeps a copy of the uploaded JAR. */
     private static final class FakePublisher implements ContentPublisher {
+        private final List<String> events;
         private boolean alreadyPublished;
         private RuntimeException failWith;
         private int existsCount;
         private int publishCount;
         private ContentCoordinates publishedCoordinates;
         private byte[] publishedJar;
+
+        FakePublisher(List<String> events) {
+            this.events = events;
+        }
 
         @Override
         public boolean exists(ContentCoordinates coordinates) {
@@ -378,6 +441,7 @@ class ReleaseServiceTest {
         @Override
         public void publish(ContentCoordinates coordinates, Path jarFile) {
             publishCount++;
+            events.add("publish");
             publishedCoordinates = coordinates;
             try {
                 publishedJar = Files.readAllBytes(jarFile);

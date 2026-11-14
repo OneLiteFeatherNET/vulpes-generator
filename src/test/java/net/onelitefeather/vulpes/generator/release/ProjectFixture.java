@@ -33,6 +33,7 @@ final class ProjectFixture {
     private final List<JsonNode> expressions = new ArrayList<>();
     private final List<JsonNode> assets = new ArrayList<>();
     private final List<JsonNode> advancements = new ArrayList<>();
+    private final List<JsonNode> packs = new ArrayList<>();
 
     /**
      * Creates a project with the given id, key and display name.
@@ -170,6 +171,11 @@ final class ProjectFixture {
         return advancements;
     }
 
+    /** The pack metadata entries of the export, mutable. */
+    List<JsonNode> packs() {
+        return packs;
+    }
+
     /**
      * Freezes the fixture into the mapper input.
      *
@@ -177,6 +183,6 @@ final class ProjectFixture {
      */
     ProjectData build() {
         return new ProjectData(project, items, components, lore, attributes, fonts, glyphRows, sounds, sources,
-                expressionFunctions, expressions, assets, advancements);
+                expressionFunctions, expressions, assets, advancements, packs);
     }
 }

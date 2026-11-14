@@ -23,6 +23,7 @@ import java.util.Map;
  * @param expressions        the expressions of the project
  * @param assets             the asset metadata of the project
  * @param advancements       the advancements of the project, which the release does not support yet
+ * @param packs              the pack metadata of the project, one entry per pack type
  * @author TheMeinerLP
  * @version 1.0.0
  * @since 1.0.0
@@ -40,6 +41,7 @@ record ProjectData(
         List<JsonNode> expressionFunctions,
         List<JsonNode> expressions,
         List<JsonNode> assets,
-        List<JsonNode> advancements
+        List<JsonNode> advancements,
+        List<JsonNode> packs
 ) {
 }

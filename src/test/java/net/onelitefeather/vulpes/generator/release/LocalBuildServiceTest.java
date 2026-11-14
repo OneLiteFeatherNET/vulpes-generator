@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -44,6 +45,8 @@ class LocalBuildServiceTest {
     private final FakeProjects projects = new FakeProjects();
     private final FakeBaseBranches branches = new FakeBaseBranches();
     private final FakeBaseVerification verification = new FakeBaseVerification();
+    private final FakeAssetContent assets = new FakeAssetContent();
+    private final InMemoryPackStorage storage = new InMemoryPackStorage(new java.util.ArrayList<>());
 
     @BeforeEach
     void resetFakes() {
@@ -58,6 +61,21 @@ class LocalBuildServiceTest {
         assertEquals("eldoria", build.projectKey(), "the file name must carry the project key");
         assertEquals(List.of("vulpes/eldoria/release.json", "vulpes/eldoria/snapshot.json"), entryNames(build.zip()),
                 "the zip must hold exactly the two metadata entries");
+    }
+
+    @Test
+    void localBuildHoldsTheResourcePackAndUploadsNothing() throws IOException {
+        assets.contents.putAll(PackTestData.CONTENTS);
+        projects.pack = PackTestData.inputs(PackTestData.meta("Eldoria"));
+
+        LocalBuild build = service().build(PROJECT_ID, null);
+
+        assertEquals(List.of("vulpes/eldoria/release.json", "vulpes/eldoria/snapshot.json",
+                        "vulpes/eldoria/eldoria-resourcepack.zip"), entryNames(build.zip()),
+                "a local build of a project with pack settings holds the pack next to the metadata");
+        assertEquals(0, storage.putCount, "a local build must not upload the pack");
+        assertEquals(0, release(build).get("packs").size(),
+                "a local build lists no pack, because the pack is not published");
     }
 
     @Test
@@ -165,7 +183,7 @@ class LocalBuildServiceTest {
 
     private LocalBuildService service() {
         return new LocalBuildService(projects, branches, verification, new ReleaseJsonWriter(), BASE,
-                Clock.fixed(NOW, ZoneOffset.UTC), "1.0.0");
+                Clock.fixed(NOW, ZoneOffset.UTC), "1.0.0", new ResourcePackService(assets, Optional.of(storage)));
     }
 
     private static JsonNode release(LocalBuild build) throws IOException {
@@ -198,6 +216,7 @@ class LocalBuildServiceTest {
     /** Knows one project and records how often the snapshot was assembled. */
     private static final class FakeProjects implements ProjectSource {
         private byte[] snapshot = snapshot(PROJECT_ID);
+        private ResourcePackInputs pack = ResourcePackInputs.NONE;
         private int assembleCount;
         private RuntimeException failWith;
 
@@ -212,7 +231,7 @@ class LocalBuildServiceTest {
         @Override
         public AssembledSnapshot assemble(UUID projectId) {
             assembleCount++;
-            return new AssembledSnapshot("eldoria", snapshot);
+            return new AssembledSnapshot("eldoria", snapshot, pack);
         }
     }
 }

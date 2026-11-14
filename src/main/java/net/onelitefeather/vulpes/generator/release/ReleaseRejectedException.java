@@ -36,6 +36,8 @@ public class ReleaseRejectedException extends RuntimeException {
         SOURCE_UNAVAILABLE,
         /** The Maven repository could not be reached or refused the upload. */
         REPOSITORY_UNAVAILABLE,
+        /** The pack bucket cannot be read or refuses the resource pack; nothing is published. */
+        PACK_STORAGE_UNAVAILABLE,
         /** The requested base branch does not exist in the vulpes-base repository. */
         UNKNOWN_BASE_BRANCH,
         /** The vulpes-base repository, its branch list, its clone or its base build cannot be used. */

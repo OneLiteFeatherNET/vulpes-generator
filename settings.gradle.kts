@@ -41,6 +41,7 @@ dependencyResolutionManagement {
             version("janino", "3.1.12")
             version("opentelemetry.instrumentation.alpha", "2.20.1-alpha")
             version("maven.resolver", "2.0.25")
+            version("awssdk", "2.44.7")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
@@ -64,6 +65,10 @@ dependencyResolutionManagement {
             // Publishing content data JARs to Reposilite (see release package).
             library("maven.resolver.supplier", "org.apache.maven.resolver", "maven-resolver-supplier-mvn3").versionRef("maven.resolver")
             library("maven.resolver.transport.jdk", "org.apache.maven.resolver", "maven-resolver-transport-jdk").versionRef("maven.resolver")
+
+            // The S3-compatible bucket of the resource packs (Ceph RGW), see the release package.
+            library("aws.s3", "software.amazon.awssdk", "s3").versionRef("awssdk")
+            library("aws.apache.client", "software.amazon.awssdk", "apache-client").versionRef("awssdk")
 
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")

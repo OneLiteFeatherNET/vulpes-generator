@@ -8,12 +8,14 @@ import net.onelitefeather.vulpes.generator.release.base.BaseVerification.Verifie
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Turns one snapshot into a published content data JAR.
  * The steps run in a fixed order: validate, refuse an existing release version before anything is fetched, resolve
  * the base branch, fetch the snapshot, verify it, check its content references and keys, verify it against the base
- * (clone, cached base classes, codegen, compilation), build the JAR in a temporary workspace, publish, notify.
+ * (clone, cached base classes, codegen, compilation), upload the resource pack when a bucket is configured, build the
+ * JAR in a temporary workspace, publish, notify. The pack is built before the base verification and uploaded after it.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -33,6 +35,7 @@ public class ReleaseService {
     private final String repository;
     private final String generatorVersion;
     private final Path workDir;
+    private final ResourcePackService packs;
 
     /**
      * Creates the service.
@@ -48,6 +51,7 @@ public class ReleaseService {
      * @param base             the {@code vulpes.base.*} configuration, which names the base repository
      * @param generatorVersion the version of this generator, written into the provenance
      * @param workDir          the base directory for build workspaces; blank means the JVM temp directory
+     * @param packs            builds the resource pack and uploads it to the pack bucket
      */
     public ReleaseService(ReleaseSnapshotSource source,
                           SnapshotVerifier verifier,
@@ -59,7 +63,8 @@ public class ReleaseService {
                           BaseVerification baseVerification,
                           BaseConfiguration base,
                           @Value("${vulpes.generator.version:dev}") String generatorVersion,
-                          @Value("${vulpes.release.work-dir:}") String workDir) {
+                          @Value("${vulpes.release.work-dir:}") String workDir,
+                          ResourcePackService packs) {
         this.source = source;
         this.verifier = verifier;
         this.jsonWriter = jsonWriter;
@@ -71,6 +76,7 @@ public class ReleaseService {
         this.repository = base.repository();
         this.generatorVersion = generatorVersion;
         this.workDir = workDir.isBlank() ? Path.of(System.getProperty("java.io.tmpdir")) : Path.of(workDir);
+        this.packs = packs;
     }
 
     /**
@@ -86,7 +92,7 @@ public class ReleaseService {
             ContentCoordinates coordinates = ContentCoordinates.forRelease(request.project(), request.version());
             refuseExisting(coordinates);
             ReleaseRequest resolved = request.withBaseBranch(branches.resolve(request.baseBranch()));
-            byte[] snapshot = source.fetch(request.projectId());
+            AssembledSnapshot snapshot = source.fetch(request.projectId());
             return publishVerified(resolved, snapshot);
         } catch (ReleaseRejectedException e) {
             throw e.forProject(request.projectId());
@@ -97,25 +103,32 @@ public class ReleaseService {
      * Verifies and publishes a snapshot that the caller has already assembled. The base branch of the request must
      * already be resolved, and the existence of the version must already be checked by the caller.
      *
-     * @param request  the release request, whose revision must be the digest of the snapshot
-     * @param snapshot the snapshot bytes
+     * The resource pack is built before the base is verified, so that a bad asset refuses the release early, and it is
+     * uploaded after the base is verified and before the data JAR is published.
+     *
+     * @param request  the release request, whose revision must be the digest of the snapshot bytes
+     * @param assembled the assembled snapshot, with the inputs of its resource pack
      * @return the coordinates, the revision, the verified base and the repository of the published release
      * @throws ReleaseRejectedException when the release is refused; nothing has been published then
      */
-    public ReleaseResult publishVerified(ReleaseRequest request, byte[] snapshot) {
+    public ReleaseResult publishVerified(ReleaseRequest request, AssembledSnapshot assembled) {
         request.validate();
         ContentCoordinates coordinates = ContentCoordinates.forRelease(request.project(), request.version());
+        byte[] snapshot = assembled.bytes();
         verifier.verify(request, snapshot);
         List<ReleaseDiagnostic> problems = ContentValidator.validate(snapshot);
         if (!problems.isEmpty()) {
             throw new ReleaseRejectedException(ReleaseRejectedException.Reason.INVALID_CONTENT,
                     problems.size() + " content problems, nothing is published", problems, false);
         }
+        Optional<ResourcePackService.PreparedPack> pack = packs.prepare(request.projectId(), assembled);
+        List<ReleasePack> listed = pack.map(prepared -> List.of(prepared.entry())).orElse(List.of());
         VerifiedBase verified = baseVerification.verify(new BaseVerification.Input(request.baseBranch(),
                 request.project(), GeneratedPackage.of(request.project()), snapshot,
                 commit -> jsonWriter.write(request, new ReleaseBase(repository, request.baseBranch(), commit),
-                        generatorVersion)));
+                        generatorVersion, listed)));
         ReleaseBase base = new ReleaseBase(repository, verified.branch(), verified.commit());
+        pack.ifPresent(packs::upload);
         try (BuildWorkspace workspace = BuildWorkspace.create(workDir)) {
             Path jarFile = workspace.dir().resolve(coordinates.artifactId() + "-" + coordinates.version() + ".jar");
             jarBuilder.build(jarFile, verified.releaseJson(), snapshot);

@@ -14,6 +14,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -170,7 +171,10 @@ class EditorReleaseServiceTest {
         ReleaseService releaseService = new ReleaseService(id -> {
             throw new AssertionError("the editor release must not fetch the snapshot a second time");
         }, new SnapshotVerifier(), new ReleaseJsonWriter(), new DataJarBuilder(), publisher,
-                (coordinates, revision) -> { }, branches, verification, BASE, "1.0.0", workDir.toString());
+                (coordinates, revision) -> { }, branches, verification, BASE, "1.0.0", workDir.toString(),
+                new ResourcePackService((projectId, assetId) -> {
+                    throw new AssertionError("no asset is read without a pack bucket");
+                }, Optional.empty()));
         return new EditorReleaseService(projects, publisher, branches, releaseService,
                 Clock.fixed(NOW, ZoneOffset.UTC));
     }

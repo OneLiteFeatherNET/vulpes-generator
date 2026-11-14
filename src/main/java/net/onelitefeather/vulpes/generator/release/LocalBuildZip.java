@@ -9,9 +9,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Assembles a local build in memory: a zip with exactly {@code vulpes/<project>/release.json} and
- * {@code vulpes/<project>/snapshot.json}, and no other entry. The bytes are not rewritten. The entries carry a fixed
- * time, so the same input always gives the same zip.
+ * Assembles a local build in memory: a zip with {@code vulpes/<project>/release.json} and
+ * {@code vulpes/<project>/snapshot.json}, and, when the project has pack settings, its resource pack as
+ * {@code vulpes/<project>/<project>-resourcepack.zip}. No other entry. The bytes are not rewritten. The entries carry
+ * a fixed time, so the same input always gives the same zip.
  *
  * @author TheMeinerLP
  * @version 1.0.0
@@ -34,10 +35,27 @@ public final class LocalBuildZip {
      * @return the zip bytes
      */
     public static byte[] write(String projectKey, byte[] releaseJson, byte[] snapshotJson) {
+        return write(projectKey, releaseJson, snapshotJson, null);
+    }
+
+    /**
+     * Writes the local build zip of a project with its resource pack.
+     *
+     * @param projectKey  the project key, which names the folder of the entries
+     * @param releaseJson the {@code release.json} bytes, stored unchanged
+     * @param snapshotJson the snapshot bytes, stored unchanged
+     * @param resourcePack the resource pack ZIP, stored as {@code <project>-resourcepack.zip}; {@code null} when the
+     *                     project has no pack, and then the zip holds no pack entry
+     * @return the zip bytes
+     */
+    public static byte[] write(String projectKey, byte[] releaseJson, byte[] snapshotJson, byte[] resourcePack) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(out, StandardCharsets.UTF_8)) {
             writeEntry(zip, "vulpes/" + projectKey + "/release.json", releaseJson);
             writeEntry(zip, "vulpes/" + projectKey + "/snapshot.json", snapshotJson);
+            if (resourcePack != null) {
+                writeEntry(zip, "vulpes/" + projectKey + "/" + projectKey + "-resourcepack.zip", resourcePack);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException("cannot write the local build zip", e);
         }

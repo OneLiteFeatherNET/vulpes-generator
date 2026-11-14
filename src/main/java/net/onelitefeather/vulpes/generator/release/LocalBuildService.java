@@ -41,6 +41,7 @@ public class LocalBuildService {
     private final String repository;
     private final Clock clock;
     private final String generatorVersion;
+    private final ResourcePackService packs;
 
     /**
      * Creates the service.
@@ -52,15 +53,18 @@ public class LocalBuildService {
      * @param base             the {@code vulpes.base.*} configuration, which names the base repository
      * @param clock            the source of {@code createdAt}
      * @param generatorVersion the version of this generator, written into the provenance
+     * @param packs            builds the resource pack, which the local build holds but never uploads
      */
     @Inject
     public LocalBuildService(ProjectSource projects, BaseBranchResolver branches, BaseVerification baseVerification,
                              ReleaseJsonWriter jsonWriter, BaseConfiguration base, Clock clock,
-                             @Value("${vulpes.generator.version:dev}") String generatorVersion) {
+                             @Value("${vulpes.generator.version:dev}") String generatorVersion,
+                             ResourcePackService packs) {
         this.projects = projects;
         this.branches = branches;
         this.baseVerification = baseVerification;
         this.jsonWriter = jsonWriter;
+        this.packs = packs;
         this.repository = base.repository();
         this.clock = clock;
         this.generatorVersion = generatorVersion;
@@ -99,7 +103,8 @@ public class LocalBuildService {
         VerifiedBase verified = baseVerification.verify(new BaseVerification.Input(branch, project,
                 GeneratedPackage.of(project), snapshot.bytes(),
                 commit -> jsonWriter.write(request, new ReleaseBase(repository, branch, commit), generatorVersion)));
-        return new LocalBuild(project, LocalBuildZip.write(project, verified.releaseJson(), snapshot.bytes()),
+        byte[] pack = packs.build(projectId, snapshot).orElse(null);
+        return new LocalBuild(project, LocalBuildZip.write(project, verified.releaseJson(), snapshot.bytes(), pack),
                 problems.size());
     }
 }

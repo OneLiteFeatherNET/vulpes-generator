@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 
 import static net.onelitefeather.vulpes.generator.release.ReleaseTestData.PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,7 +62,19 @@ class ReleaseJsonWriterTest {
         JsonNode root = parse(writer.write(ReleaseTestData.request(), ReleaseTestData.BASE, "1.0.0"));
 
         assertTrue(root.get("packs").isArray(), "packs must be an array");
-        assertEquals(0, root.get("packs").size(), "packs must be an empty array in this change");
+        assertEquals(0, root.get("packs").size(), "packs must be an empty array without a pack");
+    }
+
+    @Test
+    void packIsListedWithIdResolutionSha1SizeAndUrlInCanonicalOrder() {
+        String sha1 = "a".repeat(40);
+        ReleasePack pack = new ReleasePack("eldoria", 16, "https://packs.test/vulpes/eldoria/" + sha1 + ".zip", sha1, 123);
+
+        String json = text(writer.write(ReleaseTestData.request(), ReleaseTestData.BASE, "1.0.0", List.of(pack)));
+
+        assertTrue(json.contains("\"packs\":[{\"id\":\"eldoria\",\"resolution\":16,\"sha1\":\"" + sha1
+                        + "\",\"size\":123,\"url\":\"https://packs.test/vulpes/eldoria/" + sha1 + ".zip\"}],"),
+                "the pack must be written with sorted keys and no whitespace: " + json);
     }
 
     @Test

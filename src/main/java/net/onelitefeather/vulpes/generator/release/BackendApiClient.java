@@ -46,6 +46,29 @@ final class BackendApiClient {
     }
 
     /**
+     * Reads the raw bytes of one asset.
+     *
+     * @param path the path below the base URL
+     * @return the body of the answer
+     * @throws ReleaseRejectedException with {@link ReleaseRejectedException.Reason#SOURCE_UNAVAILABLE} for any answer
+     *                                  other than {@code 200}, including {@code 404}
+     */
+    byte[] bytes(String path) {
+        MutableHttpRequest<?> request = HttpRequest.GET(URI.create(baseUrl + path));
+        if (!token.isBlank()) {
+            request.bearerAuth(token);
+        }
+        try {
+            HttpResponse<byte[]> response = client.toBlocking().exchange(request, byte[].class);
+            return response.body() == null ? new byte[0] : response.body();
+        } catch (HttpClientResponseException e) {
+            throw unavailable(path + " answered " + e.getStatus());
+        } catch (HttpClientException e) {
+            throw unavailable("backend cannot be reached: " + e.getMessage());
+        }
+    }
+
+    /**
      * Reads one object.
      *
      * @param path the path below the base URL
