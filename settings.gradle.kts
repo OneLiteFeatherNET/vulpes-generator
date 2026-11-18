@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             version("janino", "3.1.12")
             version("opentelemetry.instrumentation.alpha", "2.20.1-alpha")
             version("maven.resolver", "2.0.25")
-            version("awssdk", "2.46.4")
+            version("awssdk", "2.46.5")
 
             library("mycelium.bom", "net.onelitefeather", "mycelium-bom").versionRef("mycelium")
 
