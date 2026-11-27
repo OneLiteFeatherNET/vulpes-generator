@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.micronaut.aot)
     jacoco
     `maven-publish`
-    id("org.openapi.generator") version "7.27.0"
+    id("org.openapi.generator") version "7.28.0"
 }
 
 // group comes from gradle.properties. The version lives here, on the marker line below,
