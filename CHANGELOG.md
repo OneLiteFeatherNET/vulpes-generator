@@ -1,5 +1,55 @@
 # Changelog
 
+## [3.0.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v2.0.0...v3.0.0) (2026-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **generator:** GET /download, GET /build/data and GET /generator/generate are removed. Stelaris must switch to the editor release flow (GET /projects/{projectId}/local-build and POST /generator/release).
+
+### Features
+
+* **pack:** build the resource pack from the project's assets ([#242](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/242)) ([1fa12a5](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/1fa12a59aa20d7c7d86d5ce74e9da2a486695bd1))
+
+
+### Bug Fixes
+
+* **chart:** pass route timeouts through to the httproute ([#230](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/230)) ([34f46f9](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/34f46f9a30578db32902874bec7efc328d25535c))
+* **deps:** update awssdk to v2.44.10 ([#246](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/246)) ([3120580](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/3120580831d91c3375f7ed67f194c09a82aca31b))
+* **deps:** update awssdk to v2.44.11 ([#247](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/247)) ([16c3032](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/16c3032e92e2318d2cae4801f6a12c52b1eebb50))
+* **deps:** update awssdk to v2.44.12 ([#248](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/248)) ([1e7daf7](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/1e7daf716c1488652d031b6f6981a334164061d0))
+* **deps:** update awssdk to v2.44.13 ([#249](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/249)) ([a50c609](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/a50c609966d76f7f87fa2efdd84732942e1eb47b))
+* **deps:** update awssdk to v2.44.14 ([#250](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/250)) ([347032c](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/347032cb954b1199fa62296bfcd8e915e9c90586))
+* **deps:** update awssdk to v2.44.8 ([#244](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/244)) ([469008c](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/469008cc79d964266c6545d28d274531f44ed743))
+* **deps:** update awssdk to v2.44.9 ([#245](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/245)) ([7a78965](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/7a78965a72bbffbcf213abf89d60ed73e7c25361))
+* **deps:** update awssdk to v2.45.0 ([#251](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/251)) ([07871f3](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/07871f39bc74d53e721aa111f8acab7b4b94ebe8))
+* **deps:** update awssdk to v2.45.1 ([#253](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/253)) ([81ff338](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/81ff338e0886aa3b41298e283cd22502ff895b31))
+* **deps:** update awssdk to v2.46.0 ([#254](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/254)) ([0c19431](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/0c1943155928b20ee8044f2740ab4f86f665407a))
+* **deps:** update awssdk to v2.46.1 ([#255](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/255)) ([40cb8fe](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/40cb8fe3f62992e4fbd2aa6af065e3f50042fe17))
+* **deps:** update awssdk to v2.46.2 ([#256](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/256)) ([8d9ffd3](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/8d9ffd379acda80f6728ad957ee7b0c0a7f4f59f))
+* **deps:** update awssdk to v2.46.3 ([#258](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/258)) ([513010b](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/513010b7f01c23571e9bd04ea9a8d904c9b3afe4))
+* **deps:** update awssdk to v2.46.4 ([#259](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/259)) ([12660bb](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/12660bb9063c62e24cdcae84a9e4bed90892e125))
+* **deps:** update awssdk to v2.46.5 ([#260](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/260)) ([df3dd0f](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/df3dd0fc20c176b7a2638a976a9a64949495c8db))
+* **deps:** update awssdk to v2.46.6 ([#261](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/261)) ([6e84bb6](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/6e84bb6dc408419ef50d1a6de510c955118505ce))
+* **deps:** update awssdk to v2.46.7 ([#262](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/262)) ([e25f385](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/e25f3853ba2ef0728151d5ddd46da5bebff54ab1))
+* **deps:** update awssdk to v2.46.8 ([#266](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/266)) ([c7e36a2](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/c7e36a25350b3a0a0e8b29566d808aef46f5e6ff))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-codegen to v0.4.0 ([#227](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/227)) ([4413b68](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/4413b6852bef288d9436cee433108ca88e792eac))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-codegen to v0.4.1 ([#233](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/233)) ([0e49cd2](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/0e49cd2028f219238eee9da1208b7d849191a97b))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-format to v0.4.0 ([#228](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/228)) ([d144e37](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/d144e37dc760567faac66258d1906abdde21df65))
+* **deps:** update dependency net.onelitefeather.vulpes:vulpes-format to v0.4.1 ([#234](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/234)) ([f62b617](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/f62b617b80fcc33389b1b4b96b265357a7d0e040))
+* **deps:** update maven.resolver to v2.0.25 ([#226](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/226)) ([8c708ec](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/8c708ecea0ccca44515c62866061cc07fb40fe03))
+* **deps:** update maven.resolver to v2.0.26 ([#264](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/264)) ([49b6a85](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/49b6a85a91801dcd84fd3aaee436459f4194be3e))
+* **release:** read the release snapshot from the backend content export ([#237](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/237)) ([9adc334](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/9adc33458d8e576908e0352f06ce9227c99f47f0))
+* **release:** retry a failed base build once and log its output ([#231](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/231)) ([997eb79](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/997eb798f4794adfd1238f9e0465be8b1eac10ac))
+* **release:** skip the base clone when the commit is cached and log clone failures ([#235](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/235)) ([6e78740](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/6e7874093fb7ab4b0d37fe96b7f2fbee9fc0f887))
+* **release:** stop checking item model definitions against project assets ([#243](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/243)) ([ae92a62](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/ae92a62b8b1ea1818d754cd499975a69b10970ae))
+* **release:** validate content references before a release ([#241](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/241)) ([a5b9023](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/a5b9023165d3b37179154a2270fc60aa24bde788))
+
+
+### Code Refactoring
+
+* **generator:** remove java generation and git integration ([#232](https://github.com/OneLiteFeatherNET/vulpes-generator/issues/232)) ([33bbc98](https://github.com/OneLiteFeatherNET/vulpes-generator/commit/33bbc982bb530987962b9205e3c6645c780fe35e))
+
 ## [2.0.0](https://github.com/OneLiteFeatherNET/vulpes-generator/compare/v1.0.0...v2.0.0) (2026-11-07)
 
 
